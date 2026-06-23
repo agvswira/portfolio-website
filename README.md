@@ -1,47 +1,25 @@
 # Portfolio Website
 
-Personal portfolio built with Next.js 15 (App Router), TypeScript, Tailwind CSS, GSAP, and Framer Motion. Designed with a clean, minimal Arctic Nord aesthetic — featuring a parallax hero scene and dynamic particle background.
+Personal portfolio website of Komang Agus Wira Adnyana — a Computer Science student at Udayana University with an interest in AI and Data Science.
 
-## Features
+## Overview
 
-- Modern Stack: Next.js 15 + App Router, TypeScript, Tailwind CSS
-- Smooth Animations: GSAP ScrollTrigger + Framer Motion
-- Responsive Design: Mobile-first, accessible
-- Clean Aesthetic: Nord color palette, minimal distractions
-- AI Chat Widget: Simulated digital twin interaction
+Built with Next.js 15 (App Router), TypeScript, and Tailwind CSS. Features a parallax mountain hero scene powered by GSAP ScrollTrigger, an animated particle background, and an AI-powered chat assistant.
 
-## Getting Started
+The design follows a clean, minimal aesthetic inspired by the Nord color palette — prioritizing readability, performance, and accessibility.
 
-```bash
-npm run dev
-```
+## Tech Stack
 
-Open [http://localhost:3000](http://localhost:3000) to view.
+| Category       | Technology                                      |
+|----------------|-------------------------------------------------|
+| Framework      | Next.js 15 (App Router)                         |
+| Language       | TypeScript                                      |
+| Styling        | Tailwind CSS                                    |
+| Animation      | GSAP ScrollTrigger, Framer Motion               |
+| AI Integration | OpenAI-compatible API (streaming SSE)           |
+| Email          | Resend API                                      |
+| Blog           | MDX with syntax highlighting                    |
 
-## Project Structure
+## Live
 
-```
-src/
-├── app/              # Pages & layout
-├── components/
-│   ├── backdrop/     # Clean backdrop (solid + vignette)
-│   ├── background/   # Animated particle background
-│   ├── chat/         # AI chat widget
-│   ├── hero/         # Parallax mountain scene
-│   ├── motion/       # Animation utilities
-│   ├── sections/     # Page sections
-│   └── ui/           # Reusable components
-├── lib/              # Constants, GSAP setup
-├── content/          # Blog posts (MDX)
-└── public/           # Static assets
-```
-
-## Development
-
-```bash
-npm run dev      # Start dev server
-npm run build    # Production build
-npm run lint     # Lint code
-```
-
-Built with Next.js.
+[aguswira.dev](https://aguswira.dev)
