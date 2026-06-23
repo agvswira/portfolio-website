@@ -17,7 +17,7 @@ export const PERSONAL = {
   nickname: "Wira",
   role: "Tech Enthusiast",
   location: "Bali, Indonesia",
-  bio: "Mahasiswa Informatika yang tertarik dengan AI dan Data Science. Suka bereksperimen dengan teknologi, membangun bot, dan mengeksplorasi cara kerja machine learning. Selalu penasaran dengan hal baru dan senang belajar lewat praktik langsung.",
+  bio: "Mahasiswa Informatika yang tertarik dengan AI dan Data Science. Senang mencoba teknologi baru, mengeksplorasi berbagai bidang IT, dan belajar lewat praktik langsung. Selalu penasaran dengan hal-hal yang belum dikuasai.",
   email: "agvswira@yourdomain.com",
   github: "https://github.com/agvswira",
   linkedin: "https://linkedin.com/in/yourusername",
