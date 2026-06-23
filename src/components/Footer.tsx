@@ -1,18 +1,20 @@
-import Link from "next/link";
-import { FiGithub, FiLinkedin, FiTwitter, FiMail } from "react-icons/fi";
+import { FiGithub, FiLinkedin, FiInstagram, FiMail } from "react-icons/fi";
+import { FaDiscord } from "react-icons/fa";
 import { SITE, PERSONAL } from "@/lib/constants";
 
 const ICONS: Record<string, React.ElementType> = {
   FiGithub,
   FiLinkedin,
-  FiTwitter,
+  FiInstagram,
+  FaDiscord,
   FiMail,
 };
 
 const SOCIAL = [
   { label: "GitHub", href: PERSONAL.github, icon: "FiGithub" },
   { label: "LinkedIn", href: PERSONAL.linkedin, icon: "FiLinkedin" },
-  { label: "Twitter / X", href: PERSONAL.twitter, icon: "FiTwitter" },
+  { label: "Instagram", href: PERSONAL.instagram, icon: "FiInstagram" },
+  { label: "Discord", href: PERSONAL.discord, icon: "FaDiscord" },
   { label: "Email", href: `mailto:${PERSONAL.email}`, icon: "FiMail" },
 ];
 
@@ -20,8 +22,8 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="relative z-10 border-t border-nord-border/30 py-10">
-      <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <footer className="relative z-10 border-t border-nord-border/10 py-5">
+      <div className="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
         {/* Brand */}
         <div className="text-sm text-text-muted">
           <span className="text-gradient font-semibold">{SITE.name}</span>
@@ -51,12 +53,7 @@ export default function Footer() {
           </ul>
         </nav>
 
-        {/* Blog link */}
-        <div className="text-sm text-text-muted">
-          <Link href="/blog" className="hover:text-frost transition-colors">
-            Blog →
-          </Link>
-        </div>
+
       </div>
     </footer>
   );

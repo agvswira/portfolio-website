@@ -2,12 +2,12 @@
 
 import { useRef } from "react";
 import { LuChevronDown } from "react-icons/lu";
-import { FiGithub, FiLinkedin, FiTwitter } from "react-icons/fi";
+import { FiGithub, FiLinkedin, FiInstagram } from "react-icons/fi";
+import { FaDiscord } from "react-icons/fa";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "@/lib/gsap";
 import { PERSONAL, HERO_STATS, SITE } from "@/lib/constants";
 import HeroScene from "@/components/motion/HeroScene";
-import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 
 export default function Hero() {
@@ -42,13 +42,8 @@ export default function Hero() {
   );
 
   return (
-    <HeroScene>
+    <HeroScene showHorizon={false}>
       <div className="w-full max-w-4xl mx-auto px-6 text-center flex flex-col items-center gap-5">
-        {/* Eyebrow badge */}
-        <Badge variant="available" className="mb-2">
-          {PERSONAL.status}
-        </Badge>
-
         {/* Title — LCP element: SSR opacity 1, no animation delay */}
         <h1
           className="text-5xl sm:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.1]"
@@ -82,7 +77,8 @@ export default function Hero() {
           {[
             { href: PERSONAL.github, Icon: FiGithub, label: "GitHub" },
             { href: PERSONAL.linkedin, Icon: FiLinkedin, label: "LinkedIn" },
-            { href: PERSONAL.twitter, Icon: FiTwitter, label: "Twitter" },
+            { href: PERSONAL.instagram, Icon: FiInstagram, label: "Instagram" },
+            { href: PERSONAL.discord, Icon: FaDiscord, label: "Discord" },
           ].map(({ href, Icon, label }) => (
             <a
               key={label}

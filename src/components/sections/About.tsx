@@ -1,11 +1,10 @@
-import { FiMapPin, FiBriefcase } from "react-icons/fi";
+import { FiMapPin } from "react-icons/fi";
 import { PERSONAL, TIMELINE } from "@/lib/constants";
 import SectionWrapper from "@/components/ui/SectionWrapper";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import Parallax from "@/components/motion/Parallax";
 import Reveal from "@/components/motion/Reveal";
 import RevealGroup from "@/components/motion/RevealGroup";
-import Badge from "@/components/ui/Badge";
 
 const ABOUT_STATS = [
   { label: "Tahun Aktif", value: "3+" },
@@ -40,10 +39,6 @@ export default function About() {
                 <span className="flex items-center gap-1.5">
                   <FiMapPin size={14} aria-hidden="true" />
                   {PERSONAL.location}
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <FiBriefcase size={14} aria-hidden="true" />
-                  <Badge variant="available">{PERSONAL.status}</Badge>
                 </span>
               </div>
 

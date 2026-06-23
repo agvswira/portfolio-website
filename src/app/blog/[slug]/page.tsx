@@ -7,6 +7,7 @@ import rehypeSlug from "rehype-slug";
 import rehypeHighlight from "rehype-highlight";
 import { getPostBySlug, getAllPosts, getAllSlugs } from "@/lib/blog";
 import { SITE, PERSONAL } from "@/lib/constants";
+import Footer from "@/components/Footer";
 import Badge from "@/components/ui/Badge";
 
 export async function generateStaticParams() {
@@ -44,11 +45,7 @@ function formatDate(iso: string) {
   });
 }
 
-export default async function BlogPostPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const post = getPostBySlug(slug);
   if (!post) notFound();
@@ -135,6 +132,7 @@ export default async function BlogPostPage({
           </nav>
         )}
       </div>
+      <Footer />
     </div>
   );
 }

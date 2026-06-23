@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { FiGithub, FiLinkedin, FiTwitter, FiMail } from "react-icons/fi";
+import { FiGithub, FiLinkedin, FiInstagram, FiMail } from "react-icons/fi";
+import { FaDiscord } from "react-icons/fa";
 import { PERSONAL } from "@/lib/constants";
 import SectionWrapper from "@/components/ui/SectionWrapper";
 import SpotlightCard from "@/components/ui/SpotlightCard";
@@ -13,7 +14,8 @@ type FormState = "idle" | "sending" | "sent" | "error";
 const SOCIAL = [
   { label: "GitHub", href: PERSONAL.github, Icon: FiGithub },
   { label: "LinkedIn", href: PERSONAL.linkedin, Icon: FiLinkedin },
-  { label: "Twitter / X", href: PERSONAL.twitter, Icon: FiTwitter },
+  { label: "Instagram", href: PERSONAL.instagram, Icon: FiInstagram },
+  { label: "Discord", href: PERSONAL.discord, Icon: FaDiscord },
   { label: "Email", href: `mailto:${PERSONAL.email}`, Icon: FiMail },
 ];
 
@@ -79,7 +81,10 @@ export default function Contact() {
 
               <div className="flex flex-col gap-5">
                 <div>
-                  <label htmlFor="contact-name" className="block text-sm text-text-secondary mb-1.5">
+                  <label
+                    htmlFor="contact-name"
+                    className="block text-sm text-text-secondary mb-1.5"
+                  >
                     Nama
                   </label>
                   <input
@@ -94,7 +99,10 @@ export default function Contact() {
                 </div>
 
                 <div>
-                  <label htmlFor="contact-email" className="block text-sm text-text-secondary mb-1.5">
+                  <label
+                    htmlFor="contact-email"
+                    className="block text-sm text-text-secondary mb-1.5"
+                  >
                     Email
                   </label>
                   <input
@@ -109,14 +117,17 @@ export default function Contact() {
                 </div>
 
                 <div>
-                  <label htmlFor="contact-message" className="block text-sm text-text-secondary mb-1.5">
+                  <label
+                    htmlFor="contact-message"
+                    className="block text-sm text-text-secondary mb-1.5"
+                  >
                     Pesan
                   </label>
                   <textarea
                     id="contact-message"
                     name="message"
                     required
-                    rows={5}
+                    rows={6}
                     placeholder="Ceritakan proyek atau pertanyaan Anda..."
                     className={`${inputBase} resize-none`}
                   />
@@ -159,7 +170,7 @@ export default function Contact() {
           <div>
             <h3 className="text-text-primary font-semibold mb-2">Atau hubungi langsung</h3>
             <p className="text-text-muted text-sm leading-relaxed">
-              Temukan saya di platform berikut. Respons paling cepat melalui email atau LinkedIn.
+              Temukan saya di platform berikut.
             </p>
           </div>
 

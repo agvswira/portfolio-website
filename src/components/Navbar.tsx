@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { LuX, LuMenu } from "react-icons/lu";
 import { NAV_ITEMS, SITE } from "@/lib/constants";
+import { getLenis } from "@/components/motion/SmoothScroll";
 
 export default function Navbar() {
   const [activeSection, setActiveSection] = useState<string>("hero");
@@ -49,11 +50,9 @@ export default function Navbar() {
     if (!el) return;
 
     // Use Lenis if available, else native
-    const win = window as unknown as {
-      lenis?: { scrollTo: (target: Element, opts: object) => void };
-    };
-    if (win.lenis) {
-      win.lenis.scrollTo(el, { offset: 0, duration: 1.2 });
+    const lenis = getLenis();
+    if (lenis) {
+      lenis.scrollTo(el, { offset: 0, duration: 1.2 });
     } else {
       el.scrollIntoView({ behavior: "smooth" });
     }

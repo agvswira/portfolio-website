@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getAllPosts } from "@/lib/blog";
 import { SITE, PERSONAL } from "@/lib/constants";
+import Footer from "@/components/Footer";
 import Badge from "@/components/ui/Badge";
 
 export const metadata: Metadata = {
@@ -94,6 +95,7 @@ export default function BlogPage() {
           </ol>
         )}
       </div>
+      <Footer />
     </div>
   );
 }

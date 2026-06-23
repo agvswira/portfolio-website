@@ -15,12 +15,12 @@ export const PERSONAL = {
   name: "Agus Wira",
   role: "Frontend Engineer",
   location: "Indonesia",
-  status: "Available for work",
   bio: "Saya frontend engineer yang fokus pada performa, aksesibilitas, dan pengalaman pengguna yang mulus. Senang bereksperimen dengan animasi scroll, sistem desain, dan teknik rendering modern.",
   email: "genta@yourdomain.com",
   github: "https://github.com/yourusername",
   linkedin: "https://linkedin.com/in/yourusername",
-  twitter: "https://twitter.com/yourusername",
+  instagram: "https://instagram.com/yourusername",
+  discord: "https://discord.gg/yourinvite",
 };
 
 export const NAV_ITEMS = [
@@ -35,7 +35,8 @@ export const NAV_ITEMS = [
 export const SOCIAL_LINKS = [
   { label: "GitHub", href: PERSONAL.github, icon: "FiGithub" },
   { label: "LinkedIn", href: PERSONAL.linkedin, icon: "FiLinkedin" },
-  { label: "Twitter / X", href: PERSONAL.twitter, icon: "FiTwitter" },
+  { label: "Instagram", href: PERSONAL.instagram, icon: "FiInstagram" },
+  { label: "Discord", href: PERSONAL.discord, icon: "FaDiscord" },
   { label: "Email", href: `mailto:${PERSONAL.email}`, icon: "FiMail" },
 ] as const;
 

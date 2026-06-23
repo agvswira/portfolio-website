@@ -52,7 +52,7 @@ const jsonLd = {
   url: SITE.url,
   jobTitle: PERSONAL.role,
   description: SITE.description,
-  sameAs: [PERSONAL.github, PERSONAL.linkedin, PERSONAL.twitter],
+  sameAs: [PERSONAL.github, PERSONAL.linkedin, PERSONAL.instagram],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
