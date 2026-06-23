@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { FiMapPin } from "react-icons/fi";
 import { PERSONAL, TIMELINE } from "@/lib/constants";
 import SectionWrapper from "@/components/ui/SectionWrapper";
@@ -27,15 +28,16 @@ export default function About() {
         <Parallax speed={-0.12}>
           <Reveal>
             <SpotlightCard className="p-8">
-              {/* Profile photo — ganti src ke foto asli saat tersedia */}
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-frost/20 to-frost-deep/30 border border-nord-border/50 flex items-center justify-center mb-6 overflow-hidden">
-                <span className="text-2xl font-semibold text-frost/60 select-none">
-                  {PERSONAL.fullName
-                    .split(" ")
-                    .map((w) => w[0])
-                    .slice(0, 3)
-                    .join("")}
-                </span>
+              {/* Profile photo */}
+              <div className="w-20 h-20 rounded-2xl bg-bg-elevated border border-nord-border/50 overflow-hidden mb-6">
+                <Image
+                  src="/images/profile.jpg"
+                  alt={PERSONAL.fullName}
+                  width={80}
+                  height={80}
+                  className="w-full h-full object-cover"
+                  priority
+                />
               </div>
 
               <h3 className="text-xl font-semibold text-text-primary mb-1">{PERSONAL.fullName}</h3>
