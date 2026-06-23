@@ -42,8 +42,8 @@ export default function HeroScene({ children, showHorizon = true }: HeroScenePro
         scrollTrigger: {
           trigger: section,
           start: "top top",
-          end: "+=180%",
-          scrub: 0.5,
+          end: "+=200%",
+          scrub: 0.4,
           pin: true,
           pinSpacing: true,
           anticipatePin: 1,
@@ -52,24 +52,24 @@ export default function HeroScene({ children, showHorizon = true }: HeroScenePro
       });
 
       // Sky — nearly static
-      tl.to(skyRef.current, { y: "-12%", opacity: 0.9, ease: "none" }, 0);
+      tl.to(skyRef.current, { y: "-15%", opacity: 0.85, ease: "none" }, 0);
 
       // Far mountain — slow + slight scale
       tl.fromTo(
         mtFarRef.current,
         { y: "0%", scale: 1 },
-        { y: "-25%", scale: 1.04, opacity: 0.8, ease: "none" },
+        { y: "-30%", scale: 1.04, opacity: 0.7, ease: "none" },
         0
       );
 
       // Mid mountain — medium speed
-      tl.to(mtMidRef.current, { y: "-55%", opacity: 0.7, ease: "none" }, 0);
+      tl.to(mtMidRef.current, { y: "-65%", opacity: 0.6, ease: "none" }, 0);
 
       // Near mountain — fast, sweeps up and out
-      tl.to(mtNearRef.current, { y: "-100%", opacity: 0.2, ease: "power1.out" }, 0);
+      tl.to(mtNearRef.current, { y: "-120%", opacity: 0.1, ease: "power1.out" }, 0);
 
       // Content — rise + fade
-      tl.to(contentRef.current, { y: "-40%", opacity: 0, ease: "power2.out" }, 0.2);
+      tl.to(contentRef.current, { y: "-50%", opacity: 0, ease: "power2.out" }, 0.3);
 
       refreshAfterAssets();
     },
@@ -160,13 +160,13 @@ export default function HeroScene({ children, showHorizon = true }: HeroScenePro
         style={{ zIndex: 3 }}
       >
         <svg
-          viewBox="0 0 1440 600"
+          viewBox="0 0 1440 700"
           preserveAspectRatio="xMidYMax slice"
           className="w-full"
           style={{ display: "block", marginBottom: -1 }}
         >
           <path
-            d="M0,600 L0,400 Q100,375 200,385 Q300,395 400,355 Q480,325 560,335 Q660,350 760,310 Q840,280 920,295 Q1000,310 1080,280 Q1180,245 1280,265 Q1360,280 1440,260 L1440,600 Z"
+            d="M0,700 L0,400 Q100,375 200,385 Q300,395 400,355 Q480,325 560,335 Q660,350 760,310 Q840,280 920,295 Q1000,310 1080,280 Q1180,245 1280,265 Q1360,280 1440,260 L1440,700 Z"
             fill="#4C566A"
           />
         </svg>
