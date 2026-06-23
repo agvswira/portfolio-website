@@ -46,15 +46,32 @@ export default function Navbar() {
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
     const id = href.replace("#", "");
+
+    // Special handling for hero/home section to scroll to absolute top
+    if (id === "hero") {
+      const lenis = getLenis();
+      if (lenis) {
+        // Scroll to absolute top (0) to ensure we're at the very beginning
+        lenis.scrollTo(0, { duration: 1.2 });
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      setMenuOpen(false);
+      return;
+    }
+
     const el = document.getElementById(id);
     if (!el) return;
 
     // Use Lenis if available, else native
     const lenis = getLenis();
     if (lenis) {
-      lenis.scrollTo(el, { offset: 0, duration: 1.2 });
+      // Account for fixed navbar height (roughly 64px)
+      lenis.scrollTo(el, { offset: -64, duration: 1.2 });
     } else {
-      el.scrollIntoView({ behavior: "smooth" });
+      // Account for fixed navbar height with scroll-margin-top
+      const y = el.getBoundingClientRect().top + window.scrollY - 64;
+      window.scrollTo({ top: y, behavior: "smooth" });
     }
     setMenuOpen(false);
   };

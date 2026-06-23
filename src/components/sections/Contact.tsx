@@ -170,7 +170,7 @@ export default function Contact() {
           <div>
             <h3 className="text-text-primary font-semibold mb-2">Atau hubungi langsung</h3>
             <p className="text-text-muted text-sm leading-relaxed">
-              Temukan saya di platform berikut.
+              Temukan saya di platform berikut. Respons paling cepat melalui email atau LinkedIn.
             </p>
           </div>
 
