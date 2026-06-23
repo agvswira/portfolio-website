@@ -3,7 +3,6 @@
 import CanvasBackground from "@/components/background/CanvasBackground";
 
 // Clean minimal backdrop — solid Polar Night wash + optional vignette.
-// NO aurora, grid, constellation, meteor, or cursor-glow.
 export default function Backdrop() {
   return (
     <>

@@ -19,7 +19,7 @@ export default function About() {
       id="about"
       eyebrow="Tentang Saya"
       title={`Halo, saya ${PERSONAL.name} 👋`}
-      subtitle="Mahasiswa yang percaya teknologi bisa dipelajari siapa saja — asal punya rasa penasaran dan semangat untuk terus ngoprek."
+      subtitle="Mahasiswa yang percaya teknologi bisa dipelajari siapa saja — asal punya rasa penasaran dan semangat untuk terus berkembang."
       className="bg-transparent"
     >
       <div className="grid lg:grid-cols-2 gap-12 items-start mt-8">
@@ -27,12 +27,18 @@ export default function About() {
         <Parallax speed={-0.12}>
           <Reveal>
             <SpotlightCard className="p-8">
-              {/* Avatar placeholder */}
-              <div className="w-20 h-20 rounded-2xl bg-bg-elevated border border-nord-border/50 flex items-center justify-center mb-6 text-3xl select-none">
-                GK
+              {/* Profile photo — ganti src ke foto asli saat tersedia */}
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-frost/20 to-frost-deep/30 border border-nord-border/50 flex items-center justify-center mb-6 overflow-hidden">
+                <span className="text-2xl font-semibold text-frost/60 select-none">
+                  {PERSONAL.fullName
+                    .split(" ")
+                    .map((w) => w[0])
+                    .slice(0, 3)
+                    .join("")}
+                </span>
               </div>
 
-              <h3 className="text-xl font-semibold text-text-primary mb-1">{PERSONAL.name}</h3>
+              <h3 className="text-xl font-semibold text-text-primary mb-1">{PERSONAL.fullName}</h3>
               <p className="text-frost text-sm font-medium mb-4">{PERSONAL.role}</p>
 
               <div className="flex flex-wrap gap-3 mb-5 text-sm text-text-muted">
@@ -86,9 +92,13 @@ export default function About() {
                   {/* Content */}
                   <div>
                     <p className="eyebrow text-[10px] mb-1">{item.year}</p>
-                    <h4 className="text-text-primary font-medium leading-snug">{item.title}</h4>
-                    <p className="text-text-muted text-sm mb-1">{item.place}</p>
-                    <p className="text-text-muted text-sm leading-relaxed">{item.desc}</p>
+                    <p className="text-frost font-semibold text-sm leading-snug">{item.place}</p>
+                    <h4 className="text-text-primary font-medium leading-snug mt-0.5">
+                      {item.title}
+                    </h4>
+                    {item.desc && (
+                      <p className="text-text-muted text-sm leading-relaxed mt-1">{item.desc}</p>
+                    )}
                   </div>
                 </div>
               ))}

@@ -1,46 +1,13 @@
 "use client";
 
-import { useRef } from "react";
 import { LuChevronDown } from "react-icons/lu";
 import { FiGithub, FiLinkedin, FiInstagram } from "react-icons/fi";
 import { FaDiscord } from "react-icons/fa";
-import { useGSAP } from "@gsap/react";
-import { gsap } from "@/lib/gsap";
-import { PERSONAL, HERO_STATS, SITE } from "@/lib/constants";
+import { PERSONAL, SITE } from "@/lib/constants";
 import HeroScene from "@/components/motion/HeroScene";
 import Button from "@/components/ui/Button";
 
 export default function Hero() {
-  const statsRef = useRef<HTMLDivElement>(null);
-
-  // Animate stat numbers on mount (after content appears)
-  useGSAP(
-    () => {
-      const counters = statsRef.current?.querySelectorAll("[data-count]");
-      if (!counters) return;
-      counters.forEach((el) => {
-        const target = Number((el as HTMLElement).dataset.count);
-        gsap.fromTo(
-          el,
-          { textContent: 0 },
-          {
-            textContent: target,
-            duration: 1.5,
-            delay: 0.8,
-            ease: "power2.out",
-            snap: { textContent: 1 },
-            onUpdate() {
-              (el as HTMLElement).textContent = String(
-                Math.round(Number((el as HTMLElement).textContent))
-              );
-            },
-          }
-        );
-      });
-    },
-    { scope: statsRef }
-  );
-
   return (
     <HeroScene showHorizon={false}>
       <div className="w-full max-w-4xl mx-auto px-6 text-center flex flex-col items-center gap-5">
@@ -90,19 +57,6 @@ export default function Hero() {
             >
               <Icon size={20} aria-hidden="true" />
             </a>
-          ))}
-        </div>
-
-        {/* Stats */}
-        <div ref={statsRef} className="flex flex-wrap items-center justify-center gap-8 mt-4">
-          {HERO_STATS.map((stat) => (
-            <div key={stat.label} className="text-center">
-              <p className="text-3xl font-bold text-text-primary tabular-nums">
-                <span data-count={stat.value}>0</span>
-                <span className="text-frost">{stat.suffix}</span>
-              </p>
-              <p className="eyebrow text-[10px] mt-0.5">{stat.label}</p>
-            </div>
           ))}
         </div>
       </div>

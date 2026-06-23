@@ -1,10 +1,10 @@
 import type { IconType } from "react-icons";
+import { SiPython, SiPandas, SiJupyter, SiTensorflow } from "react-icons/si";
 import { SiHtml5, SiCss, SiJavascript } from "react-icons/si";
 import { SiNodedotjs } from "react-icons/si";
 import { SiMysql, SiMongodb } from "react-icons/si";
 import { SiDocker, SiGit, SiLinux, SiFigma } from "react-icons/si";
-import { SiPython, SiPandas, SiJupyter, SiTensorflow } from "react-icons/si";
-import { LuBrain, LuLanguages } from "react-icons/lu";
+import { LuBrain, LuLightbulb, LuTarget, LuUsers, LuLanguages } from "react-icons/lu";
 
 export interface SkillItem {
   name: string;
@@ -17,6 +17,15 @@ export interface SkillGroup {
 }
 
 export const SKILL_GROUPS: SkillGroup[] = [
+  {
+    category: "Data Science",
+    items: [
+      { name: "Python", icon: SiPython },
+      { name: "Pandas", icon: SiPandas },
+      { name: "Jupyter", icon: SiJupyter },
+      { name: "TensorFlow", icon: SiTensorflow },
+    ],
+  },
   {
     category: "Frontend",
     items: [
@@ -46,19 +55,13 @@ export const SKILL_GROUPS: SkillGroup[] = [
     ],
   },
   {
-    category: "AI & Data Science",
+    category: "Soft Skills",
     items: [
-      { name: "Python", icon: SiPython },
-      { name: "Pandas", icon: SiPandas },
-      { name: "Jupyter", icon: SiJupyter },
-      { name: "TensorFlow", icon: SiTensorflow },
-    ],
-  },
-  {
-    category: "English",
-    items: [
-      { name: "Reading", icon: LuBrain },
-      { name: "Writing", icon: LuLanguages },
+      { name: "Problem Solving", icon: LuBrain },
+      { name: "Critical Thinking", icon: LuLightbulb },
+      { name: "Time Management", icon: LuTarget },
+      { name: "Teamwork", icon: LuUsers },
+      { name: "English", icon: LuLanguages },
     ],
   },
 ];

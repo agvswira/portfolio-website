@@ -42,7 +42,7 @@ export default function BlogPage() {
           <p className="eyebrow mb-3">Blog</p>
           <h1 className="text-4xl font-semibold text-text-primary tracking-tight mb-4">Tulisan</h1>
           <p className="text-text-muted text-lg leading-relaxed">
-            Catatan perjalanan belajar dan eksperimen teknologi.
+            Catatan perjalanan, pemikiran, dan hal-hal yang sedang aku pelajari.
           </p>
         </header>
 

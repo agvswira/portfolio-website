@@ -7,15 +7,16 @@ export const SITE = {
   url: "https://aguswira.dev",
   title: "Agus Wira — Tech Enthusiast",
   description:
-    "Mahasiswa Informatika yang tertarik di bidang AI dan Data Science. Suka ngoprek, eksperimen, dan membangun hal baru.",
+    "Mahasiswa Informatika yang tertarik di bidang AI dan Data Science. Suka bereksperimen dan membangun hal baru.",
   ogImage: "/images/og.png",
 };
 
 export const PERSONAL = {
+  fullName: "Komang Agus Wira Adnyana",
   name: "Agus Wira",
   role: "Tech Enthusiast",
-  location: "Indonesia",
-  bio: "Mahasiswa Informatika yang tertarik dengan AI dan Data Science. Suka ngoprek teknologi, membangun bot, dan mengeksplorasi cara kerja machine learning. Selalu penasaran sama hal baru dan senang belajar lewat eksperimen.",
+  location: "Bali, Indonesia",
+  bio: "Mahasiswa Informatika yang tertarik dengan AI dan Data Science. Suka bereksperimen dengan teknologi, membangun bot, dan mengeksplorasi cara kerja machine learning. Selalu penasaran dengan hal baru dan senang belajar lewat praktik langsung.",
   email: "agvswira@yourdomain.com",
   github: "https://github.com/agvswira",
   linkedin: "https://linkedin.com/in/yourusername",
@@ -40,10 +41,7 @@ export const SOCIAL_LINKS = [
   { label: "Email", href: `mailto:${PERSONAL.email}`, icon: "FiMail" },
 ] as const;
 
-export const HERO_STATS = [
-  { value: 1, suffix: "+", label: "Tahun belajar" },
-  { value: 2, suffix: "", label: "Proyek" },
-] as const;
+export const HERO_STATS = [] as const;
 
 interface TimelineItem {
   year: string;
@@ -57,13 +55,13 @@ export const TIMELINE: readonly TimelineItem[] = [
     year: "2025 — Sekarang",
     title: "S1 Informatika",
     place: "Universitas Udayana",
-    desc: "Mendalami dasar-dasar pemrograman, algoritma, dan struktur data. Tertarik pada bidang AI dan Data Science.",
+    desc: "",
   },
   {
     year: "2025 — Sekarang",
-    title: "Anggota Aktif",
+    title: "Anggota Divisi Hubungan Masyarakat (Humas)",
     place: "Himpunan Mahasiswa Informatika (HIMAIF) — Universitas Udayana",
-    desc: "Aktif mengikuti kegiatan organisasi, workshop, dan kolaborasi antar mahasiswa di bidang teknologi.",
+    desc: "",
   },
 ];
 

@@ -62,7 +62,7 @@ export default function Contact() {
       id="contact"
       eyebrow="Kontak"
       title="Mari Berkolaborasi"
-      subtitle="Mau kolaborasi, diskusi teknologi, atau sekadar ngobrol? Kirim pesan aja — aku usahain balas secepatnya."
+      subtitle="Tertarik berkolaborasi, diskusi teknologi, atau sekadar ngobrol? Silakan kirim pesan."
     >
       <div className="grid lg:grid-cols-2 gap-10 mt-4">
         {/* Form */}
