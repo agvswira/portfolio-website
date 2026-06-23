@@ -110,7 +110,7 @@ export default function Hero() {
       {/* Scroll indicator */}
       <div
         aria-hidden="true"
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-text-muted animate-bounce"
+        className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-text-muted animate-bounce"
       >
         <LuChevronDown size={22} />
       </div>

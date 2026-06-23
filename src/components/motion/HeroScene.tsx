@@ -83,6 +83,8 @@ export default function HeroScene({ children, showHorizon = true }: HeroScenePro
       className="relative w-full h-screen overflow-hidden"
       aria-label="Hero section"
     >
+      {/* Hidden anchor for precise scrolling */}
+      <div id="hero-anchor" className="absolute top-0 left-0 w-full h-1" />
       {/* ── Layer 0: Sky ─────────────────────────────── */}
       <div
         ref={skyRef}
@@ -164,7 +166,25 @@ export default function HeroScene({ children, showHorizon = true }: HeroScenePro
       </div>
 
       {/* ── Scene seam — fog gradient at bottom ──────── */}
-      <div aria-hidden="true" className="scene-seam" style={{ zIndex: 4 }} />
+      <div
+        aria-hidden="true"
+        className="scene-seam"
+        style={{
+          zIndex: 4,
+          background: "linear-gradient(to top, var(--bg-base) 0%, transparent 100%)"
+        }}
+      />
+
+      {/* Extended gradient overlay for smooth color transition */}
+      <div
+        aria-hidden="true"
+        className="absolute bottom-0 left-0 right-0 h-1/3 pointer-events-none"
+        style={{
+          zIndex: 3,
+          background: "linear-gradient(to top, var(--bg-base) 0%, transparent 100%)",
+          opacity: 0.7
+        }}
+      />
 
       {/* ── Layer 4: Hero content ────────────────────── */}
       <div
