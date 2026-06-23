@@ -1,11 +1,7 @@
-// =============================================
-// Ganti placeholder sebelum deploy ke produksi
-// =============================================
-
 export const SITE = {
   name: "Agus Wira",
   url: "https://aguswira.dev",
-  title: "Agus Wira — Tech Enthusiast",
+  title: "Agus Wira — Portfolio Website",
   description:
     "Mahasiswa Informatika yang tertarik di bidang AI dan Data Science. Suka bereksperimen dan membangun hal baru.",
   ogImage: "/images/og.png",
@@ -18,11 +14,11 @@ export const PERSONAL = {
   role: "Tech Enthusiast",
   location: "Bali, Indonesia",
   bio: "Mahasiswa Informatika yang tertarik dengan AI dan Data Science. Senang mencoba teknologi baru, mengeksplorasi berbagai bidang IT, dan belajar lewat praktik langsung. Selalu penasaran dengan hal-hal yang belum dikuasai.",
-  email: "agvswira@yourdomain.com",
+  email: "agvswira@gmail.com",
   github: "https://github.com/agvswira",
-  linkedin: "https://linkedin.com/in/yourusername",
-  instagram: "https://instagram.com/yourusername",
-  discord: "https://discord.gg/yourinvite",
+  linkedin: "https://linkedin.com/in/agvswira",
+  instagram: "https://instagram.com/agvswira",
+  discord: "https://discordapp.com/users/981150120571715604",
 };
 
 export const NAV_ITEMS = [
