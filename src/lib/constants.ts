@@ -3,9 +3,9 @@
 // =============================================
 
 export const SITE = {
-  name: "Genta Kusuma",
-  url: "https://gentakusuma.dev",
-  title: "Genta Kusuma — Frontend Engineer",
+  name: "Agus Wira",
+  url: "https://aguswira.dev",
+  title: "Agus Wira — Tech Enthusiast",
   description:
     "Frontend Engineer berbasis di Indonesia. Membangun antarmuka web modern yang cepat, aksesibel, dan elegan.",
   ogImage: "/images/og.png",
@@ -16,20 +16,20 @@ export const PERSONAL = {
   role: "Frontend Engineer",
   location: "Indonesia",
   bio: "Saya frontend engineer yang fokus pada performa, aksesibilitas, dan pengalaman pengguna yang mulus. Senang bereksperimen dengan animasi scroll, sistem desain, dan teknik rendering modern.",
-  email: "genta@yourdomain.com",
-  github: "https://github.com/yourusername",
+  email: "agvswira@yourdomain.com",
+  github: "https://github.com/agvswira",
   linkedin: "https://linkedin.com/in/yourusername",
   instagram: "https://instagram.com/yourusername",
   discord: "https://discord.gg/yourinvite",
 };
 
 export const NAV_ITEMS = [
-  { label: "Beranda", href: "#hero" },
-  { label: "Tentang", href: "#about" },
-  { label: "Keahlian", href: "#skills" },
-  { label: "Proyek", href: "#projects" },
+  { label: "Home", href: "#hero" },
+  { label: "About", href: "#about" },
+  { label: "Skills", href: "#skills" },
+  { label: "Projects", href: "#projects" },
   { label: "Blog", href: "#blog" },
-  { label: "Kontak", href: "#contact" },
+  { label: "Contact", href: "#contact" },
 ] as const;
 
 export const SOCIAL_LINKS = [
