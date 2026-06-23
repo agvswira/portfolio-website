@@ -68,7 +68,7 @@ export default function Contact() {
         {/* Form */}
         <Reveal>
           <SpotlightCard className="p-6 sm:p-8">
-            <form onSubmit={handleSubmit} noValidate>
+            <form action="/api/contact" method="post" onSubmit={handleSubmit} noValidate>
               {/* Honeypot */}
               <input
                 type="text"
