@@ -1,0 +1,85 @@
+---
+title: "Membangun Portfolio Modern dengan Next.js 15 dan GSAP"
+excerpt: "Panduan lengkap membangun portfolio website dengan Next.js 15, GSAP ScrollTrigger untuk animasi parallax, dan tema Nord yang clean."
+date: "2026-06-22"
+tags: ["Next.js", "GSAP", "TypeScript", "Tailwind"]
+---
+
+# Membangun Portfolio Modern dengan Next.js 15 dan GSAP
+
+Portfolio website adalah kartu nama digital seorang developer. Tapi bagaimana membuatnya benar-benar menonjol — bukan hanya dari sisi konten, tapi juga dari sisi teknis dan pengalaman pengguna?
+
+Di artikel ini, saya akan berbagi pendekatan yang saya gunakan untuk membangun portfolio v2.1 ini: tema **Nord**, animasi parallax dengan **GSAP ScrollTrigger**, dan arsitektur `src/` yang rapi.
+
+## Mengapa Nord?
+
+Palet warna Nord (`#2E3440` → `#ECEFF4`) memberikan keseimbangan yang sempurna antara gelap yang nyaman di mata dan kontras yang cukup untuk aksesibilitas. Dibandingkan dark-teal generik yang banyak dipakai, Nord terasa lebih "arctic" — tenang dan elegan.
+
+```typescript
+// globals.css — Nord CSS variables
+:root {
+  --bg-base: #242933;
+  --bg-surface: #2e3440;
+  --frost: #88c0d0;       /* Accent utama */
+  --text-primary: #eceff4;
+  --text-muted: #9aa4b8;  /* Tuned untuk kontras AA */
+}
+```
+
+## HeroScene — Parallax Gunung Solid
+
+Fitur utama portfolio ini adalah `HeroScene`: siluet gunung berlapis dengan warna **solid flat** Nord yang bergerak parallax saat di-scroll.
+
+```tsx
+// Setiap lapisan punya z-index dan kecepatan berbeda
+const tl = gsap.timeline({
+  scrollTrigger: {
+    trigger: sectionRef.current,
+    start: "top top",
+    end: "+=120%",
+    scrub: true,
+    pin: true,
+    pinSpacing: true,
+  },
+});
+
+// Near mountain — cepat, menyapu ke atas
+tl.to(mtNearRef.current, { y: "-70%", opacity: 0.4 }, 0);
+// Mid mountain — sedang
+tl.to(mtMidRef.current, { y: "-35%" }, 0);
+// Far mountain — lambat + sedikit scale
+tl.fromTo(mtFarRef.current, { scale: 1 }, { y: "-15%", scale: 1.04 }, 0);
+```
+
+Kuncinya adalah **flat fill** pada SVG path — tidak ada gradient, tidak ada blur. Depth dicapai lewat urutan value warna Nord (jauh lebih terang, depan lebih gelap) dan perbedaan kecepatan parallax.
+
+## Performa & Aksesibilitas
+
+Beberapa hal penting yang saya jaga:
+
+1. **LCP aman** — judul hero di-render dengan `opacity: 1` dari SSR, tidak menunggu JavaScript.
+2. **CLS = 0** — pin memakai `pinSpacing: true`; layer gunung `absolute` tidak mempengaruhi layout.
+3. **Reduced motion** — HeroScene jadi komposisi statis; marquee, shimmer, border-beam dimatikan.
+4. **Mobile** — `transform: none !important` di breakpoint ≤767px.
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  .text-gradient { animation: none; }
+  .shimmer-btn::after { display: none; }
+  .parallax-layer { transform: none !important; }
+}
+```
+
+## Smooth Scroll dengan Lenis
+
+Lenis memberikan smooth scroll yang natural dengan `lerp ~0.1`. Yang penting: sinkronkan ke GSAP tiap frame.
+
+```typescript
+lenis.on("scroll", () => ScrollTrigger.update());
+```
+
+Tanpa ini, ScrollTrigger akan membaca posisi scroll "mentah" browser, bukan posisi lerp Lenis — menyebabkan parallax terasa tidak sinkron.
+
+---
+
+Semoga bermanfaat! Kalau ada pertanyaan, jangan ragu untuk menghubungi saya via form kontak.
