@@ -42,8 +42,8 @@ export default function HeroScene({ children, showHorizon = true }: HeroScenePro
         scrollTrigger: {
           trigger: section,
           start: "top top",
-          end: "+=200%",
-          scrub: 0.4,
+          end: "+=120%",
+          scrub: true,
           pin: true,
           pinSpacing: true,
           anticipatePin: 1,
@@ -52,24 +52,24 @@ export default function HeroScene({ children, showHorizon = true }: HeroScenePro
       });
 
       // Sky — nearly static
-      tl.to(skyRef.current, { y: "-15%", opacity: 0.85, ease: "none" }, 0);
+      tl.to(skyRef.current, { y: "-5%", ease: "none" }, 0);
 
       // Far mountain — slow + slight scale
       tl.fromTo(
         mtFarRef.current,
         { y: "0%", scale: 1 },
-        { y: "-30%", scale: 1.04, opacity: 0.7, ease: "none" },
+        { y: "-15%", scale: 1.04, ease: "none" },
         0
       );
 
       // Mid mountain — medium speed
-      tl.to(mtMidRef.current, { y: "-65%", opacity: 0.6, ease: "none" }, 0);
+      tl.to(mtMidRef.current, { y: "-35%", ease: "none" }, 0);
 
       // Near mountain — fast, sweeps up and out
-      tl.to(mtNearRef.current, { y: "-120%", opacity: 0.1, ease: "power1.out" }, 0);
+      tl.to(mtNearRef.current, { y: "-70%", opacity: 0.4, ease: "none" }, 0);
 
       // Content — rise + fade
-      tl.to(contentRef.current, { y: "-50%", opacity: 0, ease: "power2.out" }, 0.3);
+      tl.to(contentRef.current, { y: "-20%", opacity: 0, ease: "none" }, 0);
 
       refreshAfterAssets();
     },
@@ -89,16 +89,7 @@ export default function HeroScene({ children, showHorizon = true }: HeroScenePro
         aria-hidden="true"
         className="absolute inset-0 parallax-layer"
         style={{ background: "#242933", zIndex: 0 }}
-      >
-        <svg
-          viewBox="0 0 1440 600"
-          preserveAspectRatio="xMidYMax slice"
-          className="w-full h-full"
-          style={{ display: "block" }}
-        >
-          <rect width="1440" height="600" fill="#242933" />
-        </svg>
-      </div>
+      />
 
       {/* ── Layer 1: Far mountain ────────────────────── */}
       <div
@@ -120,13 +111,13 @@ export default function HeroScene({ children, showHorizon = true }: HeroScenePro
           />
         )}
         <svg
-          viewBox="0 0 1440 600"
+          viewBox="0 0 1440 480"
           preserveAspectRatio="xMidYMax slice"
           className="w-full"
           style={{ display: "block", marginBottom: -1 }}
         >
           <path
-            d="M0,600 L0,320 Q120,260 200,280 Q320,310 440,240 Q520,190 600,200 Q700,215 780,180 Q860,150 960,170 Q1040,185 1120,160 Q1220,130 1320,150 Q1380,160 1440,145 L1440,600 Z"
+            d="M0,480 L0,320 Q120,260 200,280 Q320,310 440,240 Q520,190 600,200 Q700,215 780,180 Q860,150 960,170 Q1040,185 1120,160 Q1220,130 1320,150 Q1380,160 1440,145 L1440,480 Z"
             fill="#3B4252"
           />
         </svg>
@@ -140,13 +131,13 @@ export default function HeroScene({ children, showHorizon = true }: HeroScenePro
         style={{ zIndex: 2 }}
       >
         <svg
-          viewBox="0 0 1440 600"
+          viewBox="0 0 1440 480"
           preserveAspectRatio="xMidYMax slice"
           className="w-full"
           style={{ display: "block", marginBottom: -1 }}
         >
           <path
-            d="M0,600 L0,360 Q80,330 160,340 Q260,355 360,300 Q440,260 520,270 Q620,285 720,240 Q800,210 880,225 Q960,240 1040,210 Q1140,175 1240,195 Q1340,215 1440,190 L1440,600 Z"
+            d="M0,480 L0,360 Q80,330 160,340 Q260,355 360,300 Q440,260 520,270 Q620,285 720,240 Q800,210 880,225 Q960,240 1040,210 Q1140,175 1240,195 Q1340,215 1440,190 L1440,480 Z"
             fill="#434C5E"
           />
         </svg>
@@ -160,13 +151,13 @@ export default function HeroScene({ children, showHorizon = true }: HeroScenePro
         style={{ zIndex: 3 }}
       >
         <svg
-          viewBox="0 0 1440 700"
+          viewBox="0 0 1440 480"
           preserveAspectRatio="xMidYMax slice"
           className="w-full"
           style={{ display: "block", marginBottom: -1 }}
         >
           <path
-            d="M0,700 L0,400 Q100,375 200,385 Q300,395 400,355 Q480,325 560,335 Q660,350 760,310 Q840,280 920,295 Q1000,310 1080,280 Q1180,245 1280,265 Q1360,280 1440,260 L1440,700 Z"
+            d="M0,480 L0,400 Q100,375 200,385 Q300,395 400,355 Q480,325 560,335 Q660,350 760,310 Q840,280 920,295 Q1000,310 1080,280 Q1180,245 1280,265 Q1360,280 1440,260 L1440,480 Z"
             fill="#4C566A"
           />
         </svg>
