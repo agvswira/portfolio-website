@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 
 interface Particle {
   x: number;
@@ -45,10 +45,7 @@ export default function CanvasBackground() {
     return t * (2 - t);
   };
 
-  // Linear interpolation function
-  const lerp = (start: number, end: number, t: number): number => {
-    return start + (end - start) * t;
-  };
+
 
   // Initialize particles
   const initParticles = (count: number) => {
@@ -158,7 +155,7 @@ export default function CanvasBackground() {
   };
 
   // Animation loop
-  const animate = () => {
+  const animate = useCallback(() => {
     if (prefersReducedMotion()) {
       // Stop animation if reduced motion is preferred
       return;
@@ -198,7 +195,7 @@ export default function CanvasBackground() {
 
     // Continue animation loop
     animationFrameRef.current = requestAnimationFrame(animate);
-  };
+  }, []);
 
   // Handle scroll events
   const handleScroll = () => {
@@ -306,7 +303,7 @@ export default function CanvasBackground() {
     return () => {
       cancelAnimationFrame(initTimeout);
     };
-  }, []);
+  }, [animate]);
 
 
 

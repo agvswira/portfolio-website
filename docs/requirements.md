@@ -10,6 +10,8 @@
 > Stack: Next.js 15 (App Router) · React 19 · TypeScript · Tailwind CSS 3 ·
 > GSAP 3 — **ScrollTrigger** inti (opsional ScrollSmoother bila punya GSAP Club; default Lenis) ·
 > Lenis (smooth scroll, sinkron ScrollTrigger) · Framer Motion 11 (hanya micro-interaction).
+>
+> **Catatan**: Placeholder di `src/lib/constants.ts` (seperti `yourusername`, `yourdomain.com`, dan `HERO_STATS`) harus diganti sebelum deploy.
 
 ## 1. Ringkasan Produk
 
@@ -185,7 +187,7 @@ parallax yang menyatu ke section di bawahnya.
 
 - Rate limit in-memory (best-effort, reset saat restart, tidak multi-instance safe).
 - `docs/` di-`.gitignore` (privat).
-- Banyak placeholder di `src/lib/constants.ts` (`yourusername`, `yourdomain.com`)
+- Banyak placeholder di `src/lib/constants.ts` (`yourusername`, `yourdomain.com`, `HERO_STATS`)
   yang harus diganti sebelum rilis.
 - `react-scroll-parallax`, `CanvasBackground`, `AmbientGlow`, **dan kini
   `ConstellationCanvas`/aurora/meteor/grid/cursor-glow** tidak dipakai (clean look).
@@ -195,3 +197,4 @@ parallax yang menyatu ke section di bawahnya.
 - Migrasi v1→v2.1 (teal→Nord, root→`src/`, backdrop→clean, hero→gunung solid)
   wajib mengganti referensi path lama, token warna lama, dan menghapus komponen
   backdrop ramai; lihat `design.md` §2, §5, §6.
+- **Tidak ada test suite** bawaan; refactor dilakukan tanpa coverage tambahan.

@@ -18,7 +18,7 @@ export default function About() {
     <SectionWrapper
       id="about"
       eyebrow="Tentang Saya"
-      title="Halo, saya Genta 👋"
+      title={`Halo, saya ${PERSONAL.name} 👋`}
       subtitle="Frontend engineer yang percaya bahwa antarmuka yang baik bukan hanya soal estetika — tapi soal performa, aksesibilitas, dan kejelasan."
       className="bg-transparent"
     >
@@ -66,32 +66,40 @@ export default function About() {
             <h3 className="text-lg font-semibold text-text-primary">Perjalanan</h3>
           </Reveal>
 
-          <RevealGroup selector=":scope > .timeline-item" stagger={0.12} className="relative">
-            {/* Vertical line */}
-            <div
-              className="absolute left-[11px] top-3 bottom-3 w-px bg-nord-border/40"
-              aria-hidden="true"
-            />
+          {TIMELINE.length > 0 ? (
+            <RevealGroup selector=":scope > .timeline-item" stagger={0.12} className="relative">
+              {/* Vertical line */}
+              <div
+                className="absolute left-[11px] top-3 bottom-3 w-px bg-nord-border/40"
+                aria-hidden="true"
+              />
 
-            {TIMELINE.map((item, i) => (
-              <div key={i} className="timeline-item relative flex gap-5 pb-8 last:pb-0">
-                {/* Dot */}
-                <div className="relative flex-shrink-0 mt-1">
-                  <div className="w-6 h-6 rounded-full bg-bg-elevated border-2 border-frost-deep flex items-center justify-center z-10 relative">
-                    <div className="w-2 h-2 rounded-full bg-frost" />
+              {TIMELINE.map((item, i) => (
+                <div key={i} className="timeline-item relative flex gap-5 pb-8 last:pb-0">
+                  {/* Dot */}
+                  <div className="relative flex-shrink-0 mt-1">
+                    <div className="w-6 h-6 rounded-full bg-bg-elevated border-2 border-frost-deep flex items-center justify-center z-10 relative">
+                      <div className="w-2 h-2 rounded-full bg-frost" />
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div>
+                    <p className="eyebrow text-[10px] mb-1">{item.year}</p>
+                    <h4 className="text-text-primary font-medium leading-snug">{item.title}</h4>
+                    <p className="text-text-muted text-sm mb-1">{item.place}</p>
+                    <p className="text-text-muted text-sm leading-relaxed">{item.desc}</p>
                   </div>
                 </div>
-
-                {/* Content */}
-                <div>
-                  <p className="eyebrow text-[10px] mb-1">{item.year}</p>
-                  <h4 className="text-text-primary font-medium leading-snug">{item.title}</h4>
-                  <p className="text-text-muted text-sm mb-1">{item.place}</p>
-                  <p className="text-text-muted text-sm leading-relaxed">{item.desc}</p>
-                </div>
-              </div>
-            ))}
-          </RevealGroup>
+              ))}
+            </RevealGroup>
+          ) : (
+            <Reveal>
+              <p className="text-text-muted text-sm italic">
+                Belum ada riwayat pengalaman untuk ditampilkan.
+              </p>
+            </Reveal>
+          )}
         </div>
       </div>
     </SectionWrapper>

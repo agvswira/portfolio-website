@@ -109,6 +109,7 @@ src/
   components/
     motion/       # SmoothScroll, Parallax, Reveal, RevealGroup, ScrollProgress, HeroScene
     backdrop/     # Backdrop (clean wash + vignette tipis)
+    background/   # CanvasBackground (animated particle backdrop)
     ui/           # Button, Badge, SectionWrapper, SpotlightCard, Marquee
     sections/     # Hero, About, Skills, Projects, Blog, Contact
     chat/         # ChatWidget
@@ -121,6 +122,7 @@ public/           # images/og.png, favicon, dst. (di ROOT, bukan src)
 - Alias `@/*` → `./src/*` (`tsconfig.json` `paths`).
 - Semua referensi v1 (`app/...`, dst.) wajib diprefiks `src/`.
 - `ConstellationCanvas` **dihapus** (tidak ada lagi canvas backdrop).
+- `CanvasBackground` **ditambahkan** sebagai komponen latar belakang dinamis.
 
 ---
 
@@ -136,6 +138,7 @@ tenang dan menjaga keterbacaan.
 | ------------ | ---------------------------------------- | -------------------------------------- |
 | Base wash    | `bg-bg-base` (`#242933`) solid           | Dasar Polar Night polos                |
 | Vignette     | Radial gradient sangat halus (opsional)  | `.backdrop-vignette` — fokus ke tengah, nyaris tak terlihat |
+| Partikel     | Canvas partikel dinamis (`CanvasBackground`) | Bergerak lambat, reaktif scroll (opsional) |
 
 **Dihapus (demi clean look):** aurora mesh, grid lines, constellation canvas,
 meteor, cursor glow. Tidak ada loop rAF / canvas di backdrop sama sekali —
@@ -143,6 +146,23 @@ beban paint mendekati nol.
 
 > Tidak ada lagi hue shift backdrop yang mencolok. Boleh ada pergeseran value
 > super-halus terhubung scroll (opsional, default mati) — tetap clean.
+
+### 5.1 CanvasBackground (`components/background/CanvasBackground.tsx`)
+
+Latar belakang dinamis berupa partikel kecil berwarna Frost (`#88C0D0`) yang bergerak
+secara perlahan dan reaktif terhadap scroll pengguna.
+
+Fitur utama:
+- Partikel tersebar secara acak namun cenderung ke pusat layar.
+- Gerakan partikel lambat dan organik (acak kecil setiap frame).
+- Opasitas partikel berkurang saat mendekati bagian bawah layar (efek gradien halus).
+- Jumlah partikel disesuaikan otomatis untuk perangkat dengan performa rendah.
+- Animasi dijeda saat tab tidak aktif atau pengguna memilih `prefers-reduced-motion`.
+- Transparansi partikel dikontrol oleh posisi scroll: semakin jauh dari Hero section,
+  semakin sedikit partikel yang terlihat.
+
+Implementasi menggunakan `requestAnimationFrame` dan manipulasi langsung ke `canvas`
+untuk performa optimal. Tidak menyebabkan repaint/layout di thread utama.
 
 ---
 
@@ -178,6 +198,9 @@ lalu menyerahkan transisi parallax ke section di bawahnya.
   invalidateOnRefresh: true }})`.
 - Timeline menggerakkan layer 0–4 dengan `y`/`scale`/`opacity` berbeda → gunung
   bergerak pada kecepatan beda saat di-scroll = parallax sinematik.
+- **Efek visual scroll**: saat hero keluar dari viewport, warna gunung berubah secara
+  bertahap menjadi `#242933` (warna background) melalui animasi `attr.fill` GSAP,
+  memberi efek "menyatu" dengan backdrop saat transisi ke section berikutnya.
 - **Handoff parallax ke bawah**: gunung depan naik keluar layar dan section About
   **meluncur naik menimpa** scene (z lebih tinggi). Pertemuannya dibaurkan oleh
   `.scene-seam` (fog tipis `--bg-base` → transparan) supaya peralihan halus, bukan
@@ -280,6 +303,11 @@ focus-visible ring Frost global.
 - Trigger floating bottom-right (ikon `react-icons/lu`, `aria-expanded`). Window
   frosted glass Nord, header "Digital Twin", bubble user=Frost / bot=bg-elevated,
   typing indicator, streaming. Buka/tutup Framer Motion.
+- Menggunakan API `/api/chat` untuk komunikasi dengan backend (simulasi AI).
+- Respons ditampilkan secara streaming dengan placeholder "typing dots" saat loading.
+- Input field dengan placeholder "Tanya sesuatu..." dan tombol kirim.
+- Otomatis scroll ke bawah saat pesan baru muncul.
+- Fokus otomatis ke input saat widget dibuka.
 
 ---
 
