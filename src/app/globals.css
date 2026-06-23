@@ -242,22 +242,18 @@ body {
   will-change: transform;
 }
 
-/* Scene seam — fog at Hero→About join */
 .scene-seam {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 200px;
+  height: 160px;
   background: linear-gradient(to top, var(--bg-base) 0%, transparent 100%);
   pointer-events: none;
   z-index: 10;
 }
 
-/* Parallax layer */
-.parallax-layer {
-  will-change: transform;
-}
+
 
 /* =============================================
    Prose (blog MDX)

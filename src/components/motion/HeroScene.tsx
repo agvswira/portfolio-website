@@ -61,12 +61,27 @@ export default function HeroScene({ children, showHorizon = true }: HeroScenePro
         { y: "-15%", scale: 1.04, ease: "none" },
         0
       );
+      // Change far mountain color to match background
+      tl.to("#far-mountain-path", {
+        attr: { fill: "#242933" },
+        ease: "none"
+      }, 0);
 
       // Mid mountain — medium speed
       tl.to(mtMidRef.current, { y: "-35%", ease: "none" }, 0);
+      // Change mid mountain color to match background
+      tl.to("#mid-mountain-path", {
+        attr: { fill: "#242933" },
+        ease: "none"
+      }, 0);
 
       // Near mountain — fast, sweeps up and out
       tl.to(mtNearRef.current, { y: "-70%", opacity: 0.4, ease: "none" }, 0);
+      // Change near mountain color to match background
+      tl.to("#near-mountain-path", {
+        attr: { fill: "#242933" },
+        ease: "none"
+      }, 0);
 
       // Content — rise + fade
       tl.to(contentRef.current, { y: "-20%", opacity: 0, ease: "none" }, 0);
@@ -83,8 +98,6 @@ export default function HeroScene({ children, showHorizon = true }: HeroScenePro
       className="relative w-full h-screen overflow-hidden"
       aria-label="Hero section"
     >
-      {/* Hidden anchor for precise scrolling */}
-      <div id="hero-anchor" className="absolute top-0 left-0 w-full h-1" />
       {/* ── Layer 0: Sky ─────────────────────────────── */}
       <div
         ref={skyRef}
@@ -119,6 +132,7 @@ export default function HeroScene({ children, showHorizon = true }: HeroScenePro
           style={{ display: "block", marginBottom: -1 }}
         >
           <path
+            id="far-mountain-path"
             d="M0,480 L0,320 Q120,260 200,280 Q320,310 440,240 Q520,190 600,200 Q700,215 780,180 Q860,150 960,170 Q1040,185 1120,160 Q1220,130 1320,150 Q1380,160 1440,145 L1440,480 Z"
             fill="#3B4252"
           />
@@ -139,6 +153,7 @@ export default function HeroScene({ children, showHorizon = true }: HeroScenePro
           style={{ display: "block", marginBottom: -1 }}
         >
           <path
+            id="mid-mountain-path"
             d="M0,480 L0,360 Q80,330 160,340 Q260,355 360,300 Q440,260 520,270 Q620,285 720,240 Q800,210 880,225 Q960,240 1040,210 Q1140,175 1240,195 Q1340,215 1440,190 L1440,480 Z"
             fill="#434C5E"
           />
@@ -159,6 +174,7 @@ export default function HeroScene({ children, showHorizon = true }: HeroScenePro
           style={{ display: "block", marginBottom: -1 }}
         >
           <path
+            id="near-mountain-path"
             d="M0,480 L0,400 Q100,375 200,385 Q300,395 400,355 Q480,325 560,335 Q660,350 760,310 Q840,280 920,295 Q1000,310 1080,280 Q1180,245 1280,265 Q1360,280 1440,260 L1440,480 Z"
             fill="#4C566A"
           />
@@ -166,25 +182,7 @@ export default function HeroScene({ children, showHorizon = true }: HeroScenePro
       </div>
 
       {/* ── Scene seam — fog gradient at bottom ──────── */}
-      <div
-        aria-hidden="true"
-        className="scene-seam"
-        style={{
-          zIndex: 4,
-          background: "linear-gradient(to top, var(--bg-base) 0%, transparent 100%)"
-        }}
-      />
-
-      {/* Extended gradient overlay for smooth color transition */}
-      <div
-        aria-hidden="true"
-        className="absolute bottom-0 left-0 right-0 h-1/3 pointer-events-none"
-        style={{
-          zIndex: 3,
-          background: "linear-gradient(to top, var(--bg-base) 0%, transparent 100%)",
-          opacity: 0.7
-        }}
-      />
+      <div aria-hidden="true" className="scene-seam" style={{ zIndex: 4 }} />
 
       {/* ── Layer 4: Hero content ────────────────────── */}
       <div

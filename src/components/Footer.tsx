@@ -22,8 +22,8 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="relative z-10 border-t border-nord-border/10 py-3">
-      <div className="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-2" style={{ fontSize: '0.875rem', lineHeight: '1.25' }}>
+    <footer className="relative z-10 border-t border-nord-border/10 py-1">
+          <div className="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-1" style={{ fontSize: '0.875rem', lineHeight: '1.25' }}>
         {/* Brand */}
         <div className="text-text-muted">
           <span className="text-gradient font-semibold">{SITE.name}</span>
@@ -52,7 +52,6 @@ export default function Footer() {
             })}
           </ul>
         </nav>
-
 
       </div>
     </footer>
