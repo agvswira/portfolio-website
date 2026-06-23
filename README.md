@@ -21,4 +21,27 @@ Open [http://localhost:3000](http://localhost:3000) to view.
 ## Project Structure
 
 ```
-src
+src/
+├── app/              # Pages & layout
+├── components/
+│   ├── backdrop/     # Clean backdrop (solid + vignette)
+│   ├── background/   # Animated particle background
+│   ├── chat/         # AI chat widget
+│   ├── hero/         # Parallax mountain scene
+│   ├── motion/       # Animation utilities
+│   ├── sections/     # Page sections
+│   └── ui/           # Reusable components
+├── lib/              # Constants, GSAP setup
+├── content/          # Blog posts (MDX)
+└── public/           # Static assets
+```
+
+## Development
+
+```bash
+npm run dev      # Start dev server
+npm run build    # Production build
+npm run lint     # Lint code
+```
+
+Built with Next.js.
