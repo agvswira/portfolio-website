@@ -27,8 +27,8 @@ export default function BlogPage() {
   const posts = getAllPosts();
 
   return (
-    <div className="min-h-screen bg-bg-base">
-      <div className="max-w-3xl mx-auto px-6 py-24">
+    <div className="min-h-screen bg-bg-base flex flex-col">
+      <div className="max-w-3xl mx-auto px-6 py-24 flex-1">
         {/* Back */}
         <Link
           href="/"

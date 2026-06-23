@@ -5,7 +5,30 @@ import { FiGithub, FiLinkedin, FiInstagram } from "react-icons/fi";
 import { FaDiscord } from "react-icons/fa";
 import { PERSONAL, SITE } from "@/lib/constants";
 import HeroScene from "@/components/motion/HeroScene";
-import Button from "@/components/ui/Button";
+import { getLenis } from "@/components/motion/SmoothScroll";
+
+function smoothScrollTo(e: React.MouseEvent<HTMLAnchorElement>, href: string) {
+  e.preventDefault();
+  const id = href.replace("#", "");
+  if (id === "hero") {
+    const lenis = getLenis();
+    if (lenis) {
+      lenis.scrollTo(0, { duration: 1.2 });
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    return;
+  }
+  const el = document.getElementById(id);
+  if (!el) return;
+  const lenis = getLenis();
+  if (lenis) {
+    lenis.scrollTo(el, { offset: -64, duration: 1.2 });
+  } else {
+    const y = el.getBoundingClientRect().top + window.scrollY - 64;
+    window.scrollTo({ top: y, behavior: "smooth" });
+  }
+}
 
 export default function Hero() {
   return (
@@ -31,12 +54,20 @@ export default function Hero() {
 
         {/* CTAs */}
         <div className="flex flex-wrap items-center justify-center gap-3 mt-2">
-          <Button as="link" href="#projects" variant="primary" shimmer>
+          <a
+            href="#projects"
+            onClick={(e) => smoothScrollTo(e, "#projects")}
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium bg-frost text-bg-base font-semibold hover:bg-frost-cyan hover:-translate-y-0.5 hover:shadow-[0_6px_24px_rgba(136,192,208,0.35)] active:translate-y-0 transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-frost focus-visible:outline-offset-2 select-none shimmer-btn"
+          >
             View Projects
-          </Button>
-          <Button as="link" href="#contact" variant="outline">
+          </a>
+          <a
+            href="#contact"
+            onClick={(e) => smoothScrollTo(e, "#contact")}
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium border border-frost/40 text-frost hover:bg-frost/10 hover:border-frost transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-frost focus-visible:outline-offset-2 select-none"
+          >
             Get in Touch
-          </Button>
+          </a>
         </div>
 
         {/* Social icons */}

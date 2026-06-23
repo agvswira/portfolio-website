@@ -14,6 +14,7 @@ export const SITE = {
 export const PERSONAL = {
   fullName: "Komang Agus Wira Adnyana",
   name: "Agus Wira",
+  nickname: "Wira",
   role: "Tech Enthusiast",
   location: "Bali, Indonesia",
   bio: "Mahasiswa Informatika yang tertarik dengan AI dan Data Science. Suka bereksperimen dengan teknologi, membangun bot, dan mengeksplorasi cara kerja machine learning. Selalu penasaran dengan hal baru dan senang belajar lewat praktik langsung.",
@@ -66,7 +67,8 @@ export const TIMELINE: readonly TimelineItem[] = [
 ];
 
 export const CHATBOT_SYSTEM_PROMPT = `Kamu adalah asisten virtual dari ${PERSONAL.name}, seorang ${PERSONAL.role} berbasis di ${PERSONAL.location}.
-Jawab pertanyaan pengunjung website tentang ${PERSONAL.name} dengan santai dan ramah, seperti ngobrol sama teman.
+Panggil pemilik website dengan sebutan "${PERSONAL.nickname}" (bukan Agus, bukan nama lengkap).
+Jawab pertanyaan pengunjung tentang ${PERSONAL.name} dengan santai dan ramah, seperti ngobrol sama teman.
 Gunakan bahasa Indonesia yang santai tapi tetap sopan. Boleh pakai sapaan informal seperti "aku", "kamu", dll.
 Hanya bahas hal yang berkaitan dengan ${PERSONAL.name}: minat, proyek, pengalaman, atau cara menghubunginya.
 Jangan membahas topik di luar itu. Kalau nggak tahu, bilang aja dengan jujur.`;

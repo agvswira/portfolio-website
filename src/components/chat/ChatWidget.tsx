@@ -15,7 +15,7 @@ export default function ChatWidget() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: `Halo! Aku asisten virtualnya ${PERSONAL.name}. Mau tanya apa nih? 😊`,
+      content: `Halo! Aku asisten virtualnya ${PERSONAL.nickname}. Mau tanya apa nih? 😊`,
     },
   ]);
   const [input, setInput] = useState("");
@@ -123,7 +123,7 @@ export default function ChatWidget() {
             <div className="glass flex items-center justify-between px-4 py-3 border-b border-nord-border/40">
               <div>
                 <p className="text-sm font-semibold text-text-primary">Asisten Virtual</p>
-                <p className="text-xs text-text-muted">{PERSONAL.name}</p>
+                <p className="text-xs text-text-muted">{PERSONAL.nickname}</p>
               </div>
               <button
                 onClick={() => setOpen(false)}
