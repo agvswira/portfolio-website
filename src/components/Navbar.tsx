@@ -90,7 +90,7 @@ export default function Navbar() {
           className="text-lg font-semibold tracking-tight"
           aria-label={`${SITE.name} — go to top`}
         >
-          <span className="text-gradient">{SITE.name.split(" ")[0]}</span>
+          <span className="text-gradient">{SITE.name}</span>
           <span className="text-frost">.</span>
         </Link>
 

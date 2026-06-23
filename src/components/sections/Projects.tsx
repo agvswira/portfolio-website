@@ -19,7 +19,7 @@ export default function Projects() {
       id="projects"
       eyebrow="Proyek"
       title="Karya Pilihan"
-      subtitle="Proyek yang saya bangun — dari side project eksplorasi hingga solusi produksi."
+      subtitle="Proyek belajar yang aku bangun sambil eksplorasi teknologi baru."
     >
       {/* Filter tabs */}
       <div className="flex flex-wrap justify-center gap-2 mb-10">

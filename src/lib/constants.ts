@@ -5,17 +5,17 @@
 export const SITE = {
   name: "Agus Wira",
   url: "https://aguswira.dev",
-  title: "Mahasiswa Informatika yang eksplorasi AI & Data Science",
+  title: "Agus Wira — Tech Enthusiast",
   description:
-    "Portofolio eksperimen belajar di bidang AI, data science, dan web development.",
+    "Mahasiswa Informatika yang tertarik di bidang AI dan Data Science. Suka ngoprek, eksperimen, dan membangun hal baru.",
   ogImage: "/images/og.png",
 };
 
 export const PERSONAL = {
   name: "Agus Wira",
-  role: "Tech Explorer",
+  role: "Tech Enthusiast",
   location: "Indonesia",
-  bio: "Saya mahasiswa Informatika yang sedang belajar membuat antarmuka web yang menarik. Saat ini fokus mengeksplorasi AI, data science dasar, dan visualisasi data. Suka eksperimen dengan bot dan otomasi untuk produktivitas.",
+  bio: "Mahasiswa Informatika yang tertarik dengan AI dan Data Science. Suka ngoprek teknologi, membangun bot, dan mengeksplorasi cara kerja machine learning. Selalu penasaran sama hal baru dan senang belajar lewat eksperimen.",
   email: "agvswira@yourdomain.com",
   github: "https://github.com/agvswira",
   linkedin: "https://linkedin.com/in/yourusername",
@@ -42,8 +42,7 @@ export const SOCIAL_LINKS = [
 
 export const HERO_STATS = [
   { value: 1, suffix: "+", label: "Tahun belajar" },
-  { value: 2, suffix: "", label: "Proyek eksperimen" },
-  { value: 1, suffix: "+", label: "Kursus online" },
+  { value: 2, suffix: "", label: "Proyek" },
 ] as const;
 
 interface TimelineItem {
@@ -53,11 +52,23 @@ interface TimelineItem {
   desc: string;
 }
 
-// Timeline disembunyikan sementara
-export const TIMELINE = [] as readonly TimelineItem[];
+export const TIMELINE: readonly TimelineItem[] = [
+  {
+    year: "2025 — Sekarang",
+    title: "S1 Informatika",
+    place: "Universitas Udayana",
+    desc: "Mendalami dasar-dasar pemrograman, algoritma, dan struktur data. Tertarik pada bidang AI dan Data Science.",
+  },
+  {
+    year: "2025 — Sekarang",
+    title: "Anggota Aktif",
+    place: "Himpunan Mahasiswa Informatika (HIMAIF) — Universitas Udayana",
+    desc: "Aktif mengikuti kegiatan organisasi, workshop, dan kolaborasi antar mahasiswa di bidang teknologi.",
+  },
+];
 
-export const CHATBOT_SYSTEM_PROMPT = `Kamu adalah digital twin dari ${PERSONAL.name}, seorang ${PERSONAL.role} berbasis di ${PERSONAL.location}.
-Jawab pertanyaan pengunjung website tentang ${PERSONAL.name} dengan ramah dan jujur.
-Hanya bahas hal yang berkaitan dengan ${PERSONAL.name}: keahlian, proyek, pengalaman, atau cara menghubunginya.
-Jangan membahas topik di luar itu. Jawab dalam bahasa Indonesia secara ringkas dan profesional.
-Jika ditanya sesuatu yang tidak kamu ketahui, katakan dengan jujur bahwa kamu tidak memiliki informasi tersebut.`;
+export const CHATBOT_SYSTEM_PROMPT = `Kamu adalah asisten virtual dari ${PERSONAL.name}, seorang ${PERSONAL.role} berbasis di ${PERSONAL.location}.
+Jawab pertanyaan pengunjung website tentang ${PERSONAL.name} dengan santai dan ramah, seperti ngobrol sama teman.
+Gunakan bahasa Indonesia yang santai tapi tetap sopan. Boleh pakai sapaan informal seperti "aku", "kamu", dll.
+Hanya bahas hal yang berkaitan dengan ${PERSONAL.name}: minat, proyek, pengalaman, atau cara menghubunginya.
+Jangan membahas topik di luar itu. Kalau nggak tahu, bilang aja dengan jujur.`;

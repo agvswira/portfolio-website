@@ -7,10 +7,10 @@ import Reveal from "@/components/motion/Reveal";
 import RevealGroup from "@/components/motion/RevealGroup";
 
 const ABOUT_STATS = [
-  { label: "Tahun Aktif", value: "3+" },
-  { label: "Proyek", value: "20+" },
-  { label: "Kontribusi", value: "500+" },
-  { label: "Komunitas", value: "2x" },
+  { label: "Tahun Belajar", value: "1+" },
+  { label: "Proyek", value: "2" },
+  { label: "Artikel", value: "1" },
+  { label: "Tech Stack Dikuasai", value: "10+" },
 ];
 
 export default function About() {
@@ -19,7 +19,7 @@ export default function About() {
       id="about"
       eyebrow="Tentang Saya"
       title={`Halo, saya ${PERSONAL.name} 👋`}
-      subtitle="Frontend engineer yang percaya bahwa antarmuka yang baik bukan hanya soal estetika — tapi soal performa, aksesibilitas, dan kejelasan."
+      subtitle="Mahasiswa yang percaya teknologi bisa dipelajari siapa saja — asal punya rasa penasaran dan semangat untuk terus ngoprek."
       className="bg-transparent"
     >
       <div className="grid lg:grid-cols-2 gap-12 items-start mt-8">

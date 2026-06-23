@@ -12,55 +12,22 @@ export interface Project {
 export const PROJECTS: Project[] = [
   {
     id: "portfolio",
-    title: "Portfolio v2.1",
+    title: "Portfolio Website",
     description:
-      "Website portfolio personal dengan tema Nord, HeroScene parallax gunung berlapis, GSAP ScrollTrigger, dan chatbot digital twin.",
+      "Website portfolio pribadi yang dibangun sebagai eksperimen belajar. Menggunakan Next.js 15 dengan animasi parallax GSAP, tema Nord yang minimalis, dan fitur chatbot interaktif. Proyek ini jadi ajang latihan bikin UI yang clean dan responsive.",
     tags: ["Next.js", "TypeScript", "GSAP", "Tailwind"],
-    github: "https://github.com/yourusername/portfolio",
-    demo: "https://gentakusuma.dev",
+    github: "https://github.com/agvswira/portfolio",
+    demo: "https://aguswira.dev",
     featured: true,
   },
   {
-    id: "design-system",
-    title: "Nord Design System",
+    id: "eling-bot",
+    title: "Eling — WhatsApp Reminder Bot",
     description:
-      "Komponen library dark-mode dengan palet Nord, aksesibel WCAG AA, dibangun dengan Storybook dan Tailwind.",
-    tags: ["React", "TypeScript", "Tailwind", "Storybook"],
-    github: "https://github.com/yourusername/nord-ds",
+      "Bot WhatsApp sederhana untuk reminder tugas kuliah. Dibangun pakai Node.js dan library Baileys. Bisa menerima perintah, menyimpan jadwal, dan ngirim notifikasi pengingat otomatis. Proyek belajar pertama di dunia automation dan chatbot.",
+    tags: ["Node.js", "Baileys", "WhatsApp", "Bot"],
+    github: "https://github.com/agvswira/eling-bot",
     featured: true,
-  },
-  {
-    id: "ecommerce-dashboard",
-    title: "E-Commerce Dashboard",
-    description:
-      "Dashboard admin full-stack dengan visualisasi data real-time, manajemen inventori, dan laporan penjualan.",
-    tags: ["Next.js", "Node.js", "PostgreSQL", "Chart.js"],
-    github: "https://github.com/yourusername/ecom-dash",
-    demo: "https://demo.yourdomain.com",
-  },
-  {
-    id: "chat-app",
-    title: "Real-Time Chat App",
-    description:
-      "Aplikasi chat real-time dengan autentikasi JWT, room publik/privat, dan notifikasi push.",
-    tags: ["React", "Node.js", "Socket.io", "MongoDB"],
-    github: "https://github.com/yourusername/chat-app",
-  },
-  {
-    id: "blog-platform",
-    title: "Blog Platform MDX",
-    description:
-      "Platform blog minimalis dengan MDX, syntax highlighting, dan RSS feed. Dark mode otomatis.",
-    tags: ["Next.js", "MDX", "TypeScript"],
-    github: "https://github.com/yourusername/mdx-blog",
-  },
-  {
-    id: "cli-tool",
-    title: "Dev CLI Tool",
-    description:
-      "Perkakas CLI untuk scaffolding proyek Next.js dengan konfigurasi Tailwind, ESLint, dan Prettier otomatis.",
-    tags: ["Node.js", "TypeScript", "CLI"],
-    github: "https://github.com/yourusername/dev-cli",
   },
 ];
 

@@ -7,10 +7,10 @@ import Badge from "@/components/ui/Badge";
 
 export const metadata: Metadata = {
   title: "Blog",
-  description: `Tulisan tentang frontend development, tips, dan eksplorasi teknologi oleh ${PERSONAL.name}.`,
+  description: `Tulisan tentang perjalanan belajar, teknologi, dan eksperimen oleh ${PERSONAL.name}.`,
   openGraph: {
     title: `Blog | ${PERSONAL.name}`,
-    description: `Tulisan tentang frontend development oleh ${PERSONAL.name}.`,
+    description: `Tulisan tentang perjalanan belajar oleh ${PERSONAL.name}.`,
     url: `${SITE.url}/blog`,
   },
 };
@@ -42,7 +42,7 @@ export default function BlogPage() {
           <p className="eyebrow mb-3">Blog</p>
           <h1 className="text-4xl font-semibold text-text-primary tracking-tight mb-4">Tulisan</h1>
           <p className="text-text-muted text-lg leading-relaxed">
-            Eksplorasi, tips, dan pemikiran seputar frontend development.
+            Catatan perjalanan belajar dan eksperimen teknologi.
           </p>
         </header>
 

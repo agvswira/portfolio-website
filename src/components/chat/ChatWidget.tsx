@@ -15,7 +15,7 @@ export default function ChatWidget() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: `Halo! Saya digital twin dari ${PERSONAL.name}. Ada yang bisa saya bantu? 😊`,
+      content: `Halo! Aku asisten virtualnya ${PERSONAL.name}. Mau tanya apa nih? 😊`,
     },
   ]);
   const [input, setInput] = useState("");
@@ -122,7 +122,7 @@ export default function ChatWidget() {
             {/* Header */}
             <div className="glass flex items-center justify-between px-4 py-3 border-b border-nord-border/40">
               <div>
-                <p className="text-sm font-semibold text-text-primary">Digital Twin</p>
+                <p className="text-sm font-semibold text-text-primary">Asisten Virtual</p>
                 <p className="text-xs text-text-muted">{PERSONAL.name}</p>
               </div>
               <button
@@ -192,7 +192,7 @@ export default function ChatWidget() {
       {/* Trigger button */}
       <button
         onClick={() => setOpen((v) => !v)}
-        aria-label={open ? "Tutup chat" : "Buka chat dengan Digital Twin"}
+        aria-label={open ? "Tutup chat" : "Buka chat dengan asisten virtual"}
         aria-expanded={open}
         className="fixed bottom-4 right-4 sm:right-6 z-50 w-13 h-13 rounded-full bg-frost text-bg-base shadow-lg hover:bg-frost-cyan hover:shadow-[0_0_24px_rgba(136,192,208,0.4)] transition-all duration-200 flex items-center justify-center"
         style={{ width: 52, height: 52 }}

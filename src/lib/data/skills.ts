@@ -1,29 +1,10 @@
 import type { IconType } from "react-icons";
-import {
-  SiReact,
-  SiNextdotjs,
-  SiTypescript,
-  SiTailwindcss,
-  SiFramer,
-  SiHtml5,
-  SiJavascript,
-  SiSass,
-} from "react-icons/si";
-import {
-  SiNodedotjs,
-  SiExpress,
-  SiGraphql,
-  SiPostgresql,
-  SiMongodb,
-  SiRedis,
-  SiDocker,
-  SiGit,
-  SiGithubactions,
-  SiVercel,
-  SiFigma,
-  SiLinux,
-} from "react-icons/si";
-import { LuBrainCircuit, LuUsers, LuMessageSquare, LuRefreshCw, LuLightbulb } from "react-icons/lu";
+import { SiHtml5, SiCss, SiJavascript } from "react-icons/si";
+import { SiNodedotjs } from "react-icons/si";
+import { SiMysql, SiMongodb } from "react-icons/si";
+import { SiDocker, SiGit, SiLinux, SiFigma } from "react-icons/si";
+import { SiPython, SiPandas, SiJupyter, SiTensorflow } from "react-icons/si";
+import { LuBrain, LuLanguages } from "react-icons/lu";
 
 export interface SkillItem {
   name: string;
@@ -39,30 +20,20 @@ export const SKILL_GROUPS: SkillGroup[] = [
   {
     category: "Frontend",
     items: [
-      { name: "React", icon: SiReact },
-      { name: "Next.js", icon: SiNextdotjs },
-      { name: "TypeScript", icon: SiTypescript },
-      { name: "Tailwind CSS", icon: SiTailwindcss },
-      { name: "Framer Motion", icon: SiFramer },
+      { name: "HTML", icon: SiHtml5 },
+      { name: "CSS", icon: SiCss },
       { name: "JavaScript", icon: SiJavascript },
-      { name: "HTML5", icon: SiHtml5 },
-      { name: "Sass / CSS", icon: SiSass },
     ],
   },
   {
     category: "Backend",
-    items: [
-      { name: "Node.js", icon: SiNodedotjs },
-      { name: "Express", icon: SiExpress },
-      { name: "GraphQL", icon: SiGraphql },
-    ],
+    items: [{ name: "Node.js", icon: SiNodedotjs }],
   },
   {
     category: "Database",
     items: [
-      { name: "PostgreSQL", icon: SiPostgresql },
+      { name: "MySQL", icon: SiMysql },
       { name: "MongoDB", icon: SiMongodb },
-      { name: "Redis", icon: SiRedis },
     ],
   },
   {
@@ -70,25 +41,29 @@ export const SKILL_GROUPS: SkillGroup[] = [
     items: [
       { name: "Docker", icon: SiDocker },
       { name: "Git", icon: SiGit },
-      { name: "GitHub Actions", icon: SiGithubactions },
-      { name: "Vercel", icon: SiVercel },
-      { name: "Figma", icon: SiFigma },
       { name: "Linux", icon: SiLinux },
+      { name: "Figma", icon: SiFigma },
     ],
   },
   {
-    category: "Soft Skills",
+    category: "AI & Data Science",
     items: [
-      { name: "Problem Solving", icon: LuBrainCircuit },
-      { name: "Kolaborasi Tim", icon: LuUsers },
-      { name: "Komunikasi", icon: LuMessageSquare },
-      { name: "Adaptabilitas", icon: LuRefreshCw },
-      { name: "Kreativitas", icon: LuLightbulb },
+      { name: "Python", icon: SiPython },
+      { name: "Pandas", icon: SiPandas },
+      { name: "Jupyter", icon: SiJupyter },
+      { name: "TensorFlow", icon: SiTensorflow },
+    ],
+  },
+  {
+    category: "English",
+    items: [
+      { name: "Reading", icon: LuBrain },
+      { name: "Writing", icon: LuLanguages },
     ],
   },
 ];
 
 // Flat list for marquee strip
-export const TECH_MARQUEE = SKILL_GROUPS.flatMap((g) => g.items.filter((_, i) => i < 4)).map(
+export const TECH_MARQUEE = SKILL_GROUPS.flatMap((g) => g.items.filter((_, i) => i < 3)).map(
   (s) => ({ name: s.name, icon: s.icon })
 );
