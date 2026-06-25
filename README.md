@@ -1,7 +1,3 @@
-# Portfolio Website
-
-Personal portfolio website of Komang Agus Wira Adnyana — a Computer Science student at Udayana University with an interest in AI and Data Science.
-
 ## Overview
 
 Built with Next.js 15 (App Router), TypeScript, and Tailwind CSS. Features a parallax mountain hero scene powered by GSAP ScrollTrigger, an animated particle background, and an AI-powered chat assistant.
