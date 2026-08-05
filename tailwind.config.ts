@@ -26,7 +26,7 @@ const config: Config = {
         // Text — Snow Storm
         "text-primary": "#ECEFF4",
         "text-secondary": "#D8DEE9",
-        "text-muted": "#9AA4B8",
+        "text-muted": "#A8B2C2",
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],

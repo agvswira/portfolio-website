@@ -44,7 +44,8 @@ import { NAV_ITEMS, SITE } from "@/lib/constants";
       class="rounded-lg p-2 text-text-muted transition-colors hover:bg-bg-elevated hover:text-frost md:hidden"
       data-menu-toggle
     >
-      <Icon name="lucide:menu" size={20} aria-hidden="true" data-menu-icon />
+      <Icon name="lucide:menu" size={20} aria-hidden="true" data-menu-closed-icon />
+      <Icon name="lucide:x" size={20} aria-hidden="true" class="hidden" data-menu-open-icon />
     </button>
   </div>
   <nav

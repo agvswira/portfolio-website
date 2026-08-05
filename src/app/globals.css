@@ -25,7 +25,7 @@
   --aurora-purple: #b48ead;
   --text-primary: #eceff4;
   --text-secondary: #d8dee9;
-  --text-muted: #9aa4b8;
+  --text-muted: #a8b2c2;
 }
 
 /* =============================================
@@ -38,7 +38,7 @@
 }
 
 html {
-  scroll-behavior: auto;
+  scroll-behavior: smooth;
   color-scheme: dark;
 }
 
@@ -50,6 +50,17 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+[data-navbar][data-scrolled="true"] {
+  border-bottom: 1px solid rgba(136, 192, 208, 0.1);
+  background: rgba(36, 41, 51, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 /* Skip link */
@@ -242,6 +253,13 @@ body {
   display: flex;
   width: max-content;
   will-change: transform;
+  animation: marquee-scroll 38s linear infinite;
+}
+
+@keyframes marquee-scroll {
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 .scene-seam {
@@ -360,6 +378,17 @@ body {
    Reduced Motion Overrides
    ============================================= */
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
   .text-gradient {
     animation: none;
     background-position: 0% 50%;

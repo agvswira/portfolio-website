@@ -2,17 +2,17 @@
 
 ## Migration status
 
-| Field              | Value                                             |
-| ------------------ | ------------------------------------------------- |
-| Overall status     | In progress                                       |
-| Current phase      | Phase 4 — Interactions, motion, and accessibility |
-| Source branch      | `content/case-study-foundation`                   |
-| Baseline commit    | `bdbb71824c4d32faaa152c6b6b5de05bc66c2981`        |
-| Checkpoint commit  | `03e9168`                                         |
-| Migration branch   | `migration/astro`                                 |
-| Migration worktree | `.worktrees/migration-astro`                      |
-| Target platform    | Astro 7.1.x on Vercel                             |
-| Last updated       | 2026-08-05                                        |
+| Field              | Value                                       |
+| ------------------ | ------------------------------------------- |
+| Overall status     | In progress                                 |
+| Current phase      | Phase 5 — APIs, rate limiting, and security |
+| Source branch      | `content/case-study-foundation`             |
+| Baseline commit    | `bdbb71824c4d32faaa152c6b6b5de05bc66c2981`  |
+| Checkpoint commit  | `03e9168`                                   |
+| Migration branch   | `migration/astro`                           |
+| Migration worktree | `.worktrees/migration-astro`                |
+| Target platform    | Astro 7.1.x on Vercel                       |
+| Last updated       | 2026-08-05                                  |
 
 This file is the source of truth for the migration. A phase can only be marked
 `Completed` after its exit criteria have been run and their actual results have
@@ -80,8 +80,8 @@ same phase commit.
 | 1. Next.js baseline hardening               | Completed   | All gates passed; production audit reports 0 findings    |
 | 2. Astro foundation                         | Completed   | Astro/Vercel build passed; no React/Next dependency      |
 | 3. Content and static pages                 | Completed   | 10 content tests and full static Astro build passed      |
-| 4. Interactions, motion, and accessibility  | In Progress | Pending                                                  |
-| 5. APIs, rate limiting, and security        | Pending     | Pending                                                  |
+| 4. Interactions, motion, and accessibility  | Completed   | Playwright/axe: 5 passed, 1 intentionally skipped        |
+| 5. APIs, rate limiting, and security        | In Progress | Pending                                                  |
 | 6. SEO, headers, cleanup, and documentation | Pending     | Pending                                                  |
 | 7. Quality and performance gates            | Pending     | Pending                                                  |
 | 8. Preview, cutover, and closeout           | Pending     | Pending                                                  |
@@ -227,7 +227,19 @@ same phase commit.
 
 ### Evidence
 
-Pending.
+- Added vanilla TypeScript modules for navigation/scrollspy, project filters,
+  pointer spotlight, native contact enhancement, chat shell, and focus return.
+- Added GSAP ScrollTrigger only to the homepage for mountain parallax and
+  reveals; CSS owns the marquee and all continuous animation stops under
+  reduced motion.
+- Added a non-modal chat dialog with an explicit label, log/live regions,
+  labelled input, Escape close, and focus return.
+- Added Playwright and axe earlier than Phase 7 so this phase could be gated on
+  behavior: 5 tests passed and the desktop-only mobile-menu case was skipped.
+- Axe exposed a 4.01:1 muted-text contrast regression; the token was adjusted
+  to `#A8B2C2`, after which the axe scan returned zero violations.
+- Homepage eager JavaScript is approximately 46 kB gzip; content routes still
+  ship no eager JavaScript.
 
 ## Phase 5 — APIs, rate limiting, and security
 
@@ -346,6 +358,8 @@ Pending.
 | 2026-08-05 | Override `path-to-regexp` to 6.3.0                   | The Vercel adapter resolved vulnerable 6.1.0 transitively; patched compatible 6.x passes the complete adapter build.                               |
 | 2026-08-05 | Add Vitest in Phase 3 rather than Phase 7            | Content behavior was implemented test-first; Phase 7 will expand the suite and CI instead of adding tests after production code.                   |
 | 2026-08-05 | Use explicit content dates in frontmatter            | File mtimes are unstable in deployments; frontmatter now drives sorting, structured metadata, and sitemap `lastModified`.                          |
+| 2026-08-05 | Pull Playwright/axe setup into Phase 4               | Keyboard, focus, reduced-motion, filter, chat-shell, and contrast behavior had to be verified before declaring the interaction phase complete.     |
+| 2026-08-05 | Lighten `text-muted` to `#A8B2C2`                    | Axe measured only 4.01:1 on elevated cards; the new token exceeds WCAG AA while preserving the Nord hierarchy.                                     |
 
 ## Progress log
 
@@ -391,3 +405,13 @@ Pending.
 - Verified content guards/schemas, one-H1 structure, stable sitemap dates, zero
   eager static-page scripts, and desktop/mobile visual parity.
 - Started Phase 4 vanilla interactions, GSAP motion, and accessibility work.
+
+### 2026-08-05 — Phase 4 completed
+
+- Replaced React interaction code with small vanilla TypeScript modules and
+  limited GSAP to homepage motion.
+- Added accessible mobile navigation, filters, native form enhancement,
+  spotlight cards, and a keyboard-operable non-modal chat shell.
+- Verified five Playwright scenarios, a zero-violation axe scan, reduced motion,
+  desktop/mobile focus return, and the 46 kB gzip homepage script budget.
+- Started Phase 5 API, Upstash, SSE, and server-side security work.

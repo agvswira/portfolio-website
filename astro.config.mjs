@@ -26,8 +26,11 @@ export default defineConfig({
           "mail",
           "map-pin",
           "menu",
+          "message-circle",
+          "send",
           "target",
           "users",
+          "x",
         ],
         "simple-icons": [
           "css",

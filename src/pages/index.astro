@@ -8,6 +8,7 @@ import Projects from "@/sections/Projects.astro";
 import Skills from "@/sections/Skills.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Footer from "@/ui/Footer.astro";
+import ChatWidget from "@/ui/ChatWidget.astro";
 import Navbar from "@/ui/Navbar.astro";
 
 const [posts, projects] = await Promise.all([getBlogPosts(), getProjects()]);
@@ -30,4 +31,10 @@ const [posts, projects] = await Promise.all([getBlogPosts(), getProjects()]);
     <Contact />
   </main>
   <Footer />
+  <ChatWidget />
+  <script>
+    import { initHome } from "@/scripts/home";
+
+    initHome();
+  </script>
 </BaseLayout>
