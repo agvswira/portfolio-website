@@ -48,12 +48,13 @@ describe("contact API handler", () => {
   });
 
   it("supports the native form fallback with a 303 redirect", async () => {
-    const request = new Request("https://portfolio.test/api/contact", {
-      method: "POST",
-      headers: { "content-type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams(contactPayload),
-    });
-    const response = await handleContactRequest(request, {
+    const nativeRequest = () =>
+      new Request("https://portfolio.test/api/contact", {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(contactPayload),
+      });
+    const response = await handleContactRequest(nativeRequest(), {
       salt: "pepper",
       environment: "test",
       rateLimit: vi.fn().mockResolvedValue(allowed),
@@ -61,10 +62,17 @@ describe("contact API handler", () => {
     });
 
     expect(response.status).toBe(303);
-    expect(response.headers.get("location")).toBe(
-      "https://portfolio.test/?contact=success#contact"
-    );
+    expect(response.headers.get("location")).toBe("https://portfolio.test/#contact-success");
     expect(response.headers.get("x-ratelimit-remaining")).toBe("4");
+
+    const failed = await handleContactRequest(nativeRequest(), {
+      salt: "pepper",
+      environment: "test",
+      rateLimit: vi.fn().mockResolvedValue(allowed),
+      sendContact: vi.fn().mockResolvedValue({ ok: false, status: 502 }),
+    });
+    expect(failed.status).toBe(303);
+    expect(failed.headers.get("location")).toBe("https://portfolio.test/#contact-error");
   });
 
   it("rejects unsupported media, oversized bodies, and validation failures", async () => {
@@ -144,6 +152,7 @@ describe("chat API handler", () => {
   });
 
   it("rejects invalid payloads and malformed upstream responses", async () => {
+    const cancel = vi.fn();
     const base = {
       salt: "pepper",
       environment: "test",
@@ -155,11 +164,18 @@ describe("chat API handler", () => {
     });
     const malformed = await handleChatRequest(jsonRequest("/api/chat", chatPayload), {
       ...base,
-      streamChat: vi.fn().mockResolvedValue(new Response("not an event stream")),
+      streamChat: vi.fn().mockResolvedValue(
+        new Response(
+          new ReadableStream({
+            cancel,
+          })
+        )
+      ),
     });
 
     expect(invalid.status).toBe(400);
     expect(malformed.status).toBe(502);
+    expect(cancel).toHaveBeenCalledOnce();
   });
 
   it("returns 503 when the AI service is not configured", async () => {

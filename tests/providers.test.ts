@@ -60,9 +60,13 @@ describe("AI provider", () => {
       fetcher
     );
 
-    await expect(
-      stream([{ role: "user", content: "Halo" }], new AbortController().signal)
-    ).resolves.toBe(upstream);
+    const response = await stream(
+      [{ role: "user", content: "Halo" }],
+      new AbortController().signal
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe("text/event-stream");
+    await expect(response.text()).resolves.toBe("data: [DONE]\n\n");
     const [url, init] = fetcher.mock.calls[0] as [string, RequestInit];
     expect(url).toBe("https://ai.example.test/v1/chat/completions");
     expect(JSON.parse(String(init.body))).toMatchObject({

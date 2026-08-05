@@ -40,7 +40,9 @@ export function createResendSender(config: ResendConfig, fetcher: FetchLike = fe
       10_000,
       clientSignal
     );
-    return response.ok ? { ok: true } : { ok: false, status: 502 };
+    const result: ContactDeliveryResult = response.ok ? { ok: true } : { ok: false, status: 502 };
+    await response.body?.cancel().catch(() => undefined);
+    return result;
   };
 }
 

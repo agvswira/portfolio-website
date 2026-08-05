@@ -26,7 +26,7 @@ function redirectToContact(
   headers?: HeadersInit
 ): Response {
   const responseHeaders = new Headers(headers);
-  responseHeaders.set("location", new URL(`/?contact=${state}#contact`, request.url).href);
+  responseHeaders.set("location", new URL(`/#contact-${state}`, request.url).href);
   responseHeaders.set("cache-control", "no-store");
   return new Response(null, { status: 303, headers: responseHeaders });
 }

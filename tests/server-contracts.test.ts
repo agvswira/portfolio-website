@@ -137,6 +137,95 @@ describe("request boundaries", () => {
       vi.useRealTimers();
     }
   });
+
+  it("keeps propagating client aborts after streaming headers arrive", async () => {
+    const client = new AbortController();
+    let observedSignal: AbortSignal | undefined;
+    let upstreamController: ReadableStreamDefaultController<Uint8Array> | undefined;
+    const fetcher = vi.fn((_input: RequestInfo | URL, init?: RequestInit) => {
+      observedSignal = init?.signal ?? undefined;
+      return Promise.resolve(
+        new Response(
+          new ReadableStream<Uint8Array>({
+            start(controller) {
+              upstreamController = controller;
+              controller.enqueue(new TextEncoder().encode("data: partial\n\n"));
+            },
+          }),
+          { headers: { "content-type": "text/event-stream" } }
+        )
+      );
+    });
+
+    const response = await requestWithTimeout(
+      fetcher,
+      "https://example.test",
+      {},
+      5_000,
+      client.signal
+    );
+    const bodyResult = response.text().then(
+      () => "fulfilled",
+      (error: unknown) => (error instanceof DOMException ? error.name : "rejected")
+    );
+
+    client.abort(new DOMException("Client disconnected", "AbortError"));
+    try {
+      const result = await Promise.race([
+        bodyResult,
+        new Promise<string>((resolve) => setTimeout(() => resolve("pending"), 50)),
+      ]);
+      expect(observedSignal?.aborted).toBe(true);
+      expect(result).toBe("AbortError");
+    } finally {
+      try {
+        upstreamController?.close();
+      } catch {
+        // The fixed implementation cancels the upstream stream first.
+      }
+      await bodyResult;
+    }
+  });
+
+  it("keeps the upstream deadline active until a streaming body ends", async () => {
+    let observedSignal: AbortSignal | undefined;
+    let upstreamController: ReadableStreamDefaultController<Uint8Array> | undefined;
+    const fetcher = vi.fn((_input: RequestInfo | URL, init?: RequestInit) => {
+      observedSignal = init?.signal ?? undefined;
+      return Promise.resolve(
+        new Response(
+          new ReadableStream<Uint8Array>({
+            start(controller) {
+              upstreamController = controller;
+              controller.enqueue(new TextEncoder().encode("data: partial\n\n"));
+            },
+          }),
+          { headers: { "content-type": "text/event-stream" } }
+        )
+      );
+    });
+
+    const response = await requestWithTimeout(fetcher, "https://example.test", {}, 10);
+    const bodyResult = response.text().then(
+      () => "fulfilled",
+      (error: unknown) => (error instanceof DOMException ? error.name : "rejected")
+    );
+    try {
+      const result = await Promise.race([
+        bodyResult,
+        new Promise<string>((resolve) => setTimeout(() => resolve("pending"), 100)),
+      ]);
+      expect(observedSignal?.aborted).toBe(true);
+      expect(result).toBe("TimeoutError");
+    } finally {
+      try {
+        upstreamController?.close();
+      } catch {
+        // The fixed implementation cancels the upstream stream first.
+      }
+      await bodyResult;
+    }
+  });
 });
 
 describe("rate-limit identity", () => {

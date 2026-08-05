@@ -5,14 +5,14 @@
 | Field              | Value                                      |
 | ------------------ | ------------------------------------------ |
 | Overall status     | In progress                                |
-| Current phase      | Phase 8 — Preview, cutover, and closeout   |
+| Current phase      | Phase 8 — Review remediation               |
 | Source branch      | `content/case-study-foundation`            |
 | Baseline commit    | `bdbb71824c4d32faaa152c6b6b5de05bc66c2981` |
 | Checkpoint commit  | `03e9168`                                  |
 | Migration branch   | `migration/astro`                          |
 | Migration worktree | `.worktrees/migration-astro`               |
 | Target platform    | Astro 7.1.x on Vercel                      |
-| Last updated       | 2026-08-05                                 |
+| Last updated       | 2026-08-06                                 |
 
 This file is the source of truth for the migration. A phase can only be marked
 `Completed` after its exit criteria have been run and their actual results have
@@ -84,7 +84,7 @@ same phase commit.
 | 5. APIs, rate limiting, and security        | Completed   | 46 unit/integration tests; 9 E2E passed, 1 skipped       |
 | 6. SEO, headers, cleanup, and documentation | Completed   | SEO/CSP E2E passed; legacy dependency/output scans clean |
 | 7. Quality and performance gates            | Completed   | LH 99/100/100; 35 E2E + 47 unit; all gates passed        |
-| 8. Preview, cutover, and closeout           | In Progress | Pending                                                  |
+| 8. Preview, cutover, and closeout           | In Progress | Review fixes pending CI and redeployment                 |
 
 ## Phase 0 — Tracker and checkpoint
 
@@ -376,7 +376,33 @@ same phase commit.
 
 ### Evidence
 
-Pending.
+- Previous cutover commit `c58891f96dc113971430ed80a5ada52b12a2cee7`
+  passed GitHub Actions run `31027252852`: quality, Playwright/visual, and
+  Lighthouse jobs all completed successfully.
+- Vercel Preview deployment `dpl_7FywbARK5tt83ime3dJJWWMok5eh` at
+  `https://portfolio-website-ri1vrqa45-agvswiras-projects.vercel.app` passed
+  every public-route/404 smoke check, the defensive-header checks, desktop and
+  Pixel 7 interactions, reduced-motion behavior, and axe with zero violations.
+- Preview provider checks returned HTTP 200 for Resend contact delivery and the
+  OpenAI-compatible SSE chat; the chat stream contained exactly one `[DONE]`.
+  Upstash returned the configured contact/chat limits of 5 and 20.
+- Built Production deployment `dpl_FP6AsVQ5hyyXxS34drmS9AAdS49F` with
+  `--prod --skip-domain`, then tested its isolated URL before promotion. All
+  public routes, 404 behavior, security headers, live contact, live chat,
+  desktop/mobile interactions, reduced motion, and axe passed.
+- Promoted that exact deployment only after the isolated Production checks.
+  `https://aguswira.dev` now resolves to the Astro deployment, serves `/_astro/`
+  assets without `/_next/` assets, and passed post-cutover route, API,
+  desktop/mobile, console, and accessibility smoke checks.
+- The rollback target is the last healthy Next.js deployment,
+  `dpl_6jcPqCtPjARuK44BUBczDF736424`, at
+  `https://portfolio-website-i5r3q0m19-agvswiras-projects.vercel.app` from
+  baseline commit `bdbb71824c4d32faaa152c6b6b5de05bc66c2981`. Restore it with
+  `vercel promote dpl_6jcPqCtPjARuK44BUBczDF736424 --yes` from the linked
+  project if rollback is required.
+- Final review found post-header SSE lifecycle and no-JavaScript contact
+  fallback gaps. Regression tests and fixes are implemented locally; final CI,
+  Preview verification, and Production redeployment are pending.
 
 ## Public interfaces and environment
 
@@ -499,3 +525,26 @@ Pending.
   Lighthouse runs with CLS well below the 0.05 budget.
 - Started Phase 8 Vercel Preview, production cutover, smoke test, and rollback
   evidence work.
+
+### 2026-08-06 — Phase 8 review remediation
+
+- Corrected the Vercel Astro framework declaration and made Linux visual
+  baselines deterministic without relaxing the pixel-difference threshold.
+- Passed the final three-job CI run and deployed the application commit to an
+  isolated Vercel Preview with separate Preview service credentials.
+- Verified every route, security header, contact delivery, streamed AI chat,
+  desktop/mobile interaction, reduced-motion behavior, accessibility scan, and
+  deployed visual before cutover.
+- Built an isolated Production candidate with Production credentials, repeated
+  the critical smoke suite, and only then promoted the tested deployment to
+  `aguswira.dev`.
+- Repeated route, API wiring, desktop/mobile, console, and axe checks through
+  the public domain and retained the final Next.js deployment as a one-command
+  rollback target.
+- An independent closeout review found that the AI deadline/client abort ended
+  when SSE headers arrived and that native contact feedback depended on
+  JavaScript. Added failing regression tests, retained stream controls through
+  body completion, added static hash-target feedback, and added a built Vercel
+  entrypoint CI smoke check.
+- Replacement CI and deployment evidence are pending before Phase 8 can be
+  marked completed.

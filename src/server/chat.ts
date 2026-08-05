@@ -74,6 +74,7 @@ export async function handleChatRequest(
 
   const contentType = upstream.headers.get("content-type")?.toLowerCase() ?? "";
   if (!upstream.ok || !upstream.body || !contentType.includes("text/event-stream")) {
+    await upstream.body?.cancel().catch(() => undefined);
     return jsonResponse({ error: "Respons AI tidak valid." }, 502, limitHeaders);
   }
 

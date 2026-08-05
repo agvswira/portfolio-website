@@ -43,6 +43,7 @@ export async function requestWithTimeout(
   clientSignal?: AbortSignal
 ): Promise<Response> {
   const controller = new AbortController();
+  let cleanedUp = false;
   const abortFromClient = () => {
     controller.abort(clientSignal?.reason ?? new DOMException("Client disconnected", "AbortError"));
   };
@@ -54,12 +55,37 @@ export async function requestWithTimeout(
     controller.abort(new DOMException("Upstream request timed out", "TimeoutError"));
   }, timeoutMs);
 
-  try {
-    return await fetcher(input, { ...init, signal: controller.signal });
-  } finally {
+  const cleanup = () => {
+    if (cleanedUp) return;
+    cleanedUp = true;
     clearTimeout(timeout);
     clientSignal?.removeEventListener("abort", abortFromClient);
+  };
+
+  let response: Response;
+  try {
+    response = await fetcher(input, { ...init, signal: controller.signal });
+  } catch (error) {
+    cleanup();
+    throw error;
   }
+
+  if (!response.body) {
+    cleanup();
+    return response;
+  }
+
+  const passthrough = new TransformStream<Uint8Array, Uint8Array>();
+  void response.body
+    .pipeTo(passthrough.writable, { signal: controller.signal })
+    .catch(() => undefined)
+    .finally(cleanup);
+
+  return new Response(passthrough.readable, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: response.headers,
+  });
 }
 
 export function jsonResponse(body: unknown, status = 200, headers?: HeadersInit): Response {

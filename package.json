@@ -16,6 +16,7 @@
     "check:links": "node scripts/check-links.mjs",
     "check:bundles": "node scripts/check-bundles.mjs",
     "check:legacy": "node scripts/check-legacy.mjs",
+    "check:server": "node scripts/check-server-entry.mjs",
     "test:lighthouse": "lhci autorun --config=.lighthouserc.json",
     "lint": "eslint .",
     "typecheck": "astro check",

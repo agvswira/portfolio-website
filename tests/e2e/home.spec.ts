@@ -75,6 +75,31 @@ test("contact form preserves its JSON contract without a live provider", async (
   await expect(page.locator("[data-contact-status]")).toContainText("Pesan berhasil terkirim");
 });
 
+test("native contact fallback shows feedback without JavaScript", async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  const page = await context.newPage();
+  await page.route("**/api/contact", (route) =>
+    route.fulfill({ status: 303, headers: { location: "/#contact-success" } })
+  );
+  await page.goto("/");
+
+  await page.getByLabel("Nama").fill("Pengunjung Tanpa JavaScript");
+  await page.getByRole("textbox", { name: "Email", exact: true }).fill("visitor@example.com");
+  await page
+    .getByRole("textbox", { name: "Pesan", exact: true })
+    .fill("Halo, saya mengirim formulir tanpa JavaScript.");
+  await page.getByRole("button", { name: "Kirim Pesan", exact: true }).click();
+
+  await expect(page).toHaveURL(/\/#contact-success$/);
+  await expect(page.locator("#contact-success")).toBeVisible();
+  await expect(page.locator("#contact-success")).toContainText("Pesan berhasil terkirim");
+
+  await page.goto("/#contact-error");
+  await expect(page.locator("#contact-error")).toBeVisible();
+  await expect(page.locator("#contact-error")).toContainText("Pesan belum berhasil dikirim");
+  await context.close();
+});
+
 test("chat renders a buffered OpenAI-compatible SSE response", async ({ page }) => {
   await page.route("**/api/chat", async (route) => {
     expect(route.request().postDataJSON()).toEqual({
