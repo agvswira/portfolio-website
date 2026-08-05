@@ -4,8 +4,19 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 interface VercelConfig {
+  framework?: string;
   headers: Array<{ source: string; headers: Array<{ key: string; value: string }> }>;
 }
+
+describe("Vercel framework", () => {
+  it("declares Astro as the deployment framework", () => {
+    const config = JSON.parse(
+      readFileSync(resolve(process.cwd(), "vercel.json"), "utf8")
+    ) as VercelConfig;
+
+    expect(config.framework).toBe("astro");
+  });
+});
 
 describe("Vercel security headers", () => {
   it("defines a hash-based CSP and the full defensive header set", () => {
