@@ -4,8 +4,8 @@
 
 | Field              | Value                                      |
 | ------------------ | ------------------------------------------ |
-| Overall status     | In progress                                |
-| Current phase      | Phase 8 — Review remediation               |
+| Overall status     | Completed                                  |
+| Current phase      | Phase 8 — Completed                        |
 | Source branch      | `content/case-study-foundation`            |
 | Baseline commit    | `bdbb71824c4d32faaa152c6b6b5de05bc66c2981` |
 | Checkpoint commit  | `03e9168`                                  |
@@ -74,17 +74,17 @@ same phase commit.
 
 ## Phase tracker
 
-| Phase                                       | Status      | Exit evidence                                            |
-| ------------------------------------------- | ----------- | -------------------------------------------------------- |
-| 0. Tracker and checkpoint                   | Completed   | Checkpoint `03e9168`; lint, type-check, and build passed |
-| 1. Next.js baseline hardening               | Completed   | All gates passed; production audit reports 0 findings    |
-| 2. Astro foundation                         | Completed   | Astro/Vercel build passed; no React/Next dependency      |
-| 3. Content and static pages                 | Completed   | 10 content tests and full static Astro build passed      |
-| 4. Interactions, motion, and accessibility  | Completed   | Playwright/axe: 5 passed, 1 intentionally skipped        |
-| 5. APIs, rate limiting, and security        | Completed   | 46 unit/integration tests; 9 E2E passed, 1 skipped       |
-| 6. SEO, headers, cleanup, and documentation | Completed   | SEO/CSP E2E passed; legacy dependency/output scans clean |
-| 7. Quality and performance gates            | Completed   | LH 99/100/100; 35 E2E + 47 unit; all gates passed        |
-| 8. Preview, cutover, and closeout           | In Progress | Review fixes pending CI and redeployment                 |
+| Phase                                       | Status    | Exit evidence                                            |
+| ------------------------------------------- | --------- | -------------------------------------------------------- |
+| 0. Tracker and checkpoint                   | Completed | Checkpoint `03e9168`; lint, type-check, and build passed |
+| 1. Next.js baseline hardening               | Completed | All gates passed; production audit reports 0 findings    |
+| 2. Astro foundation                         | Completed | Astro/Vercel build passed; no React/Next dependency      |
+| 3. Content and static pages                 | Completed | 10 content tests and full static Astro build passed      |
+| 4. Interactions, motion, and accessibility  | Completed | Playwright/axe: 5 passed, 1 intentionally skipped        |
+| 5. APIs, rate limiting, and security        | Completed | 46 unit/integration tests; 9 E2E passed, 1 skipped       |
+| 6. SEO, headers, cleanup, and documentation | Completed | SEO/CSP E2E passed; legacy dependency/output scans clean |
+| 7. Quality and performance gates            | Completed | LH 99/100/100; 35 E2E + 47 unit; all gates passed        |
+| 8. Preview, cutover, and closeout           | Completed | Astro live on `aguswira.dev`; rollback `dpl_6jcPq...`    |
 
 ## Phase 0 — Tracker and checkpoint
 
@@ -376,33 +376,33 @@ same phase commit.
 
 ### Evidence
 
-- Previous cutover commit `c58891f96dc113971430ed80a5ada52b12a2cee7`
-  passed GitHub Actions run `31027252852`: quality, Playwright/visual, and
-  Lighthouse jobs all completed successfully.
-- Vercel Preview deployment `dpl_7FywbARK5tt83ime3dJJWWMok5eh` at
-  `https://portfolio-website-ri1vrqa45-agvswiras-projects.vercel.app` passed
-  every public-route/404 smoke check, the defensive-header checks, desktop and
-  Pixel 7 interactions, reduced-motion behavior, and axe with zero violations.
-- Preview provider checks returned HTTP 200 for Resend contact delivery and the
-  OpenAI-compatible SSE chat; the chat stream contained exactly one `[DONE]`.
-  Upstash returned the configured contact/chat limits of 5 and 20.
-- Built Production deployment `dpl_FP6AsVQ5hyyXxS34drmS9AAdS49F` with
-  `--prod --skip-domain`, then tested its isolated URL before promotion. All
-  public routes, 404 behavior, security headers, live contact, live chat,
-  desktop/mobile interactions, reduced motion, and axe passed.
-- Promoted that exact deployment only after the isolated Production checks.
-  `https://aguswira.dev` now resolves to the Astro deployment, serves `/_astro/`
-  assets without `/_next/` assets, and passed post-cutover route, API,
-  desktop/mobile, console, and accessibility smoke checks.
+- Final application commit `7af7a67a98d597f257dab7ad0e6e026125df3098`
+  passed GitHub Actions run `31035250047`: quality, Ubuntu Playwright/visual,
+  and Lighthouse jobs all completed successfully. The final suites contain 50
+  unit/integration tests and 37 passing E2E tests with one intentional skip.
+- Three fresh local Lighthouse runs each scored Performance 99, Accessibility
+  100, and SEO 100; CLS was 0.00846 and LCP was 1.73–1.75 s. Homepage eager
+  JavaScript remained 47,250 B gzip; blog and project routes remained 0 B.
+- Final Vercel Preview deployment `dpl_DVzY72QbeqrPmvWwRu6veaH5mNCu` at
+  `https://portfolio-website-d5irgo4u1-agvswiras-projects.vercel.app` passed
+  route/header checks, live SSE with one `[DONE]`, live Resend delivery, and
+  desktop/mobile/reduced-motion/axe checks. A real form submission with
+  JavaScript disabled returned 303 and displayed `#contact-success`.
+- Built final Production deployment `dpl_Rftt4V7Y5T4SwNhiu6uKWgYMfuWo` at
+  `https://portfolio-website-q3t8bwca2-agvswiras-projects.vercel.app` with
+  `--prod --skip-domain`. Its isolated URL passed live contact and chat,
+  no-JavaScript feedback, desktop/mobile/reduced-motion, console, and axe smoke
+  checks before promotion.
+- Promoted that exact tested deployment. `https://aguswira.dev` resolves to it,
+  serves `/_astro/` assets without `/_next/` assets, and passed post-cutover
+  route/404, security-header, API contract, no-JavaScript, desktop/mobile,
+  console, and accessibility checks.
 - The rollback target is the last healthy Next.js deployment,
   `dpl_6jcPqCtPjARuK44BUBczDF736424`, at
   `https://portfolio-website-i5r3q0m19-agvswiras-projects.vercel.app` from
   baseline commit `bdbb71824c4d32faaa152c6b6b5de05bc66c2981`. Restore it with
   `vercel promote dpl_6jcPqCtPjARuK44BUBczDF736424 --yes` from the linked
   project if rollback is required.
-- Final review found post-header SSE lifecycle and no-JavaScript contact
-  fallback gaps. Regression tests and fixes are implemented locally; final CI,
-  Preview verification, and Production redeployment are pending.
 
 ## Public interfaces and environment
 
@@ -526,7 +526,7 @@ same phase commit.
 - Started Phase 8 Vercel Preview, production cutover, smoke test, and rollback
   evidence work.
 
-### 2026-08-06 — Phase 8 review remediation
+### 2026-08-06 — Phase 8 completed
 
 - Corrected the Vercel Astro framework declaration and made Linux visual
   baselines deterministic without relaxing the pixel-difference threshold.
@@ -546,5 +546,6 @@ same phase commit.
   JavaScript. Added failing regression tests, retained stream controls through
   body completion, added static hash-target feedback, and added a built Vercel
   entrypoint CI smoke check.
-- Replacement CI and deployment evidence are pending before Phase 8 can be
-  marked completed.
+- The replacement commit passed all three CI jobs, then passed isolated Preview
+  and Production smoke tests. Promoted only the tested Production deployment
+  and repeated critical checks through `aguswira.dev`.
