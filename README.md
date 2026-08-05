@@ -73,11 +73,15 @@ Jangan memakai salt production untuk Preview.
 npm run format:check
 npm run lint
 npm run typecheck
-npm test
+npm run test:coverage
 npm run test:e2e
 npm run build
 npm run check:csp
-npm audit --omit=dev --audit-level=high
+npm run check:links
+npm run check:bundles
+npm run check:legacy
+npm run test:lighthouse
+npm audit --audit-level=high
 ```
 
 Test provider selalu memakai mock; suite tidak mengirim email, memakai kuota AI,

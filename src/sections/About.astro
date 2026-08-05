@@ -1,6 +1,8 @@
 ---
+import { Image } from "astro:assets";
 import { Icon } from "astro-icon/components";
 
+import profileImage from "@/assets/profile.jpg";
 import { PERSONAL, TIMELINE } from "@/lib/constants";
 import type { BlogEntry, ProjectEntry } from "@/lib/content";
 import { SKILL_GROUPS } from "@/lib/skills";
@@ -32,11 +34,13 @@ const stats = [
       <div
         class="mb-6 h-20 w-20 overflow-hidden rounded-2xl border border-nord-border/50 bg-bg-elevated"
       >
-        <img
-          src="/images/profile.jpg"
+        <Image
+          src={profileImage}
           alt={PERSONAL.fullName}
           width="80"
           height="80"
+          format="webp"
+          quality={80}
           loading="lazy"
           decoding="async"
           class="h-full w-full object-cover"

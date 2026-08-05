@@ -150,3 +150,34 @@ test("hash-based production CSP permits the intended homepage behavior", async (
   await expect(page.locator("[data-project-card]:visible")).toHaveCount(1);
   expect(violations).toEqual([]);
 });
+
+test("contact and chat expose provider errors through their live regions", async ({ page }) => {
+  await page.route("**/api/contact", (route) =>
+    route.fulfill({
+      status: 429,
+      contentType: "application/json",
+      body: '{"error":"Terlalu banyak permintaan. Coba lagi nanti."}',
+    })
+  );
+  await page.route("**/api/chat", (route) =>
+    route.fulfill({
+      status: 502,
+      contentType: "application/json",
+      body: '{"error":"Gagal menghubungi AI."}',
+    })
+  );
+  await page.goto("/");
+
+  await page.getByLabel("Nama").fill("Pengunjung Test");
+  await page.getByRole("textbox", { name: "Email", exact: true }).fill("visitor@example.com");
+  await page
+    .getByRole("textbox", { name: "Pesan", exact: true })
+    .fill("Halo, saya ingin membahas sebuah proyek bersama.");
+  await page.getByRole("button", { name: "Kirim Pesan", exact: true }).click();
+  await expect(page.locator("[data-contact-status]")).toContainText("Terlalu banyak permintaan");
+
+  await page.getByRole("button", { name: "Buka chat" }).click();
+  await page.getByLabel("Pesan untuk asisten").fill("Apa proyek Wira?");
+  await page.getByRole("button", { name: "Kirim pesan", exact: true }).click();
+  await expect(page.locator("[data-chat-status]")).toHaveText("Gagal menghubungi AI.");
+});

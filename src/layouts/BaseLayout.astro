@@ -3,6 +3,7 @@ import "@fontsource-variable/geist-mono";
 import "@fontsource-variable/sora";
 import "../styles/globals.css";
 
+import profileImage from "@/assets/profile.jpg";
 import { PERSONAL, SITE } from "@/lib/constants";
 
 interface Props {
@@ -39,7 +40,7 @@ const personJsonLd = {
   name: PERSONAL.fullName,
   alternateName: PERSONAL.name,
   url: SITE.url,
-  image: new URL("/images/profile.jpg", SITE.url).href,
+  image: new URL(profileImage.src, SITE.url).href,
   jobTitle: PERSONAL.role,
   homeLocation: { "@type": "Place", name: PERSONAL.location },
   description: SITE.description,

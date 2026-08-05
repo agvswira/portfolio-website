@@ -5,7 +5,7 @@
 | Field              | Value                                      |
 | ------------------ | ------------------------------------------ |
 | Overall status     | In progress                                |
-| Current phase      | Phase 7 — Quality and performance gates    |
+| Current phase      | Phase 8 — Preview, cutover, and closeout   |
 | Source branch      | `content/case-study-foundation`            |
 | Baseline commit    | `bdbb71824c4d32faaa152c6b6b5de05bc66c2981` |
 | Checkpoint commit  | `03e9168`                                  |
@@ -83,8 +83,8 @@ same phase commit.
 | 4. Interactions, motion, and accessibility  | Completed   | Playwright/axe: 5 passed, 1 intentionally skipped        |
 | 5. APIs, rate limiting, and security        | Completed   | 46 unit/integration tests; 9 E2E passed, 1 skipped       |
 | 6. SEO, headers, cleanup, and documentation | Completed   | SEO/CSP E2E passed; legacy dependency/output scans clean |
-| 7. Quality and performance gates            | In Progress | Pending                                                  |
-| 8. Preview, cutover, and closeout           | Pending     | Pending                                                  |
+| 7. Quality and performance gates            | Completed   | LH 99/100/100; 35 E2E + 47 unit; all gates passed        |
+| 8. Preview, cutover, and closeout           | In Progress | Pending                                                  |
 
 ## Phase 0 — Tracker and checkpoint
 
@@ -340,7 +340,22 @@ same phase commit.
 
 ### Evidence
 
-Pending.
+- Added enforced Vitest coverage thresholds; the final suite reports 88.12%
+  statements, 82.43% branches, 94.87% functions, and 91.41% lines.
+- Expanded Playwright/axe to every public route, 404, robots, sitemap,
+  canonical/structured metadata, success/error API UI, keyboard, CSP, reduced
+  motion, and full-page desktop/mobile visual snapshots: 35 passed, one
+  intentionally skipped.
+- Added deterministic CSP, 163-link/asset, bundle-budget, and legacy
+  dependency/output checks. Homepage eager JS is 47,250 B gzip against 122,880
+  B; blog and project routes are 0 B against 20,480 B.
+- Optimized the rendered profile asset through Astro from a 96.5 kB JPEG to an
+  approximately 1.3 kB transferred 80×80 WebP; Lighthouse image audits pass.
+- Three consecutive mobile Lighthouse runs each scored Performance 99,
+  Accessibility 100, and SEO 100; CLS was 0.00846 and LCP was 1.72–1.73 s.
+- Added a three-job Node 24 GitHub Actions workflow for quality/coverage,
+  Playwright/visuals, and Lighthouse. The equivalent complete local matrix and
+  the full dependency audit passed with zero vulnerabilities.
 
 ## Phase 8 — Preview, cutover, and closeout
 
@@ -377,22 +392,25 @@ Pending.
 
 ## Decision log
 
-| Date       | Decision                                             | Reason                                                                                                                                             |
-| ---------- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-08-05 | Use a root-level `MIGRATION_PLAN.md`                 | `docs/` is ignored; the tracker must be versioned.                                                                                                 |
-| 2026-08-05 | Checkpoint the current dirty branch before isolation | Existing case-study work must be preserved before creating a migration worktree.                                                                   |
-| 2026-08-05 | Temporarily override Next's PostCSS and Sharp        | New advisories remained after Next 15.5.22; overrides avoid a second framework migration to Next 16 before Astro and are verified by a full build. |
-| 2026-08-05 | Keep legacy Next source temporarily but exclude it   | Old components remain as a parity reference while Astro builds only the new source; they will be deleted after parity.                             |
-| 2026-08-05 | Override `path-to-regexp` to 6.3.0                   | The Vercel adapter resolved vulnerable 6.1.0 transitively; patched compatible 6.x passes the complete adapter build.                               |
-| 2026-08-05 | Add Vitest in Phase 3 rather than Phase 7            | Content behavior was implemented test-first; Phase 7 will expand the suite and CI instead of adding tests after production code.                   |
-| 2026-08-05 | Use explicit content dates in frontmatter            | File mtimes are unstable in deployments; frontmatter now drives sorting, structured metadata, and sitemap `lastModified`.                          |
-| 2026-08-05 | Pull Playwright/axe setup into Phase 4               | Keyboard, focus, reduced-motion, filter, chat-shell, and contrast behavior had to be verified before declaring the interaction phase complete.     |
-| 2026-08-05 | Lighten `text-muted` to `#A8B2C2`                    | Axe measured only 4.01:1 on elevated cards; the new token exceeds WCAG AA while preserving the Nord hierarchy.                                     |
-| 2026-08-05 | Fail closed when Upstash times out                   | SDK timeouts are permissive by default; timeout results are converted to 503 so missing rate-limit state never silently permits requests.          |
-| 2026-08-05 | Lazy-load the streaming chat client                  | The accessible shell remains eager, while the SSE parser and request/history logic load only after the visitor submits the first message.          |
-| 2026-08-05 | Derive the OG image from the real homepage           | A 1200×630 browser render preserves the actual Nord identity and avoids a social preview that diverges from the deployed interface.                |
-| 2026-08-05 | Hash inline JSON-LD and verify after every build     | Structured data must remain crawlable without permitting arbitrary inline scripts; generated HTML hashes are checked against `vercel.json`.        |
-| 2026-08-05 | Use Astro `getSecret()` inside API routes            | Astro recommends adapter-provided runtime secret access; it also supports local `.env` files without embedding secrets into client bundles.        |
+| Date       | Decision                                             | Reason                                                                                                                                                 |
+| ---------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-08-05 | Use a root-level `MIGRATION_PLAN.md`                 | `docs/` is ignored; the tracker must be versioned.                                                                                                     |
+| 2026-08-05 | Checkpoint the current dirty branch before isolation | Existing case-study work must be preserved before creating a migration worktree.                                                                       |
+| 2026-08-05 | Temporarily override Next's PostCSS and Sharp        | New advisories remained after Next 15.5.22; overrides avoid a second framework migration to Next 16 before Astro and are verified by a full build.     |
+| 2026-08-05 | Keep legacy Next source temporarily but exclude it   | Old components remain as a parity reference while Astro builds only the new source; they will be deleted after parity.                                 |
+| 2026-08-05 | Override `path-to-regexp` to 6.3.0                   | The Vercel adapter resolved vulnerable 6.1.0 transitively; patched compatible 6.x passes the complete adapter build.                                   |
+| 2026-08-05 | Add Vitest in Phase 3 rather than Phase 7            | Content behavior was implemented test-first; Phase 7 will expand the suite and CI instead of adding tests after production code.                       |
+| 2026-08-05 | Use explicit content dates in frontmatter            | File mtimes are unstable in deployments; frontmatter now drives sorting, structured metadata, and sitemap `lastModified`.                              |
+| 2026-08-05 | Pull Playwright/axe setup into Phase 4               | Keyboard, focus, reduced-motion, filter, chat-shell, and contrast behavior had to be verified before declaring the interaction phase complete.         |
+| 2026-08-05 | Lighten `text-muted` to `#A8B2C2`                    | Axe measured only 4.01:1 on elevated cards; the new token exceeds WCAG AA while preserving the Nord hierarchy.                                         |
+| 2026-08-05 | Fail closed when Upstash times out                   | SDK timeouts are permissive by default; timeout results are converted to 503 so missing rate-limit state never silently permits requests.              |
+| 2026-08-05 | Lazy-load the streaming chat client                  | The accessible shell remains eager, while the SSE parser and request/history logic load only after the visitor submits the first message.              |
+| 2026-08-05 | Derive the OG image from the real homepage           | A 1200×630 browser render preserves the actual Nord identity and avoids a social preview that diverges from the deployed interface.                    |
+| 2026-08-05 | Hash inline JSON-LD and verify after every build     | Structured data must remain crawlable without permitting arbitrary inline scripts; generated HTML hashes are checked against `vercel.json`.            |
+| 2026-08-05 | Use Astro `getSecret()` inside API routes            | Astro recommends adapter-provided runtime secret access; it also supports local `.env` files without embedding secrets into client bundles.            |
+| 2026-08-05 | Scope the Vercel path-regexp override                | A global override broke LHCI's Express server; only `@vercel/routing-utils` needs 6.3.0, while Express and `serve` retain compatible patched versions. |
+| 2026-08-05 | Optimize the profile through `astro:assets`          | The 400×400 JPEG cost 96.5 kB for a 78×78 render; the generated 80×80 WebP transfers about 1.3 kB with no visual redesign.                             |
+| 2026-08-05 | Gate explicit targets instead of LH recommended set  | The plan fixes category/CLS budgets; advisory audits remain visible, while image findings were remediated rather than hidden behind the preset.        |
 
 ## Progress log
 
@@ -470,3 +488,14 @@ Pending.
 - Verified metadata, robots/sitemap preservation, clean production dependencies,
   and absence of legacy framework markers in generated output.
 - Started Phase 7 CI, coverage, link, bundle, audit, Lighthouse, and visual gates.
+
+### 2026-08-05 — Phase 7 completed
+
+- Enforced coverage, CSP, internal-link, bundle, legacy-output, full audit,
+  Playwright/axe, and Lighthouse gates locally and in GitHub Actions.
+- Added deterministic full-page desktop/mobile visual baselines and exercised
+  every route plus success, error, keyboard, reduced-motion, and metadata flows.
+- Optimized the profile image and verified three consistent 99/100/100 mobile
+  Lighthouse runs with CLS well below the 0.05 budget.
+- Started Phase 8 Vercel Preview, production cutover, smoke test, and rollback
+  evidence work.
