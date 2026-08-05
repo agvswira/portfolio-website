@@ -31,9 +31,7 @@ export default function Reveal({
       const reduced = prefersReducedMotion();
 
       // Reduced motion: just fade, no translate
-      const fromVars = reduced
-        ? { opacity: 0 }
-        : { opacity: 0, y: direction === "up" ? 32 : 0 };
+      const fromVars = reduced ? { opacity: 0 } : { opacity: 0, y: direction === "up" ? 32 : 0 };
 
       const toVars = {
         opacity: 1,

@@ -50,10 +50,7 @@ export async function POST(req: NextRequest) {
       code: "CONTACT_SERVICE_UNAVAILABLE",
       timestamp: new Date().toISOString(),
     });
-    return NextResponse.json(
-      { error: "Form kontak sedang tidak tersedia." },
-      { status: 503 }
-    );
+    return NextResponse.json({ error: "Form kontak sedang tidak tersedia." }, { status: 503 });
   }
 
   try {

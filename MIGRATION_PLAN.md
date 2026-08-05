@@ -2,17 +2,17 @@
 
 ## Migration status
 
-| Field | Value |
-| --- | --- |
-| Overall status | In progress |
-| Current phase | Phase 1 — Next.js baseline hardening |
-| Source branch | `content/case-study-foundation` |
-| Baseline commit | `bdbb71824c4d32faaa152c6b6b5de05bc66c2981` |
-| Checkpoint commit | `03e9168` |
-| Migration branch | `migration/astro` |
-| Migration worktree | `.worktrees/migration-astro` |
-| Target platform | Astro 7.1.x on Vercel |
-| Last updated | 2026-08-05 |
+| Field              | Value                                      |
+| ------------------ | ------------------------------------------ |
+| Overall status     | In progress                                |
+| Current phase      | Phase 2 — Astro foundation                 |
+| Source branch      | `content/case-study-foundation`            |
+| Baseline commit    | `bdbb71824c4d32faaa152c6b6b5de05bc66c2981` |
+| Checkpoint commit  | `03e9168`                                  |
+| Migration branch   | `migration/astro`                          |
+| Migration worktree | `.worktrees/migration-astro`               |
+| Target platform    | Astro 7.1.x on Vercel                      |
+| Last updated       | 2026-08-05                                 |
 
 This file is the source of truth for the migration. A phase can only be marked
 `Completed` after its exit criteria have been run and their actual results have
@@ -74,17 +74,17 @@ same phase commit.
 
 ## Phase tracker
 
-| Phase | Status | Exit evidence |
-| --- | --- | --- |
-| 0. Tracker and checkpoint | Completed | Checkpoint `03e9168`; lint, type-check, and build passed |
-| 1. Next.js baseline hardening | In Progress | Pending |
-| 2. Astro foundation | Pending | Pending |
-| 3. Content and static pages | Pending | Pending |
-| 4. Interactions, motion, and accessibility | Pending | Pending |
-| 5. APIs, rate limiting, and security | Pending | Pending |
-| 6. SEO, headers, cleanup, and documentation | Pending | Pending |
-| 7. Quality and performance gates | Pending | Pending |
-| 8. Preview, cutover, and closeout | Pending | Pending |
+| Phase                                       | Status      | Exit evidence                                            |
+| ------------------------------------------- | ----------- | -------------------------------------------------------- |
+| 0. Tracker and checkpoint                   | Completed   | Checkpoint `03e9168`; lint, type-check, and build passed |
+| 1. Next.js baseline hardening               | Completed   | All gates passed; production audit reports 0 findings    |
+| 2. Astro foundation                         | In Progress | Pending                                                  |
+| 3. Content and static pages                 | Pending     | Pending                                                  |
+| 4. Interactions, motion, and accessibility  | Pending     | Pending                                                  |
+| 5. APIs, rate limiting, and security        | Pending     | Pending                                                  |
+| 6. SEO, headers, cleanup, and documentation | Pending     | Pending                                                  |
+| 7. Quality and performance gates            | Pending     | Pending                                                  |
+| 8. Preview, cutover, and closeout           | Pending     | Pending                                                  |
 
 ## Phase 0 — Tracker and checkpoint
 
@@ -134,7 +134,14 @@ same phase commit.
 
 ### Evidence
 
-Pending.
+- Upgraded `next` and `eslint-config-next` from 15.5.19 to 15.5.22.
+- Added Node `>=22.12.0`, `npm run typecheck`, and patched dependency
+  resolutions for `js-yaml`, PostCSS, and Sharp.
+- `npm run format:check`: passed after formatting the 14 reported files.
+- `npm run lint`: passed.
+- `npm run typecheck`: passed.
+- `npm run build`: passed and generated all 15 routes on Next.js 15.5.22.
+- `npm audit --omit=dev --audit-level=high`: passed with 0 vulnerabilities.
 
 ## Phase 2 — Astro foundation
 
@@ -309,10 +316,11 @@ Pending.
 
 ## Decision log
 
-| Date | Decision | Reason |
-| --- | --- | --- |
-| 2026-08-05 | Use a root-level `MIGRATION_PLAN.md` | `docs/` is ignored; the tracker must be versioned. |
-| 2026-08-05 | Checkpoint the current dirty branch before isolation | Existing case-study work must be preserved before creating a migration worktree. |
+| Date       | Decision                                             | Reason                                                                                                                                             |
+| ---------- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-05 | Use a root-level `MIGRATION_PLAN.md`                 | `docs/` is ignored; the tracker must be versioned.                                                                                                 |
+| 2026-08-05 | Checkpoint the current dirty branch before isolation | Existing case-study work must be preserved before creating a migration worktree.                                                                   |
+| 2026-08-05 | Temporarily override Next's PostCSS and Sharp        | New advisories remained after Next 15.5.22; overrides avoid a second framework migration to Next 16 before Astro and are verified by a full build. |
 
 ## Progress log
 
@@ -330,3 +338,12 @@ Pending.
 - Re-ran lint, TypeScript, and the production build successfully in the
   isolated workspace.
 - Started Phase 1 baseline hardening; dependency audit remediation is pending.
+
+### 2026-08-05 — Phase 1 completed
+
+- Upgraded the temporary Next.js baseline and patched all production
+  dependency findings without moving to Next 16.
+- Added deterministic engine/type-check configuration and normalized Prettier
+  formatting.
+- Verified format, lint, TypeScript, production build, and production audit.
+- Started Phase 2 Astro foundation work.

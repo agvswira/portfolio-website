@@ -19,10 +19,7 @@ export default function Badge({ children, variant = "frost", className = "" }: B
       <span
         className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${variantClasses.available} ${className}`}
       >
-        <span
-          className="w-1.5 h-1.5 rounded-full bg-frost animate-pulse-slow"
-          aria-hidden="true"
-        />
+        <span className="w-1.5 h-1.5 rounded-full bg-frost animate-pulse-slow" aria-hidden="true" />
         {children}
       </span>
     );

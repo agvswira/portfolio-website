@@ -62,26 +62,38 @@ export default function HeroScene({ children, showHorizon = true }: HeroScenePro
         0
       );
       // Change far mountain color to match background
-      tl.to("#far-mountain-path", {
-        attr: { fill: "#242933" },
-        ease: "none"
-      }, 0);
+      tl.to(
+        "#far-mountain-path",
+        {
+          attr: { fill: "#242933" },
+          ease: "none",
+        },
+        0
+      );
 
       // Mid mountain — medium speed
       tl.to(mtMidRef.current, { y: "-35%", ease: "none" }, 0);
       // Change mid mountain color to match background
-      tl.to("#mid-mountain-path", {
-        attr: { fill: "#242933" },
-        ease: "none"
-      }, 0);
+      tl.to(
+        "#mid-mountain-path",
+        {
+          attr: { fill: "#242933" },
+          ease: "none",
+        },
+        0
+      );
 
       // Near mountain — fast, sweeps up and out
       tl.to(mtNearRef.current, { y: "-70%", opacity: 0.4, ease: "none" }, 0);
       // Change near mountain color to match background
-      tl.to("#near-mountain-path", {
-        attr: { fill: "#242933" },
-        ease: "none"
-      }, 0);
+      tl.to(
+        "#near-mountain-path",
+        {
+          attr: { fill: "#242933" },
+          ease: "none",
+        },
+        0
+      );
 
       // Content — rise + fade
       tl.to(contentRef.current, { y: "-20%", opacity: 0, ease: "none" }, 0);

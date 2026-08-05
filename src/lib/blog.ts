@@ -25,9 +25,7 @@ function calcReadingTime(content: string): number {
 export function getAllPosts(): PostMeta[] {
   if (!fs.existsSync(BLOG_DIR)) return [];
 
-  const files = fs
-    .readdirSync(BLOG_DIR)
-    .filter((f) => f.endsWith(".mdx") || f.endsWith(".md"));
+  const files = fs.readdirSync(BLOG_DIR).filter((f) => f.endsWith(".mdx") || f.endsWith(".md"));
 
   const posts = files.map((filename) => {
     const slug = filename.replace(/\.(mdx|md)$/, "");

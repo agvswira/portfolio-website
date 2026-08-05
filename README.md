@@ -6,15 +6,15 @@ The design follows a clean, minimal aesthetic inspired by the Nord color palette
 
 ## Tech Stack
 
-| Category       | Technology                                      |
-|----------------|-------------------------------------------------|
-| Framework      | Next.js 15 (App Router)                         |
-| Language       | TypeScript                                      |
-| Styling        | Tailwind CSS                                    |
-| Animation      | GSAP ScrollTrigger, Framer Motion               |
-| AI Integration | OpenAI-compatible API (streaming SSE)           |
-| Email          | Resend API                                      |
-| Blog           | MDX with syntax highlighting                    |
+| Category       | Technology                            |
+| -------------- | ------------------------------------- |
+| Framework      | Next.js 15 (App Router)               |
+| Language       | TypeScript                            |
+| Styling        | Tailwind CSS                          |
+| Animation      | GSAP ScrollTrigger, Framer Motion     |
+| AI Integration | OpenAI-compatible API (streaming SSE) |
+| Email          | Resend API                            |
+| Blog           | MDX with syntax highlighting          |
 
 ## Live
 

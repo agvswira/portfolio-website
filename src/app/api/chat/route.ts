@@ -11,7 +11,10 @@ export async function POST(req: NextRequest) {
   // Rate limit: 20 req/min per IP
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
   if (!rateLimit(ip, 20, 60_000)) {
-    return NextResponse.json({ error: "Terlalu banyak permintaan. Coba lagi nanti." }, { status: 429 });
+    return NextResponse.json(
+      { error: "Terlalu banyak permintaan. Coba lagi nanti." },
+      { status: 429 }
+    );
   }
 
   let body: { messages?: unknown };
@@ -45,7 +48,8 @@ export async function POST(req: NextRequest) {
 
   if (!apiKey) {
     // Fallback response when no API key configured
-    const fallback = "Maaf, chatbot sedang tidak tersedia. Silakan hubungi saya langsung via email.";
+    const fallback =
+      "Maaf, chatbot sedang tidak tersedia. Silakan hubungi saya langsung via email.";
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       start(controller) {

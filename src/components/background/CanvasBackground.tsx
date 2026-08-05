@@ -45,8 +45,6 @@ export default function CanvasBackground() {
     return t * (2 - t);
   };
 
-
-
   // Initialize particles
   const initParticles = (count: number) => {
     const particles: Particle[] = [];
@@ -81,8 +79,10 @@ export default function CanvasBackground() {
     if (!canvas) return;
 
     // Ensure we have valid dimensions
-    const width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
-    const height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+    const width =
+      window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+    const height =
+      window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 
     // Only update if dimensions have changed
     if (canvas.width !== width || canvas.height !== height) {
@@ -169,9 +169,10 @@ export default function CanvasBackground() {
 
     // Calculate scroll progress through hero section
     // Ensure we don't divide by zero
-    const scrollProgress = heroHeightRef.current > 0
-      ? Math.max(0, Math.min(1, scrollYRef.current / heroHeightRef.current))
-      : 0;
+    const scrollProgress =
+      heroHeightRef.current > 0
+        ? Math.max(0, Math.min(1, scrollYRef.current / heroHeightRef.current))
+        : 0;
 
     // Apply easing to scroll progress for smoother transition
     const easedProgress = easeInOutCubic(scrollProgress);
@@ -251,7 +252,7 @@ export default function CanvasBackground() {
       if (heroHeightRef.current === 0) {
         timer = setTimeout(updateHeroHeight, 100);
         // Also try again after all assets are loaded
-        window.addEventListener('load', updateHeroHeight);
+        window.addEventListener("load", updateHeroHeight);
       }
 
       // Initialize particles with dense count (reduce for low-end devices)
@@ -289,7 +290,7 @@ export default function CanvasBackground() {
         document.removeEventListener("visibilitychange", handleVisibilityChange);
         window.removeEventListener("blur", handleBlur);
         window.removeEventListener("focus", handleFocus);
-        window.removeEventListener('load', updateHeroHeight);
+        window.removeEventListener("load", updateHeroHeight);
         if (timer) clearTimeout(timer);
         if (resizeTimeout) clearTimeout(resizeTimeout);
         cancelAnimationFrame(animationFrameRef.current);
@@ -304,8 +305,6 @@ export default function CanvasBackground() {
       cancelAnimationFrame(initTimeout);
     };
   }, [animate]);
-
-
 
   return (
     <canvas

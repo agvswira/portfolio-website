@@ -31,9 +31,7 @@ export default function GlobalError({
           textAlign: "center",
         }}
       >
-        <h2 style={{ fontSize: "1.25rem", fontWeight: 600 }}>
-          Terjadi kesalahan
-        </h2>
+        <h2 style={{ fontSize: "1.25rem", fontWeight: 600 }}>Terjadi kesalahan</h2>
         <p
           style={{
             fontFamily: "monospace",
