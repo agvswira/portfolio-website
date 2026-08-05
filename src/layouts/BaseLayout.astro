@@ -1,7 +1,7 @@
 ---
 import "@fontsource-variable/geist-mono";
 import "@fontsource-variable/sora";
-import "../app/globals.css";
+import "../styles/globals.css";
 
 import { PERSONAL, SITE } from "@/lib/constants";
 
@@ -10,6 +10,12 @@ interface Props {
   description?: string;
   canonicalPath?: string;
   noindex?: boolean;
+  image?: string;
+  imageAlt?: string;
+  ogType?: "website" | "article";
+  publishedTime?: string;
+  modifiedTime?: string;
+  structuredData?: Record<string, unknown> | Array<Record<string, unknown>>;
 }
 
 const {
@@ -17,18 +23,34 @@ const {
   description = SITE.description,
   canonicalPath = Astro.url.pathname,
   noindex = false,
+  image = SITE.ogImage,
+  imageAlt = `${PERSONAL.name} — ${PERSONAL.role}`,
+  ogType = "website",
+  publishedTime,
+  modifiedTime,
+  structuredData,
 } = Astro.props;
 const canonical = new URL(canonicalPath, SITE.url);
+const socialImage = new URL(image, SITE.url);
 const pageTitle = title === SITE.title ? title : `${title} | ${PERSONAL.name}`;
-const jsonLd = {
+const personJsonLd = {
   "@context": "https://schema.org",
   "@type": "Person",
-  name: PERSONAL.name,
+  name: PERSONAL.fullName,
+  alternateName: PERSONAL.name,
   url: SITE.url,
+  image: new URL("/images/profile.jpg", SITE.url).href,
   jobTitle: PERSONAL.role,
+  homeLocation: { "@type": "Place", name: PERSONAL.location },
   description: SITE.description,
   sameAs: [PERSONAL.github, PERSONAL.linkedin, PERSONAL.instagram],
 };
+const pageStructuredData = structuredData
+  ? Array.isArray(structuredData)
+    ? structuredData
+    : [structuredData]
+  : [];
+const jsonLd = JSON.stringify([personJsonLd, ...pageStructuredData]).replace(/</g, "\\u003c");
 ---
 
 <!doctype html>
@@ -42,8 +64,25 @@ const jsonLd = {
     <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
     <link rel="canonical" href={canonical} />
     <link rel="icon" href="/favicon.ico" sizes="any" />
+    <meta property="og:locale" content="id_ID" />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={socialImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={imageAlt} />
+    {publishedTime && <meta property="article:published_time" content={publishedTime} />}
+    {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImage} />
+    <meta name="twitter:image:alt" content={imageAlt} />
     <title>{pageTitle}</title>
-    <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />
+    <script type="application/ld+json" is:inline set:html={jsonLd} />
   </head>
   <body>
     <a href="#main" class="skip-link">Lewati ke konten</a>

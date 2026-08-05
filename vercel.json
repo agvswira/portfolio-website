@@ -1,0 +1,27 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'sha256-VPAURX2+kmtxQFGXPqKQ2MfE9HLnxQssn5EiuXdMBV8=' 'sha256-14mM1ZzTQGJ4K6LvITL3DoNNHvoLW4x3g4DZsRXQRnI=' 'sha256-LBLRbwFM0K5exbuLxE4tX9oQikp3MInIzAA6poTLfeQ=' 'sha256-UKJrr52QjFAaCBIutwXYqml5S3CuSl0Nf9n1dt/KpTE=' 'sha256-5PbjsjPS+EEDu3qlFOMggsgXkYqyW03I7tNQ/UyC6o4=' 'sha256-N5vBAHq95nbhiOvx3lEmUM5MjPFvcIlLe/QtrY7nM5w='; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; media-src 'none'; worker-src 'self'; manifest-src 'self'; upgrade-insecure-requests"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), geolocation=(), microphone=(), payment=(), usb=()"
+        },
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
+        { "key": "Cross-Origin-Resource-Policy", "value": "same-origin" },
+        { "key": "X-Frame-Options", "value": "DENY" }
+      ]
+    }
+  ]
+}

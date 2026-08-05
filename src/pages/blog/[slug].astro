@@ -2,6 +2,7 @@
 import { render } from "astro:content";
 
 import { formatIndonesianDate, getBlogPosts, type BlogEntry } from "@/lib/content";
+import { PERSONAL, SITE } from "@/lib/constants";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Badge from "@/ui/Badge.astro";
 import Footer from "@/ui/Footer.astro";
@@ -26,12 +27,30 @@ export async function getStaticPaths() {
 
 const { post, older, newer } = Astro.props;
 const { Content } = await render(post);
+const canonicalPath = `/blog/${post.slug}`;
+const canonicalUrl = new URL(canonicalPath, SITE.url).href;
+const blogJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  headline: post.data.title,
+  description: post.data.excerpt,
+  datePublished: post.data.date.toISOString(),
+  dateModified: (post.data.updatedDate ?? post.data.date).toISOString(),
+  inLanguage: "id-ID",
+  image: new URL(SITE.ogImage, SITE.url).href,
+  mainEntityOfPage: canonicalUrl,
+  author: { "@type": "Person", name: PERSONAL.fullName, url: SITE.url },
+};
 ---
 
 <BaseLayout
   title={post.data.title}
   description={post.data.excerpt}
-  canonicalPath={`/blog/${post.slug}`}
+  canonicalPath={canonicalPath}
+  ogType="article"
+  publishedTime={post.data.date.toISOString()}
+  modifiedTime={(post.data.updatedDate ?? post.data.date).toISOString()}
+  structuredData={blogJsonLd}
 >
   <div class="flex min-h-screen flex-col bg-bg-base">
     <main id="main" class="mx-auto w-full max-w-3xl flex-1 px-6 py-24">

@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { getSecret } from "astro:env/server";
 
 import { CHATBOT_SYSTEM_PROMPT } from "../../lib/constants";
 import { handleChatRequest } from "../../server/chat";
@@ -11,8 +12,8 @@ let rateLimit: RateLimitCheck | undefined;
 
 function getRateLimit(): RateLimitCheck {
   if (rateLimit) return rateLimit;
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const url = getSecret("UPSTASH_REDIS_REST_URL");
+  const token = getSecret("UPSTASH_REDIS_REST_TOKEN");
   rateLimit =
     url && token
       ? createUpstashRateLimit(url, token, 20)
@@ -23,19 +24,19 @@ function getRateLimit(): RateLimitCheck {
 }
 
 export const POST: APIRoute = ({ request }) => {
-  const apiKey = process.env.AI_API_KEY;
+  const apiKey = getSecret("AI_API_KEY");
   const streamChat = apiKey
     ? createAiStreamer({
         apiKey,
-        baseUrl: process.env.AI_BASE_URL ?? "https://api.openai.com/v1",
-        model: process.env.AI_MODEL ?? "gpt-4o-mini",
+        baseUrl: getSecret("AI_BASE_URL") ?? "https://api.openai.com/v1",
+        model: getSecret("AI_MODEL") ?? "gpt-4o-mini",
         systemPrompt: CHATBOT_SYSTEM_PROMPT,
       })
     : null;
 
   return handleChatRequest(request, {
-    salt: process.env.RATE_LIMIT_SALT ?? "",
-    environment: process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "development",
+    salt: getSecret("RATE_LIMIT_SALT") ?? "",
+    environment: getSecret("VERCEL_ENV") ?? getSecret("NODE_ENV") ?? "development",
     rateLimit: getRateLimit(),
     streamChat,
   });

@@ -5,7 +5,7 @@
 | Field              | Value                                      |
 | ------------------ | ------------------------------------------ |
 | Overall status     | In progress                                |
-| Current phase      | Phase 6 — SEO, headers, cleanup, and docs  |
+| Current phase      | Phase 7 — Quality and performance gates    |
 | Source branch      | `content/case-study-foundation`            |
 | Baseline commit    | `bdbb71824c4d32faaa152c6b6b5de05bc66c2981` |
 | Checkpoint commit  | `03e9168`                                  |
@@ -82,8 +82,8 @@ same phase commit.
 | 3. Content and static pages                 | Completed   | 10 content tests and full static Astro build passed      |
 | 4. Interactions, motion, and accessibility  | Completed   | Playwright/axe: 5 passed, 1 intentionally skipped        |
 | 5. APIs, rate limiting, and security        | Completed   | 46 unit/integration tests; 9 E2E passed, 1 skipped       |
-| 6. SEO, headers, cleanup, and documentation | In Progress | Pending                                                  |
-| 7. Quality and performance gates            | Pending     | Pending                                                  |
+| 6. SEO, headers, cleanup, and documentation | Completed   | SEO/CSP E2E passed; legacy dependency/output scans clean |
+| 7. Quality and performance gates            | In Progress | Pending                                                  |
 | 8. Preview, cutover, and closeout           | Pending     | Pending                                                  |
 
 ## Phase 0 — Tracker and checkpoint
@@ -300,7 +300,23 @@ same phase commit.
 
 ### Evidence
 
-Pending.
+- Added a visually inspected homepage-derived 1200×630 PNG plus canonical,
+  Open Graph, Twitter, and image metadata across every public HTML route.
+- Added `Person` JSON-LD globally, `BlogPosting` on article routes, and
+  `CreativeWork` on project routes using stable content dates.
+- Added hash-based CSP, HSTS, nosniff, referrer, permissions, COOP/CORP, frame,
+  form, base, object, and connect restrictions in `vercel.json`; a build-time
+  verifier checks every generated inline script hash.
+- Replaced `process.env` endpoint access with Astro server-only `getSecret()`
+  and documented isolated Preview/Production environment configuration.
+- Deleted the complete Next/React/Framer/Lenis/canvas source tree, duplicate
+  loaders, obsolete assets, Next config/output, and the last unused icon set;
+  CSS now lives under `src/styles`.
+- Updated the portfolio case study, README, `.env.example`, `.nvmrc`, local
+  setup, architecture, test, deployment, CSP maintenance, and rollback docs.
+- Fresh verification passed 47 Vitest tests, 13 Playwright tests with one
+  intentional skip, CSP-in-browser behavior, Astro/Vercel build, zero-findings
+  production audit, and clean legacy dependency/built-output scans.
 
 ## Phase 7 — Quality and performance gates
 
@@ -374,6 +390,9 @@ Pending.
 | 2026-08-05 | Lighten `text-muted` to `#A8B2C2`                    | Axe measured only 4.01:1 on elevated cards; the new token exceeds WCAG AA while preserving the Nord hierarchy.                                     |
 | 2026-08-05 | Fail closed when Upstash times out                   | SDK timeouts are permissive by default; timeout results are converted to 503 so missing rate-limit state never silently permits requests.          |
 | 2026-08-05 | Lazy-load the streaming chat client                  | The accessible shell remains eager, while the SSE parser and request/history logic load only after the visitor submits the first message.          |
+| 2026-08-05 | Derive the OG image from the real homepage           | A 1200×630 browser render preserves the actual Nord identity and avoids a social preview that diverges from the deployed interface.                |
+| 2026-08-05 | Hash inline JSON-LD and verify after every build     | Structured data must remain crawlable without permitting arbitrary inline scripts; generated HTML hashes are checked against `vercel.json`.        |
+| 2026-08-05 | Use Astro `getSecret()` inside API routes            | Astro recommends adapter-provided runtime secret access; it also supports local `.env` files without embedding secrets into client bundles.        |
 
 ## Progress log
 
@@ -440,3 +459,14 @@ Pending.
   mocked contact/chat journeys on desktop and mobile, and retained a zero-findings
   production dependency audit.
 - Started Phase 6 SEO, security headers, legacy cleanup, and documentation.
+
+### 2026-08-05 — Phase 6 completed
+
+- Added route-specific social/structured metadata and a real 1200×630 OG image.
+- Enforced and browser-tested a hash-based production CSP plus the complete
+  defensive header set, with deterministic generated-hash verification.
+- Removed all obsolete Next/React/motion/canvas code and output, moved global
+  styles to the Astro tree, and rewrote setup/deploy/rollback documentation.
+- Verified metadata, robots/sitemap preservation, clean production dependencies,
+  and absence of legacy framework markers in generated output.
+- Started Phase 7 CI, coverage, link, bundle, audit, Lighthouse, and visual gates.

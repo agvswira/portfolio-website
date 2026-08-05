@@ -2,6 +2,7 @@
 import { render } from "astro:content";
 
 import { getProjects, type ProjectEntry } from "@/lib/content";
+import { PERSONAL, SITE } from "@/lib/constants";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Badge from "@/ui/Badge.astro";
 import Footer from "@/ui/Footer.astro";
@@ -20,12 +21,31 @@ export async function getStaticPaths() {
 
 const { project } = Astro.props;
 const { Content } = await render(project);
+const canonicalPath = `/projects/${project.data.slug}`;
+const canonicalUrl = new URL(canonicalPath, SITE.url).href;
+const projectImage = project.data.coverImage ?? SITE.ogImage;
+const projectJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "CreativeWork",
+  name: project.data.title,
+  description: project.data.summary,
+  datePublished: project.data.publishedDate.toISOString(),
+  dateModified: project.data.updatedDate.toISOString(),
+  inLanguage: "id-ID",
+  url: canonicalUrl,
+  image: new URL(projectImage, SITE.url).href,
+  keywords: project.data.tags,
+  creator: { "@type": "Person", name: PERSONAL.fullName, url: SITE.url },
+};
 ---
 
 <BaseLayout
   title={project.data.title}
   description={project.data.summary}
-  canonicalPath={`/projects/${project.data.slug}`}
+  canonicalPath={canonicalPath}
+  image={projectImage}
+  imageAlt={`${project.data.title} — proyek ${PERSONAL.name}`}
+  structuredData={projectJsonLd}
 >
   <div class="flex min-h-screen flex-col bg-bg-base">
     <main id="main" class="mx-auto w-full max-w-4xl flex-1 px-6 py-24">

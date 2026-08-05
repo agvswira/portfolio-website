@@ -1,30 +1,31 @@
 ---
 title: "Portfolio Website"
 slug: "portfolio-website"
-summary: "Website pribadi tempat aku mengumpulkan proyek, tulisan, dan perjalanan belajar Informatika. Versi terbarunya sedang kurombak agar setiap proyek punya cerita dan bukti yang bisa dibaca lebih jauh."
+summary: "Website pribadi untuk proyek, tulisan, dan perjalanan belajar Informatika. Arsitekturnya dimigrasikan dari Next.js ke Astro agar halaman konten tetap statis, ringan, dan tidak membawa runtime React."
 problem: "Versi awal portfolio sudah terlihat lengkap, tetapi proyek hanya tampil sebagai kartu pendek. Pengunjung belum bisa melihat masalah yang kukerjakan, keputusan teknis, peranku, atau hasil akhirnya."
 role: "Solo designer dan developer — menyusun konten, design system, frontend, motion, endpoint server, serta deployment."
-timeline: "22 Juni 2026–sekarang — versi awal, audit, perbaikan masalah utama, lalu migrasi proyek ke case study MDX."
+timeline: "22 Juni 2026–sekarang — versi awal, audit menyeluruh, case study MDX, lalu migrasi bertahap dari Next.js ke Astro."
 publishedDate: "2026-08-05"
 updatedDate: "2026-08-05"
 stack:
-  - "Next.js 15"
-  - "React 19"
+  - "Astro 7"
   - "TypeScript"
   - "Tailwind CSS"
   - "GSAP ScrollTrigger"
-  - "MDX"
+  - "Astro Content Collections"
+  - "MDX + Zod"
+  - "Upstash Redis"
   - "Resend"
   - "OpenAI-compatible API"
 outcome:
-  - "Situs aktif di aguswira.dev dengan halaman proyek dan blog yang dibuat lewat static generation."
-  - "Tiga proyek sekarang memiliki route dan case study sendiri, bukan hanya kartu di homepage."
-  - "Build terakhir menghasilkan First Load JS 344 kB untuk route proyek dan 462 kB untuk homepage."
+  - "Semua halaman publik diprerender lewat Astro; hanya endpoint contact dan chat yang berjalan sebagai serverless function."
+  - "Runtime React, Framer Motion, Lenis, dan canvas lama dihapus; halaman blog dan proyek tidak mengirim JavaScript eager."
+  - "Homepage mengirim sekitar 46 kB JavaScript gzip dan streaming chat baru dimuat setelah pesan pertama dikirim."
 demoUrl: "https://aguswira.dev"
 repoUrl: "https://github.com/agvswira/portfolio-website"
 coverImage: null
 featured: false
-tags: ["Portfolio", "Next.js", "MDX", "Frontend"]
+tags: ["Portfolio", "Astro", "MDX", "Frontend"]
 evidence:
   - label: "Live website"
     url: "https://aguswira.dev"
@@ -63,7 +64,7 @@ Homepage juga diubah agar kartu proyek menampilkan outcome, bukan deskripsi
 generik. Pengunjung bisa membaca hasil utamanya dengan cepat, lalu membuka case
 study jika ingin melihat detail.
 
-Loader proyek berjalan di server dan memeriksa frontmatter sebelum build.
+Astro Content Collections memeriksa frontmatter sebelum build.
 Slug harus valid, field wajib tidak boleh kosong, dan body MDX tidak boleh
 menambahkan H1 sendiri. H1 dibuat oleh route detail. Guard terakhir ditambahkan
 karena halaman blog pernah menghasilkan dua H1 pada halaman yang sama.
@@ -77,38 +78,38 @@ menuliskannya sendiri.
 
 ```text
 src/content/
-  +-- blog/*.mdx ----------> blog loader --------> /blog/[slug]
+  +-- blog/*.mdx ----------> Content Collection --> /blog/[slug]
   |
-  +-- projects/*.mdx ------> project loader -----> /projects/[slug]
-                                  |
-                                  +--------------> homepage project cards
+  +-- projects/*.mdx ------> Content Collection --> /projects/[slug]
+                                     |
+                                     +------------> homepage project cards
 
-App Router
-  +-- Server Components: page, metadata, static params, MDX loading
-  +-- Client Components: filter, navigation, motion, canvas, chat UI
-  +-- Route Handlers:
-        +-- /api/chat -----> OpenAI-compatible streaming response
-        +-- /api/contact --> validation, rate limit, Resend
+Astro
+  +-- Static pages: layouts, sections, metadata, MDX rendering
+  +-- Vanilla TS: navigation, filters, contact, motion, chat shell
+  +-- Server endpoints:
+        +-- /api/chat -----> Upstash --> OpenAI-compatible SSE
+        +-- /api/contact --> Upstash --> validation --> Resend
 ```
 
-Next.js App Router menangani route dan rendering. File blog serta proyek dibaca
-dari filesystem pada server. Slug yang ditemukan kemudian diberikan ke
-`generateStaticParams`, sehingga halaman detail dapat dibuat saat production
-build.
+Astro menangani route, layout, dan prerendering. Content Collections membaca
+blog serta proyek dari filesystem, memvalidasi frontmatter dengan Zod, lalu
+menghasilkan static path. MDX dirender saat build dengan GitHub-flavored
+Markdown dan syntax highlighting. Homepage hanya memakai metadata kartu; body
+panjang tidak masuk ke JavaScript filter.
 
-`next-mdx-remote` merender isi MDX dengan dukungan GitHub-flavored Markdown,
-syntax highlighting, dan slug pada heading. Homepage hanya menerima metadata
-yang dibutuhkan kartu; body panjang tidak dikirim ke komponen filter proyek.
+Bagian visual tetap memakai Tailwind dengan warna Nord. GSAP ScrollTrigger
+hanya dimuat di homepage untuk reveal dan parallax, sedangkan marquee memakai
+CSS. Navigasi, filter, spotlight, contact, dan shell chat memakai vanilla
+TypeScript. Reduced motion menghentikan animasi berulang dan menonaktifkan
+transisi yang tidak diperlukan.
 
-Bagian visual memakai Tailwind dengan warna Nord, GSAP ScrollTrigger untuk
-reveal dan parallax, Lenis untuk smooth scroll, serta canvas untuk particle
-background. Preferensi reduced motion diperiksa di helper GSAP, canvas, dan
-CSS.
-
-Chat dan form kontak ditempatkan di Route Handler karena keduanya membutuhkan
-secret. Chat meneruskan response streaming dari provider OpenAI-compatible.
-Form kontak memvalidasi input, memakai honeypot dan rate limit, lalu mengirim
-email lewat Resend.
+Chat dan form kontak menjadi endpoint Astro on-demand karena membutuhkan
+secret. Keduanya dibatasi dengan sliding window Upstash yang memakai identitas
+IP ter-hash dan namespace environment. Chat meneruskan SSE dari provider
+OpenAI-compatible; contact memvalidasi input dan mengirim email lewat Resend.
+Request memiliki batas ukuran, timeout upstream, serta status error yang tidak
+membocorkan detail internal.
 
 ## Outcome
 
@@ -116,36 +117,38 @@ Website publik dapat dibuka di [aguswira.dev](https://aguswira.dev), sedangkan
 source-nya tersedia di
 [GitHub](https://github.com/agvswira/portfolio-website).
 
-Pada production build lokal terakhir, ketiga slug proyek dibuat sebagai static
-pages melalui `generateStaticParams`. Setiap halaman hasil build memiliki satu
-H1 dan lima section utama dengan urutan yang sama.
+Pada build kandidat migrasi, seluruh slug blog dan proyek dibuat sebagai static
+page. Setiap halaman memiliki satu H1, canonical URL, social metadata, serta
+structured data sesuai jenis kontennya.
 
-| Route              | Rendering | First Load JS |
-| ------------------ | --------- | ------------: |
-| `/`                | Static    |      `462 kB` |
-| `/blog/[slug]`     | SSG       |      `344 kB` |
-| `/projects/[slug]` | SSG       |      `344 kB` |
+| Route              | Rendering         | JavaScript eager (gzip) |
+| ------------------ | ----------------- | ----------------------: |
+| `/`                | Static            |           sekitar 46 kB |
+| `/blog/[slug]`     | Static            |                    0 kB |
+| `/projects/[slug]` | Static            |                    0 kB |
+| `/api/*`           | Vercel serverless |                       — |
 
-Angka tersebut berasal dari output `next build`, bukan Lighthouse. Pengukuran
-seperti LCP, FPS animasi, atau pengalaman di perangkat mobile masih perlu diuji
-di browser.
+Vitest mencakup schema, validasi API, rate-limit key, timeout, abort, provider,
+dan parser SSE. Playwright memeriksa keyboard flow, reduced motion, axe,
+contact, dan streaming chat di viewport desktop serta mobile tanpa memanggil
+provider live.
 
-Case study baru ini masih berada di branch lokal dan belum muncul di deployment
-publik.
+Kandidat Astro ini masih berada di branch migrasi. Cutover ke production baru
+dilakukan setelah audit performa, Preview Vercel, dan smoke test selesai.
 
 ## Lessons
 
-Perombakan ini belum selesai, jadi aku belum ingin menulis kesimpulan yang
-terlihat final. Sejauh ini, perubahan terbesar justru datang dari menata ulang
-isi proyek. Animasi dan visual bisa dibenahi setelah pembaca punya sesuatu yang
-memang layak dibaca.
+Audit ini mengubah cara aku menilai arsitektur portfolio. Framework dan animasi
+bukan tujuan; keduanya berguna hanya jika halaman tetap cepat, mudah
+dinavigasi, dan membantu pembaca menemukan bukti proyek.
 
-Masih ada pekerjaan teknis setelah konten: shared client bundle berada di
-`340 kB`, salah satu shared chunk berukuran `217 kB`, dan motion layer perlu
-diuji di browser nyata.
+Migrasi bertahap juga terasa lebih aman daripada rewrite sekaligus. Setiap fase
+punya parity check, test, build, dan commit sendiri. Sumber Next dipertahankan
+sebagai referensi sampai halaman, interaksi, dan API Astro terbukti setara, baru
+kemudian dihapus.
 
-Audit ini juga mengubah cara aku menilai arsitektur portfolio. Framework dan
-animasi bukan tujuan akhirnya; keduanya hanya berguna kalau halaman tetap cepat,
-mudah dinavigasi, dan membantu pembaca memahami bukti dari setiap proyek. Karena
-itu, perubahan berikutnya perlu dinilai dengan metrik performa, aksesibilitas,
-dan apakah isi case study tetap mudah ditemukan tanpa JavaScript.
+Pelajaran teknis terbesarnya adalah menjaga JavaScript sebagai pilihan per
+route. Halaman konten tidak memerlukannya, homepage hanya memuat interaksi yang
+terlihat, dan parser streaming chat masuk ke lazy chunk setelah pengguna benar-
+benar mengirim pesan. Hasil performa akhir tetap harus dibuktikan lewat
+Lighthouse dan Preview production-like, bukan hanya ukuran bundle lokal.

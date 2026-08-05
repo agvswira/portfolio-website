@@ -7,20 +7,12 @@ export default [
   ...tseslint.configs.recommended,
   ...astro.configs["flat/recommended"],
   {
-    ignores: [
-      "node_modules/**",
-      ".astro/**",
-      ".next/**",
-      ".vercel/**",
-      "dist/**",
-      "next-env.d.ts",
-      "src/app/**",
-      "src/components/**",
-      "src/lib/blog.ts",
-      "src/lib/data/skills.ts",
-      "src/lib/gsap.ts",
-      "src/lib/projects.ts",
-      "src/lib/rate-limit.ts",
-    ],
+    ignores: ["node_modules/**", ".astro/**", ".vercel/**", "dist/**"],
+  },
+  {
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      globals: { console: "readonly", process: "readonly" },
+    },
   },
 ];

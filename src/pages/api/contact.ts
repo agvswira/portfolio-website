@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { getSecret } from "astro:env/server";
 
 import { handleContactRequest } from "../../server/contact";
 import { createResendSender } from "../../server/providers";
@@ -10,8 +11,8 @@ let rateLimit: RateLimitCheck | undefined;
 
 function getRateLimit(): RateLimitCheck {
   if (rateLimit) return rateLimit;
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const url = getSecret("UPSTASH_REDIS_REST_URL");
+  const token = getSecret("UPSTASH_REDIS_REST_TOKEN");
   rateLimit =
     url && token
       ? createUpstashRateLimit(url, token, 5)
@@ -22,14 +23,14 @@ function getRateLimit(): RateLimitCheck {
 }
 
 export const POST: APIRoute = ({ request }) => {
-  const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.CONTACT_FROM_EMAIL;
-  const to = process.env.CONTACT_EMAIL;
+  const apiKey = getSecret("RESEND_API_KEY");
+  const from = getSecret("CONTACT_FROM_EMAIL");
+  const to = getSecret("CONTACT_EMAIL");
   const sendContact = apiKey && from && to ? createResendSender({ apiKey, from, to }) : null;
 
   return handleContactRequest(request, {
-    salt: process.env.RATE_LIMIT_SALT ?? "",
-    environment: process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "development",
+    salt: getSecret("RATE_LIMIT_SALT") ?? "",
+    environment: getSecret("VERCEL_ENV") ?? getSecret("NODE_ENV") ?? "development",
     rateLimit: getRateLimit(),
     sendContact,
   });

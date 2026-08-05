@@ -7,15 +7,5 @@
     }
   },
   "include": [".astro/types.d.ts", "src/**/*.astro", "src/**/*.ts"],
-  "exclude": [
-    "dist",
-    "node_modules",
-    "src/app",
-    "src/components",
-    "src/lib/blog.ts",
-    "src/lib/data/skills.ts",
-    "src/lib/gsap.ts",
-    "src/lib/projects.ts",
-    "src/lib/rate-limit.ts"
-  ]
+  "exclude": ["dist", "node_modules"]
 }

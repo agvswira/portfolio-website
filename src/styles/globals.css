@@ -2,9 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* =============================================
-   CSS Custom Properties — Nord Design System
-   ============================================= */
+/* Nord design tokens */
 :root {
   --font-sans: "Sora Variable";
   --font-mono: "Geist Mono Variable";
