@@ -1,0 +1,148 @@
+---
+title: "Portfolio Website"
+slug: "portfolio-website"
+summary: "Website pribadi tempat aku mengumpulkan proyek, tulisan, dan perjalanan belajar Informatika. Versi terbarunya sedang kurombak agar setiap proyek punya cerita dan bukti yang bisa dibaca lebih jauh."
+problem: "Versi awal portfolio sudah terlihat lengkap, tetapi proyek hanya tampil sebagai kartu pendek. Pengunjung belum bisa melihat masalah yang kukerjakan, keputusan teknis, peranku, atau hasil akhirnya."
+role: "Solo designer dan developer — menyusun konten, design system, frontend, motion, endpoint server, serta deployment."
+timeline: "22 Juni 2026–sekarang — versi awal, audit, perbaikan masalah utama, lalu migrasi proyek ke case study MDX."
+stack:
+  - "Next.js 15"
+  - "React 19"
+  - "TypeScript"
+  - "Tailwind CSS"
+  - "GSAP ScrollTrigger"
+  - "MDX"
+  - "Resend"
+  - "OpenAI-compatible API"
+outcome:
+  - "Situs aktif di aguswira.dev dengan halaman proyek dan blog yang dibuat lewat static generation."
+  - "Tiga proyek sekarang memiliki route dan case study sendiri, bukan hanya kartu di homepage."
+  - "Build terakhir menghasilkan First Load JS 344 kB untuk route proyek dan 462 kB untuk homepage."
+demoUrl: "https://aguswira.dev"
+repoUrl: "https://github.com/agvswira/portfolio-website"
+coverImage: "TODO: tambahkan screenshot homepage atau halaman case study dari deployment terbaru setelah branch konten dirilis."
+featured: false
+tags: ["Portfolio", "Next.js", "MDX", "Frontend"]
+evidence:
+  - label: "Live website"
+    url: "https://aguswira.dev"
+  - label: "Source repository"
+    url: "https://github.com/agvswira/portfolio-website"
+---
+
+## Problem
+
+Versi pertama website ini sebenarnya sudah punya banyak bagian: hero, profil,
+daftar skill, proyek, blog, form kontak, sampai AI chat. Dari luar kelihatan
+lengkap, tetapi bagian proyeknya belum banyak membantu.
+
+Setiap proyek hanya mendapat satu kartu dengan judul, deskripsi singkat, stack,
+dan link. Kalau seorang dosen, recruiter magang, atau pembaca teknis ingin tahu
+apa yang sebenarnya kukerjakan, mereka harus keluar dari website dan
+membongkar repository sendiri.
+
+Aku ingin portfolio ini lebih dari halaman perkenalan. Setiap proyek seharusnya
+bisa menjawab beberapa pertanyaan dasar: masalah apa yang dikerjakan, apa
+peranku, bagaimana arsitekturnya, hasil apa yang benar-benar ada, dan bagian
+mana yang masih kurang.
+
+## Approach
+
+Aku memulai perombakan dari konten, bukan tampilan. Data proyek yang sebelumnya
+berada di array TypeScript dipindahkan ke MDX. Frontmatter menyimpan informasi
+yang perlu tampil konsisten pada kartu dan header, sedangkan body MDX dipakai
+untuk cerita yang lebih panjang.
+
+Semua case study memakai urutan yang sama: Problem, Approach, Architecture,
+Outcome, lalu Lessons. Urutan ini bukan supaya setiap tulisan terdengar seragam,
+tetapi supaya pembaca tahu di mana harus mencari informasi.
+
+Homepage juga diubah agar kartu proyek menampilkan outcome, bukan deskripsi
+generik. Pengunjung bisa membaca hasil utamanya dengan cepat, lalu membuka case
+study jika ingin melihat detail.
+
+Loader proyek berjalan di server dan memeriksa frontmatter sebelum build.
+Slug harus valid, field wajib tidak boleh kosong, dan body MDX tidak boleh
+menambahkan H1 sendiri. H1 dibuat oleh route detail. Guard terakhir ditambahkan
+karena halaman blog pernah menghasilkan dua H1 pada halaman yang sama.
+
+Saat menulis isi proyek, aku memakai source code, riwayat Git, hasil test,
+deployment record, dan URL publik sebagai rujukan. Informasi yang hanya bisa
+datang dari pengalaman pribadi tetap dibiarkan kosong sampai aku bisa
+menuliskannya sendiri.
+
+## Architecture
+
+```text
+src/content/
+  +-- blog/*.mdx ----------> blog loader --------> /blog/[slug]
+  |
+  +-- projects/*.mdx ------> project loader -----> /projects/[slug]
+                                  |
+                                  +--------------> homepage project cards
+
+App Router
+  +-- Server Components: page, metadata, static params, MDX loading
+  +-- Client Components: filter, navigation, motion, canvas, chat UI
+  +-- Route Handlers:
+        +-- /api/chat -----> OpenAI-compatible streaming response
+        +-- /api/contact --> validation, rate limit, Resend
+```
+
+Next.js App Router menangani route dan rendering. File blog serta proyek dibaca
+dari filesystem pada server. Slug yang ditemukan kemudian diberikan ke
+`generateStaticParams`, sehingga halaman detail dapat dibuat saat production
+build.
+
+`next-mdx-remote` merender isi MDX dengan dukungan GitHub-flavored Markdown,
+syntax highlighting, dan slug pada heading. Homepage hanya menerima metadata
+yang dibutuhkan kartu; body panjang tidak dikirim ke komponen filter proyek.
+
+Bagian visual memakai Tailwind dengan warna Nord, GSAP ScrollTrigger untuk
+reveal dan parallax, Lenis untuk smooth scroll, serta canvas untuk particle
+background. Preferensi reduced motion diperiksa di helper GSAP, canvas, dan
+CSS.
+
+Chat dan form kontak ditempatkan di Route Handler karena keduanya membutuhkan
+secret. Chat meneruskan response streaming dari provider OpenAI-compatible.
+Form kontak memvalidasi input, memakai honeypot dan rate limit, lalu mengirim
+email lewat Resend.
+
+## Outcome
+
+Website publik dapat dibuka di [aguswira.dev](https://aguswira.dev), sedangkan
+source-nya tersedia di
+[GitHub](https://github.com/agvswira/portfolio-website).
+
+Pada production build lokal terakhir, ketiga slug proyek dibuat sebagai static
+pages melalui `generateStaticParams`. Setiap halaman hasil build memiliki satu
+H1 dan lima section utama dengan urutan yang sama.
+
+| Route              | Rendering | First Load JS |
+| ------------------ | --------- | ------------: |
+| `/`                | Static    |      `462 kB` |
+| `/blog/[slug]`     | SSG       |      `344 kB` |
+| `/projects/[slug]` | SSG       |      `344 kB` |
+
+Angka tersebut berasal dari output `next build`, bukan Lighthouse. Pengukuran
+seperti LCP, FPS animasi, atau pengalaman di perangkat mobile masih perlu diuji
+di browser.
+
+Case study baru ini masih berada di branch lokal dan belum muncul di deployment
+publik.
+
+## Lessons
+
+Perombakan ini belum selesai, jadi aku belum ingin menulis kesimpulan yang
+terlihat final. Sejauh ini, perubahan terbesar justru datang dari menata ulang
+isi proyek. Animasi dan visual bisa dibenahi setelah pembaca punya sesuatu yang
+memang layak dibaca.
+
+Masih ada pekerjaan teknis setelah konten: shared client bundle berada di
+`340 kB`, salah satu shared chunk berukuran `217 kB`, dan motion layer perlu
+diuji di browser nyata.
+
+TODO: setelah redesign dirilis, tulis apa yang paling berubah dari cara
+pandangmu, bagian mana yang ternyata terlalu rumit, dan indikator yang akan
+dipakai untuk menilai apakah portfolio ini benar-benar lebih berguna bagi
+pembaca.

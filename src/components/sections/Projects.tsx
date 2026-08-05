@@ -1,18 +1,24 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { FiGithub, FiExternalLink } from "react-icons/fi";
-import { PROJECTS, ALL_TAGS } from "@/lib/data/projects";
+import { isPublicUrl, type ProjectMeta } from "@/lib/project-types";
 import SectionWrapper from "@/components/ui/SectionWrapper";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import Badge from "@/components/ui/Badge";
 import RevealGroup from "@/components/motion/RevealGroup";
 
-export default function Projects() {
+interface ProjectsProps {
+  projects: ProjectMeta[];
+}
+
+export default function Projects({ projects }: ProjectsProps) {
   const [activeTag, setActiveTag] = useState("All");
+  const allTags = Array.from(new Set(projects.flatMap((project) => project.tags))).sort();
 
   const filtered =
-    activeTag === "All" ? PROJECTS : PROJECTS.filter((p) => p.tags.includes(activeTag));
+    activeTag === "All" ? projects : projects.filter((project) => project.tags.includes(activeTag));
 
   return (
     <SectionWrapper
@@ -23,7 +29,7 @@ export default function Projects() {
     >
       {/* Filter tabs */}
       <div className="flex flex-wrap justify-center gap-2 mb-10">
-        {["All", ...ALL_TAGS].map((tag) => (
+        {["All", ...allTags].map((tag) => (
           <button
             key={tag}
             onClick={() => setActiveTag(tag)}
@@ -43,21 +49,11 @@ export default function Projects() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map((project) => (
             <SpotlightCard
-              key={project.id}
+              key={project.slug}
               as="article"
               beam={project.featured}
               className="project-card flex flex-col p-5 gap-4"
             >
-              {/* Thumbnail placeholder */}
-              <div
-                className="w-full h-36 rounded-lg bg-bg-elevated/70 border border-nord-border/30 flex items-center justify-center"
-                aria-hidden="true"
-              >
-                <span className="text-text-muted/30 text-4xl font-bold select-none">
-                  {project.title.charAt(0)}
-                </span>
-              </div>
-
               <div className="flex-1 flex flex-col gap-2">
                 {/* Title + Featured badge */}
                 <div className="flex items-start justify-between gap-2">
@@ -71,9 +67,21 @@ export default function Projects() {
                   )}
                 </div>
 
-                <p className="text-text-muted text-xs leading-relaxed flex-1">
-                  {project.description}
-                </p>
+                <div className="flex-1">
+                  <p className="text-[10px] uppercase tracking-wider text-text-muted mb-2">
+                    Outcome
+                  </p>
+                  <ul className="space-y-2 text-text-muted text-xs leading-relaxed">
+                    {project.outcome.map((item) => (
+                      <li key={item} className="flex gap-2">
+                        <span aria-hidden="true" className="text-frost">
+                          →
+                        </span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
 
                 {/* Tags */}
                 <div className="flex flex-wrap gap-1.5 mt-1">
@@ -86,10 +94,16 @@ export default function Projects() {
               </div>
 
               {/* Links */}
-              <div className="flex items-center gap-3 pt-1 border-t border-nord-border/20">
-                {project.github && (
+              <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-nord-border/20">
+                <Link
+                  href={`/projects/${project.slug}`}
+                  className="text-xs font-medium text-frost hover:text-frost-cyan transition-colors"
+                >
+                  Case study →
+                </Link>
+                {isPublicUrl(project.repoUrl) && (
                   <a
-                    href={project.github}
+                    href={project.repoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`GitHub — ${project.title}`}
@@ -99,9 +113,9 @@ export default function Projects() {
                     GitHub
                   </a>
                 )}
-                {project.demo && (
+                {isPublicUrl(project.demoUrl) && (
                   <a
-                    href={project.demo}
+                    href={project.demoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`Live Demo — ${project.title}`}

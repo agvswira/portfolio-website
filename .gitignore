@@ -43,7 +43,9 @@ next-env.d.ts
 
 # Private docs (spec)
 docs/
-/AGENTS.md
+
+# Local git worktrees
+.worktrees/
 
 # Env
 .env.local

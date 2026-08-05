@@ -1,0 +1,140 @@
+---
+title: "Eling — WhatsApp Reminder Bot"
+slug: "eling-bot"
+summary: "Eling adalah bot WhatsApp yang kubuat untuk mencatat deadline, menyimpan link tugas, dan membantu pembagian kerja kelompok langsung dari chat. Prototype ini sempat kupakai bersama seorang teman selama beberapa minggu, tetapi sekarang tidak lagi dikembangkan."
+problem: "Deadline, link dokumen, dan pembagian tugas mudah tenggelam di percakapan grup. Eling mencoba membuat informasi itu bisa dicatat dan dicari lagi tanpa harus keluar dari WhatsApp."
+role: "Pengembang tunggal — membuat alur command dan AI, penyimpanan per chat, scheduler WITA, serta integrasi WhatsApp melalui Baileys."
+timeline: "16–25 Juni 2026 untuk pengembangan awal, kemudian dipakai secara terbatas selama beberapa minggu sebelum dihentikan."
+stack:
+  - "Node.js 18+"
+  - "TypeScript"
+  - "Baileys"
+  - "node-cron"
+  - "JSON"
+  - "OpenAI-compatible API"
+outcome:
+  - "Dipakai di satu grup privat bersama seorang teman selama beberapa minggu."
+  - "Command mode tetap berjalan tanpa API key; AI mode menerima bahasa natural melalui 11 function tools."
+  - "Proyek dihentikan ketika minatku bergeser ke Obsidian untuk note-taking dan membangun second brain."
+demoUrl: "Tidak tersedia — proyek tidak lagi dijalankan."
+repoUrl: "https://github.com/agvswira/eling-bot"
+coverImage: "Tidak tersedia — screenshot penggunaan tidak tersimpan."
+featured: false
+tags: ["WhatsApp Bot", "TypeScript", "Automation", "Discontinued"]
+evidence:
+  - label: "Source and documentation"
+    url: "https://github.com/agvswira/eling-bot#readme"
+---
+
+## Problem
+
+Eling berawal dari hal yang cukup dekat dengan kehidupan kuliah: informasi
+penting sering muncul di grup WhatsApp, lalu tenggelam di antara percakapan
+lain. Deadline, link Google Docs, pembagian bab laporan, dan revisi akhirnya
+harus dicari lagi dengan scroll atau bertanya ulang.
+
+Aku ingin mencoba menyimpan informasi itu dari tempat percakapannya terjadi.
+Nama “Eling” sendiri berarti “ingat”. Scope-nya hanya tiga jenis data:
+
+- deadline beserta mata kuliah, tanggal, jam, dan detail;
+- link tugas yang dapat diberi label dan dicari;
+- pembagian tugas kelompok untuk setiap anggota.
+
+Eling bukan bot publik. Aku menjalankannya di satu grup privat yang berisi aku
+dan seorang teman selama kurang lebih beberapa minggu.
+
+## Approach
+
+Ada dua cara memakai Eling. Command mode menggunakan perintah seperti
+`!deadline`, `!link`, dan `!grouptask`. Mode ini tidak memerlukan layanan AI dan
+tetap bekerja ketika API key tidak diisi.
+
+AI mode dipakai untuk pesan yang lebih natural. Di grup, bot baru merespons
+ketika di-mention atau ketika pesannya dibalas. Di chat pribadi, pesan dapat
+dikirim langsung.
+
+Model tidak menulis ke file sesukanya. Eling menyediakan 11 function tools
+untuk menambah, membaca, menyelesaikan, mencari, atau menghapus data. Hasil
+function call dikirim kembali ke model sebelum balasan akhir dibuat. Loop
+tool-nya dibatasi lima putaran, sedangkan riwayat percakapan disimpan maksimal
+12 pesan per chat di memory.
+
+Setiap grup memakai JID WhatsApp-nya sebagai scope. Karena itu, deadline dan
+link dari grup lain tidak ikut muncul ketika dicari. Penghapusan data juga
+dibatasi untuk orang yang menambahkannya atau nomor admin yang dikonfigurasi.
+
+Scheduler berjalan tiap menit dengan zona waktu WITA. Reminder sebelum deadline
+hanya dikirim sekali per hari mulai pukul 07.00. Setelah waktunya lewat, bot
+mengirim satu notifikasi terlambat dan mempertahankan item di daftar selama 24
+jam.
+
+## Architecture
+
+```text
+Pesan WhatsApp
+      |
+      v
+Baileys socket
+      |
+      v
+message handler
+      |
+      +-- awalan "!" ----------> command handler --------+
+      |                                               |
+      +-- mention / chat pribadi -> OpenAI-compatible  |
+                                  function calling ----+
+                                                      |
+                                                      v
+                         deadline / link / group-task stores
+                                                      |
+                                                      v
+                                               file JSON lokal
+
+node-cron --> baca seluruh deadline --> kirim reminder ke chat asal
+```
+
+`src/index.ts` menangani sesi Baileys, QR login, reconnect, pesan masuk, dan
+scheduler. `handlers/message.ts` membaca isi pesan lalu memilih command mode
+atau AI mode. Operasi deadline, link, dan tugas kelompok disimpan lewat modul
+terpisah di `src/storage`.
+
+Data disimpan dalam file JSON lokal. Saat menulis, Eling membuat temporary file
+lebih dulu lalu me-rename-nya menjadi file utama. Cara ini cukup untuk satu
+proses bot, tetapi belum dirancang untuk beberapa instance yang menulis data
+secara bersamaan.
+
+Base URL, API key, dan model AI dibaca dari environment. Provider
+OpenAI-compatible dapat diganti tanpa mengubah alur pesan, dan seluruh fitur
+command masih tersedia ketika AI dinonaktifkan.
+
+## Outcome
+
+Eling sempat dipakai di satu grup kecil selama beberapa minggu. Dalam pemakaian
+tersebut, bot menjadi tempat untuk mencatat deadline, menyimpan link, dan
+mencoba pembagian tugas lewat AI.
+
+Aku tidak menyimpan screenshot percakapannya. Karena grupnya privat dan botnya
+sudah tidak dijalankan, aku memilih tidak mengaktifkannya kembali hanya untuk
+membuat screenshot baru. Source code dan README menjadi dokumentasi yang masih
+tersisa.
+
+Proyek ini juga tidak memiliki automated test atau data penggunaan yang lebih
+rinci. Pemakaiannya berhenti pada lingkup kecil tersebut; Eling tidak pernah
+dijalankan sebagai bot produksi.
+
+## Lessons
+
+Setelah beberapa minggu, minatku bergeser dari reminder di WhatsApp ke cara
+menyusun catatan dan pengetahuan dalam jangka panjang. Sekarang aku lebih
+tertarik memakai dan mengeksplorasi Obsidian sebagai aplikasi note-taking dan
+second brain. Karena itu, pengembangan Eling tidak kulanjutkan.
+
+Ada juga beberapa batas teknis yang sudah terlihat dari prototype-nya. Reminder
+hanya berjalan selama proses bot aktif, data tersimpan di satu mesin, dan
+Baileys bukan client resmi WhatsApp. Menjadikannya layanan yang terus hidup
+berarti harus memikirkan backup, monitoring, privacy, dan perubahan protokol
+WhatsApp.
+
+Eling tetap berguna sebagai eksperimen kecil: aku sempat membawa ide dari
+source code ke percakapan nyata, memakainya sebentar, lalu berhenti ketika arah
+belajarku berubah.

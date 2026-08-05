@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
 
   // Honeypot check
   if (body.website) {
-    return NextResponse.json({ ok: true }); // Silently accept bots
+    return NextResponse.json({ error: "Request tidak valid." }, { status: 400 });
   }
 
   const name = String(body.name ?? "").trim();
@@ -46,9 +46,14 @@ export async function POST(req: NextRequest) {
   const contactEmail = process.env.CONTACT_EMAIL;
 
   if (!resendKey || !contactEmail) {
-    // Fallback: log to console when env vars not configured
-    console.log("[Contact Form]", { name, email, message: message.slice(0, 200) });
-    return NextResponse.json({ ok: true });
+    console.error("[Contact Form]", {
+      code: "CONTACT_SERVICE_UNAVAILABLE",
+      timestamp: new Date().toISOString(),
+    });
+    return NextResponse.json(
+      { error: "Form kontak sedang tidak tersedia." },
+      { status: 503 }
+    );
   }
 
   try {
@@ -68,13 +73,19 @@ export async function POST(req: NextRequest) {
     });
 
     if (!res.ok) {
-      const errorBody = await res.text();
-      console.error("[Resend API error]", res.status, errorBody);
-      throw new Error(`Resend error: ${res.status}`);
+      console.error("[Contact Form]", {
+        code: "CONTACT_PROVIDER_ERROR",
+        status: res.status,
+        timestamp: new Date().toISOString(),
+      });
+      return NextResponse.json({ error: "Gagal mengirim email." }, { status: 502 });
     }
-    return NextResponse.json({ ok: true });
-  } catch (err) {
-    console.error("[/api/contact]", err);
+    return NextResponse.json({ success: true });
+  } catch {
+    console.error("[Contact Form]", {
+      code: "CONTACT_NETWORK_ERROR",
+      timestamp: new Date().toISOString(),
+    });
     return NextResponse.json({ error: "Gagal mengirim email." }, { status: 502 });
   }
 }

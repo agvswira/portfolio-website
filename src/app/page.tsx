@@ -10,8 +10,11 @@ import BlogSection from "@/components/sections/BlogSection";
 import Contact from "@/components/sections/Contact";
 import Footer from "@/components/Footer";
 import ChatWidget from "@/components/chat/ChatWidget";
+import { getAllProjects } from "@/lib/projects";
 
 export default function Home() {
+  const projects = getAllProjects();
+
   return (
     <>
       {/* Background: clean Polar Night wash, z-0 */}
@@ -33,7 +36,7 @@ export default function Home() {
           <About />
 
           <Skills />
-          <Projects />
+          <Projects projects={projects} />
           <BlogSection />
           <Contact />
         </main>

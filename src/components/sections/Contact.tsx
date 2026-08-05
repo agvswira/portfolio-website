@@ -158,7 +158,14 @@ export default function Contact() {
               )}
               {state === "error" && (
                 <p className="text-sm text-aurora-red bg-aurora-red/10 border border-aurora-red/20 rounded-lg px-4 py-3">
-                  {errorMsg || "Gagal mengirim pesan. Coba lagi nanti."}
+                  {errorMsg || "Gagal mengirim pesan."} Silakan kirim email langsung ke{" "}
+                  <a
+                    href={`mailto:${PERSONAL.email}`}
+                    className="font-medium underline underline-offset-2 hover:text-text-primary"
+                  >
+                    {PERSONAL.email}
+                  </a>
+                  .
                 </p>
               )}
             </div>

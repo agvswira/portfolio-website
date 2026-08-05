@@ -1,0 +1,157 @@
+---
+title: "BOTPass"
+slug: "botpass"
+summary: "BOTPass adalah DApp check-in event di BOT Chain. Peserta mencatat kehadiran lewat wallet, lalu statusnya bisa diperiksa langsung dari contract tanpa meminta akses ke data panitia."
+problem: "Daftar hadir yang disimpan di spreadsheet atau platform tertutup hanya bisa dipercaya lewat pengelolanya. BOTPass mencoba membuat catatan check-in yang dapat diperiksa publik tanpa menyimpan nama, email, atau nomor telepon peserta."
+role: "Solo builder — menentukan use case dan alur produk, mengarahkan implementasi lewat vibe coding, lalu menguji serta men-deploy contract ke Testnet dan Mainnet."
+timeline: "25 Juli 2026–sekarang — dikembangkan untuk submission BOTChain Build Week Hackathon yang masih berlangsung."
+stack:
+  - "Solidity 0.8.20"
+  - "OpenZeppelin Contracts 5.0.2"
+  - "Hardhat"
+  - "ethers.js"
+  - "Vite"
+  - "Vanilla JavaScript"
+  - "HTML"
+  - "CSS"
+  - "MetaMask"
+outcome:
+  - "Frontend live di botpass.online dan contract aktif di BOT Chain Mainnet (Chain ID 677)."
+  - "Source contract Mainnet terverifikasi di BOTScan dan bisa dibaca langsung dari explorer."
+  - "107 test untuk contract, deployment guard, pemisahan jaringan, dan verification record berhasil dijalankan."
+demoUrl: "https://botpass.online/?event=1"
+repoUrl: "https://github.com/agvswira/botpass"
+coverImage: "https://botpass.online/assets/botpass-og.png"
+featured: true
+tags: ["Web3", "DApp", "Smart Contract", "Hackathon"]
+evidence:
+  - label: "Verified Mainnet contract"
+    url: "https://scan.botchain.ai/address/0xFd7A12779c69C705b8aFF1fe3409E45867d33133"
+  - label: "Hackathon guidebook"
+    url: "https://www.girlmeetstech.org/guidebook-build-week-hackathon"
+  - label: "Technical documentation"
+    url: "https://github.com/agvswira/botpass#readme"
+---
+
+## Problem
+
+Kalau daftar hadir disimpan di spreadsheet, orang lain hanya bisa percaya
+bahwa data di dalamnya benar. Peserta tidak punya bukti yang bisa diperiksa
+sendiri, sedangkan pihak luar tetap harus meminta akses ke panitia.
+
+BOTPass mengambil bagian paling kecil dari masalah itu: mencatat bahwa sebuah
+wallet melakukan check-in pada sebuah event. Catatannya disimpan di contract,
+jadi status kehadiran dan jumlah peserta dapat dibaca lagi dari jaringan
+publik. BOTPass tidak menyimpan nama, email, nomor telepon, atau NIK.
+
+Proyek ini kubuat untuk
+[BOTChain Build Week Hackathon](https://www.girlmeetstech.org/guidebook-build-week-hackathon).
+Guidebook-nya lebih menghargai satu fitur yang bekerja penuh daripada banyak
+fitur yang setengah jadi. Karena itu, scope BOTPass sengaja pendek: buat event,
+buka check-in, kirim transaksi kehadiran, lalu periksa hasilnya.
+
+## Approach
+
+BOTPass kubangun dengan vibe coding. Aku banyak memakai AI untuk menulis dan
+mengubah kodenya. Guidebook hackathon membolehkan cara kerja ini, termasuk jika
+sebagian besar implementasi dibuat lewat AI. Syaratnya: aplikasinya harus
+bekerja dan aku harus bisa menjelaskan apa yang dilakukan saat demo.
+
+Karena itu, aku tidak memakai jumlah baris yang kutulis manual sebagai ukuran.
+Yang kulihat adalah apakah tiga alur berikut benar-benar bekerja:
+
+| Peran         | Aksi utama                                  | Wallet | Gas   |
+| ------------- | ------------------------------------------- | ------ | ----- |
+| Penyelenggara | Membuat event dan membuka/menutup check-in  | Ya     | Ya    |
+| Peserta       | Check-in untuk wallet miliknya sendiri      | Ya     | Ya    |
+| Pemeriksa     | Membaca status kehadiran dan jumlah peserta | Tidak  | Tidak |
+
+Pemeriksa tidak perlu memasang wallet karena verifikasi hanya melakukan read
+call. Wallet dan gas baru diperlukan saat ada perubahan state, seperti membuat
+event atau check-in.
+
+Aturan satu-wallet-satu-check-in juga hidup di contract, bukan hanya di
+frontend. Kalau aturan ini ditaruh di JavaScript, orang masih bisa melewati UI
+dan memanggil contract secara langsung.
+
+Frontend membedakan beberapa keadaan gagal: jaringan salah, event belum ada,
+check-in masih tertutup, waktu event belum mulai atau sudah lewat, saldo BOT
+tidak cukup, transaksi ditolak, dan wallet sudah pernah check-in. Pengguna jadi
+tahu apa yang terjadi tanpa harus membaca error mentah dari RPC.
+
+## Architecture
+
+```text
+Browser
+  |
+  +-- read-only provider --------> BOT Chain RPC
+  |                                  |
+  |                                  v
+  |                             BOTPass contract
+  |                                  |
+  +-- MetaMask + signer -------------+
+                                     |
+                                     v
+                              state dan event log
+                                     |
+                                     v
+                                BOTScan
+```
+
+Contract ditulis dengan Solidity `0.8.20` dan memakai `Ownable2Step` dari
+OpenZeppelin Contracts `5.0.2`. Di dalamnya ada detail event, status check-in,
+relasi event–wallet, dan attendance count.
+
+Penyelenggara dapat membuat event serta membuka atau menutup check-in. Peserta
+hanya bisa mencatat wallet yang sedang memanggil contract. Getter terpisah
+menyediakan detail event, status sebuah wallet, dan jumlah kehadiran.
+
+Frontend-nya memakai HTML, CSS, vanilla JavaScript, ethers.js, dan Vite. Tidak
+ada backend atau database attendee. Provider read-only menangani pembacaan
+data, sedangkan signer hanya dibuat saat pengguna perlu mengirim transaksi.
+
+Untuk Mainnet, deployment script memeriksa Chain ID `677`, alamat deployer,
+saldo, gas estimate, source tree, dan artifact sebelum meminta konfirmasi.
+Setelah transaksi sukses, runtime bytecode pada alamat baru dibandingkan dengan
+artifact. Alamat contract juga tidak langsung masuk ke frontend produksi
+sebelum deployment record dan hash-nya cocok.
+
+## Outcome
+
+Contract Mainnet BOTPass berada di
+[`0xFd7…33133`](https://scan.botchain.ai/address/0xFd7A12779c69C705b8aFF1fe3409E45867d33133)
+pada Chain ID `677`. Source Solidity-nya sudah terverifikasi di BOTScan dengan
+compiler `0.8.20`, EVM `paris`, dan optimizer `200` runs.
+
+Frontend dapat dibuka di [botpass.online](https://botpass.online/?event=1),
+sedangkan source lengkapnya tersedia di
+[GitHub](https://github.com/agvswira/botpass).
+
+Suite Hardhat menghasilkan `107 passing`. Test-nya mencakup lifecycle event,
+otorisasi owner, batas waktu, check-in duplikat, getter kehadiran, pemisahan
+Testnet/Mainnet, deployment record, dan guard pada jalur deployment.
+
+Hackathon masih berlangsung, jadi belum ada hasil penjurian, status akhir
+submission, atau angka penggunaan yang layak ditulis sebagai outcome. Video
+demo dan X post juga akan ditambahkan setelah submission selesai.
+
+## Lessons
+
+Sejauh ini belum ada kegagalan besar atau satu keputusan teknis yang terasa
+paling sulit. Proses implementasinya memang banyak dibantu AI. Bagian yang
+tetap harus kupahami sendiri adalah batas sistem dan cara memastikan hasilnya
+benar-benar bekerja.
+
+BOTPass hanya membuktikan bahwa sebuah alamat wallet melakukan check-in yang
+diterima contract. Ia tidak membuktikan identitas dunia nyata, lokasi, atau
+kehadiran fisik pemilik wallet. Satu orang juga masih dapat membuat lebih dari
+satu wallet.
+
+Ada satu catatan teknis yang belum rapi. `deployments/677.json` masih mencatat
+`verificationStatus: "unverified"`, sedangkan BOTScan sekarang melaporkan
+contract sudah terverifikasi. Record lokal itu perlu diselaraskan agar kondisi
+repository sama dengan kondisi Mainnet.
+
+Bagian ini akan kuperbarui lagi setelah hackathon selesai. Untuk sekarang,
+kesimpulan yang bisa kutulis baru sebatas proses build dan verifikasi, bukan
+hasil kompetisi.
