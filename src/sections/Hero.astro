@@ -1,0 +1,92 @@
+---
+import { Icon } from "astro-icon/components";
+
+import { PERSONAL, SITE, SOCIAL_LINKS } from "@/lib/constants";
+
+const socialIcons: Record<string, string> = {
+  FiGithub: "simple-icons:github",
+  FiLinkedin: "simple-icons:linkedin",
+  FiInstagram: "simple-icons:instagram",
+  FaDiscord: "simple-icons:discord",
+  FiMail: "lucide:mail",
+};
+---
+
+<section id="hero" class="relative h-screen w-full overflow-hidden" aria-label="Hero">
+  <div aria-hidden="true" class="absolute inset-0 bg-bg-base" data-hero-sky></div>
+
+  <div
+    aria-hidden="true"
+    class="parallax-layer absolute inset-x-0 bottom-0 z-[1]"
+    data-mountain="far"
+  >
+    <svg viewBox="0 0 1440 480" preserveAspectRatio="xMidYMax slice" class="block w-full">
+      <path
+        d="M0,480 L0,320 Q120,260 200,280 Q320,310 440,240 Q520,190 600,200 Q700,215 780,180 Q860,150 960,170 Q1040,185 1120,160 Q1220,130 1320,150 Q1380,160 1440,145 L1440,480 Z"
+        fill="#3B4252"></path>
+    </svg>
+  </div>
+  <div
+    aria-hidden="true"
+    class="parallax-layer absolute inset-x-0 bottom-0 z-[2]"
+    data-mountain="mid"
+  >
+    <svg viewBox="0 0 1440 480" preserveAspectRatio="xMidYMax slice" class="block w-full">
+      <path
+        d="M0,480 L0,360 Q80,330 160,340 Q260,355 360,300 Q440,260 520,270 Q620,285 720,240 Q800,210 880,225 Q960,240 1040,210 Q1140,175 1240,195 Q1340,215 1440,190 L1440,480 Z"
+        fill="#434C5E"></path>
+    </svg>
+  </div>
+  <div
+    aria-hidden="true"
+    class="parallax-layer absolute inset-x-0 bottom-0 z-[3]"
+    data-mountain="near"
+  >
+    <svg viewBox="0 0 1440 480" preserveAspectRatio="xMidYMax slice" class="block w-full">
+      <path
+        d="M0,480 L0,400 Q100,375 200,385 Q300,395 400,355 Q480,325 560,335 Q660,350 760,310 Q840,280 920,295 Q1000,310 1080,280 Q1180,245 1280,265 Q1360,280 1440,260 L1440,480 Z"
+        fill="#4C566A"></path>
+    </svg>
+  </div>
+  <div aria-hidden="true" class="scene-seam z-[4]"></div>
+
+  <div class="absolute inset-0 z-[5] flex flex-col items-center justify-center" data-hero-content>
+    <div class="mx-auto flex w-full max-w-4xl flex-col items-center gap-5 px-6 text-center">
+      <h1 class="text-5xl font-semibold leading-[1.1] tracking-tight sm:text-6xl lg:text-7xl">
+        <span class="text-gradient">{SITE.name}</span>
+      </h1>
+      <p class="max-w-xl text-xl font-medium text-text-secondary sm:text-2xl">{PERSONAL.role}</p>
+      <p class="max-w-2xl text-base leading-relaxed text-text-muted sm:text-lg">{PERSONAL.bio}</p>
+      <div class="mt-2 flex flex-wrap items-center justify-center gap-3">
+        <a
+          href="#projects"
+          class="shimmer-btn inline-flex items-center justify-center rounded-lg bg-frost px-5 py-2.5 text-sm font-semibold text-bg-base transition-all duration-200 hover:-translate-y-0.5 hover:bg-frost-cyan hover:shadow-[0_6px_24px_rgba(136,192,208,0.35)]"
+          >View Projects</a
+        >
+        <a
+          href="#contact"
+          class="inline-flex items-center justify-center rounded-lg border border-frost/40 px-5 py-2.5 text-sm font-medium text-frost transition-all duration-200 hover:border-frost hover:bg-frost/10"
+          >Get in Touch</a
+        >
+      </div>
+      <div class="mt-1 flex items-center gap-4">
+        {
+          SOCIAL_LINKS.filter(({ label }) => label !== "Email").map(({ label, href, icon }) => (
+            <a
+              href={href}
+              aria-label={label}
+              rel="noopener noreferrer"
+              target="_blank"
+              class="p-1 text-text-muted transition-colors hover:text-frost"
+            >
+              <Icon name={socialIcons[icon]} size={20} aria-hidden="true" />
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+  <div aria-hidden="true" class="absolute bottom-4 left-1/2 z-[6] -translate-x-1/2 text-text-muted">
+    <Icon name="lucide:chevron-down" size={22} />
+  </div>
+</section>

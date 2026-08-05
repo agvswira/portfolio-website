@@ -1,13 +1,33 @@
 ---
+import { getBlogPosts, getProjects } from "@/lib/content";
+import About from "@/sections/About.astro";
+import BlogSection from "@/sections/BlogSection.astro";
+import Contact from "@/sections/Contact.astro";
+import Hero from "@/sections/Hero.astro";
+import Projects from "@/sections/Projects.astro";
+import Skills from "@/sections/Skills.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import Footer from "@/ui/Footer.astro";
+import Navbar from "@/ui/Navbar.astro";
+
+const [posts, projects] = await Promise.all([getBlogPosts(), getProjects()]);
 ---
 
 <BaseLayout>
-  <main id="main" class="grid min-h-screen place-items-center px-6 text-center">
-    <div>
-      <p class="eyebrow">Astro migration foundation</p>
-      <h1 class="mt-4 text-4xl font-semibold text-text-primary">Agus Wira</h1>
-      <p class="mt-4 text-text-secondary">Homepage sedang dipindahkan ke Astro.</p>
+  <div aria-hidden="true" class="pointer-events-none fixed inset-0 z-0 bg-bg-base">
+    <div
+      class="absolute inset-0 bg-[radial-gradient(ellipse_120%_80%_at_50%_0%,transparent_60%,rgba(0,0,0,0.18)_100%)]"
+    >
     </div>
+  </div>
+  <Navbar />
+  <main id="main" class="relative">
+    <Hero />
+    <About {posts} {projects} />
+    <Skills />
+    <Projects {projects} />
+    <BlogSection {posts} />
+    <Contact />
   </main>
+  <Footer />
 </BaseLayout>

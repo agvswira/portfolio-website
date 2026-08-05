@@ -1,11 +1,65 @@
 ---
+import { formatIndonesianDate, getBlogPosts } from "@/lib/content";
+import { PERSONAL } from "@/lib/constants";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import Badge from "@/ui/Badge.astro";
+import Footer from "@/ui/Footer.astro";
+
+const posts = await getBlogPosts();
 ---
 
-<BaseLayout title="Blog" description="Tulisan Agus Wira tentang teknologi dan perjalanan belajar.">
-  <main id="main" class="mx-auto min-h-screen max-w-5xl px-6 py-24">
-    <p class="eyebrow">Blog</p>
-    <h1 class="mt-4 text-4xl font-semibold">Tulisan</h1>
-    <p class="mt-4 text-text-secondary">Daftar tulisan sedang dipindahkan ke Astro.</p>
-  </main>
+<BaseLayout
+  title="Blog"
+  description={`Tulisan tentang perjalanan belajar, teknologi, dan eksperimen oleh ${PERSONAL.name}.`}
+>
+  <div class="flex min-h-screen flex-col bg-bg-base">
+    <main id="main" class="mx-auto w-full max-w-3xl flex-1 px-6 py-24">
+      <a
+        href="/"
+        class="mb-10 inline-flex items-center gap-2 text-sm text-text-muted transition-colors hover:text-frost"
+        >← Kembali ke Beranda</a
+      >
+      <header class="mb-14">
+        <p class="eyebrow mb-3">Blog</p>
+        <h1 class="mb-4 text-4xl font-semibold tracking-tight text-text-primary">Tulisan</h1>
+        <p class="text-lg leading-relaxed text-text-muted">
+          Catatan perjalanan, pemikiran, dan hal-hal yang sedang aku pelajari.
+        </p>
+      </header>
+      <ol class="flex flex-col gap-0" reversed>
+        {
+          posts.map((post) => (
+            <li>
+              <a
+                href={`/blog/${post.slug}`}
+                class="group flex flex-col gap-1 border-b border-nord-border/30 py-6 transition-colors hover:border-frost/20 sm:flex-row sm:items-baseline sm:gap-6"
+              >
+                <time
+                  datetime={post.data.date.toISOString()}
+                  class="w-36 flex-shrink-0 font-mono text-sm text-text-muted"
+                >
+                  {formatIndonesianDate(post.data.date)}
+                </time>
+                <div class="flex-1">
+                  <h2 class="mb-2 font-medium leading-snug text-text-primary transition-colors group-hover:text-frost">
+                    {post.data.title}
+                  </h2>
+                  <p class="mb-3 line-clamp-2 text-sm leading-relaxed text-text-muted">
+                    {post.data.excerpt}
+                  </p>
+                  <div class="flex flex-wrap items-center gap-2">
+                    {post.data.tags.map((tag) => (
+                      <Badge variant="tag">{tag}</Badge>
+                    ))}
+                    <span class="ml-auto text-xs text-text-muted">{post.readingTime} mnt baca</span>
+                  </div>
+                </div>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </main>
+    <Footer />
+  </div>
 </BaseLayout>

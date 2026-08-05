@@ -6,6 +6,8 @@
    CSS Custom Properties — Nord Design System
    ============================================= */
 :root {
+  --font-sans: "Sora Variable";
+  --font-mono: "Geist Mono Variable";
   --bg-base: #242933;
   --bg-surface: #2e3440;
   --bg-elevated: #3b4252;
@@ -322,6 +324,12 @@ body {
 .prose-dark ol {
   padding-left: 1.5rem;
   margin-bottom: 1.25rem;
+}
+.prose-dark ul {
+  list-style: disc;
+}
+.prose-dark ol {
+  list-style: decimal;
 }
 .prose-dark li {
   margin-bottom: 0.35rem;

@@ -2,17 +2,17 @@
 
 ## Migration status
 
-| Field              | Value                                      |
-| ------------------ | ------------------------------------------ |
-| Overall status     | In progress                                |
-| Current phase      | Phase 3 — Content and static pages         |
-| Source branch      | `content/case-study-foundation`            |
-| Baseline commit    | `bdbb71824c4d32faaa152c6b6b5de05bc66c2981` |
-| Checkpoint commit  | `03e9168`                                  |
-| Migration branch   | `migration/astro`                          |
-| Migration worktree | `.worktrees/migration-astro`               |
-| Target platform    | Astro 7.1.x on Vercel                      |
-| Last updated       | 2026-08-05                                 |
+| Field              | Value                                             |
+| ------------------ | ------------------------------------------------- |
+| Overall status     | In progress                                       |
+| Current phase      | Phase 4 — Interactions, motion, and accessibility |
+| Source branch      | `content/case-study-foundation`                   |
+| Baseline commit    | `bdbb71824c4d32faaa152c6b6b5de05bc66c2981`        |
+| Checkpoint commit  | `03e9168`                                         |
+| Migration branch   | `migration/astro`                                 |
+| Migration worktree | `.worktrees/migration-astro`                      |
+| Target platform    | Astro 7.1.x on Vercel                             |
+| Last updated       | 2026-08-05                                        |
 
 This file is the source of truth for the migration. A phase can only be marked
 `Completed` after its exit criteria have been run and their actual results have
@@ -79,8 +79,8 @@ same phase commit.
 | 0. Tracker and checkpoint                   | Completed   | Checkpoint `03e9168`; lint, type-check, and build passed |
 | 1. Next.js baseline hardening               | Completed   | All gates passed; production audit reports 0 findings    |
 | 2. Astro foundation                         | Completed   | Astro/Vercel build passed; no React/Next dependency      |
-| 3. Content and static pages                 | In Progress | Pending                                                  |
-| 4. Interactions, motion, and accessibility  | Pending     | Pending                                                  |
+| 3. Content and static pages                 | Completed   | 10 content tests and full static Astro build passed      |
+| 4. Interactions, motion, and accessibility  | In Progress | Pending                                                  |
 | 5. APIs, rate limiting, and security        | Pending     | Pending                                                  |
 | 6. SEO, headers, cleanup, and documentation | Pending     | Pending                                                  |
 | 7. Quality and performance gates            | Pending     | Pending                                                  |
@@ -194,7 +194,18 @@ same phase commit.
 
 ### Evidence
 
-Pending.
+- Added Astro Content Collections with strict blog/project Zod schemas and
+  build-time guards for H1, slug, and case-study section order.
+- Added Vitest during this phase to follow test-first development; the guards
+  and schemas were observed failing before implementation and now pass 10/10.
+- Replaced invalid URL placeholders with `null`, removed the duplicate article
+  H1, added explicit content dates, visible list markers, and Nord Shiki output.
+- Ported the complete static homepage, blog index/details, project details,
+  footer, sitemap, and robots output to Astro components.
+- Every rendered route has exactly one H1 and `main#main`; static pages contain
+  zero external/eager script tags.
+- Desktop and 390 px mobile headless screenshots confirm the Nord design,
+  Sora/Geist fonts, mountain layers, and content layout render correctly.
 
 ## Phase 4 — Interactions, motion, and accessibility
 
@@ -333,6 +344,8 @@ Pending.
 | 2026-08-05 | Temporarily override Next's PostCSS and Sharp        | New advisories remained after Next 15.5.22; overrides avoid a second framework migration to Next 16 before Astro and are verified by a full build. |
 | 2026-08-05 | Keep legacy Next source temporarily but exclude it   | Old components remain as a parity reference while Astro builds only the new source; they will be deleted after parity.                             |
 | 2026-08-05 | Override `path-to-regexp` to 6.3.0                   | The Vercel adapter resolved vulnerable 6.1.0 transitively; patched compatible 6.x passes the complete adapter build.                               |
+| 2026-08-05 | Add Vitest in Phase 3 rather than Phase 7            | Content behavior was implemented test-first; Phase 7 will expand the suite and CI instead of adding tests after production code.                   |
+| 2026-08-05 | Use explicit content dates in frontmatter            | File mtimes are unstable in deployments; frontmatter now drives sorting, structured metadata, and sitemap `lastModified`.                          |
 
 ## Progress log
 
@@ -369,3 +382,12 @@ Pending.
 - Verified the Vercel build, empty React/Next dependency tree, clean production
   audit, and generated output without Next runtime markers.
 - Started Phase 3 content collection and static-page migration.
+
+### 2026-08-05 — Phase 3 completed
+
+- Migrated blog posts and projects into typed Astro Content Collections.
+- Ported every static public page and homepage section with server-rendered
+  Iconify SVGs and no client framework runtime.
+- Verified content guards/schemas, one-H1 structure, stable sitemap dates, zero
+  eager static-page scripts, and desktop/mobile visual parity.
+- Started Phase 4 vanilla interactions, GSAP motion, and accessibility work.

@@ -1,19 +1,117 @@
 ---
-import BaseLayout from "@/layouts/BaseLayout.astro";
+import { render } from "astro:content";
 
-export function getStaticPaths() {
-  return ["botpass", "eling-bot", "portfolio-website"].map((slug) => ({
-    params: { slug },
-    props: { slug },
+import { getProjects, type ProjectEntry } from "@/lib/content";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Badge from "@/ui/Badge.astro";
+import Footer from "@/ui/Footer.astro";
+
+interface Props {
+  project: ProjectEntry;
+}
+
+export async function getStaticPaths() {
+  const projects = await getProjects();
+  return projects.map((project) => ({
+    params: { slug: project.data.slug },
+    props: { project },
   }));
 }
 
-const { slug } = Astro.props;
+const { project } = Astro.props;
+const { Content } = await render(project);
 ---
 
-<BaseLayout title="Project" noindex>
-  <main id="main" class="mx-auto min-h-screen max-w-4xl px-6 py-24">
-    <p class="eyebrow">Project migration</p>
-    <h1 class="mt-4 text-4xl font-semibold">{slug}</h1>
-  </main>
+<BaseLayout
+  title={project.data.title}
+  description={project.data.summary}
+  canonicalPath={`/projects/${project.data.slug}`}
+>
+  <div class="flex min-h-screen flex-col bg-bg-base">
+    <main id="main" class="mx-auto w-full max-w-4xl flex-1 px-6 py-24">
+      <a
+        href="/#projects"
+        class="mb-10 inline-flex items-center gap-2 text-sm text-text-muted transition-colors hover:text-frost"
+        >← Kembali ke proyek</a
+      >
+      <article>
+        <header class="mb-14">
+          <div class="mb-5 flex flex-wrap items-center gap-2">
+            {project.data.featured && <Badge variant="featured">Featured</Badge>}
+            {project.data.tags.map((tag) => <Badge variant="tag">{tag}</Badge>)}
+          </div>
+          <h1
+            class="text-balance text-4xl font-semibold leading-tight tracking-tight text-text-primary sm:text-5xl"
+          >
+            {project.data.title}
+          </h1>
+          <p class="mt-5 max-w-2xl text-lg leading-relaxed text-text-muted">
+            {project.data.summary}
+          </p>
+          <dl class="mt-8 grid gap-5 border-y border-nord-border/30 py-6 sm:grid-cols-2">
+            <div>
+              <dt class="text-xs uppercase tracking-wider text-text-muted">Role</dt><dd
+                class="mt-2 text-sm leading-relaxed text-text-secondary"
+              >
+                {project.data.role}
+              </dd>
+            </div>
+            <div>
+              <dt class="text-xs uppercase tracking-wider text-text-muted">Timeline</dt><dd
+                class="mt-2 text-sm leading-relaxed text-text-secondary"
+              >
+                {project.data.timeline}
+              </dd>
+            </div>
+          </dl>
+          <div class="mt-6 flex flex-wrap gap-3 text-sm">
+            {
+              project.data.demoUrl && (
+                <a
+                  href={project.data.demoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-frost transition-colors hover:text-frost-cyan"
+                >
+                  Live site ↗
+                </a>
+              )
+            }
+            <a
+              href={project.data.repoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-frost transition-colors hover:text-frost-cyan">Repository ↗</a
+            >
+            {
+              project.data.evidence.map((item) => (
+                <a
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-frost transition-colors hover:text-frost-cyan"
+                >
+                  {item.label} ↗
+                </a>
+              ))
+            }
+          </div>
+          <div class="mt-8">
+            <p class="mb-3 text-xs uppercase tracking-wider text-text-muted">Stack</p>
+            <ul class="flex flex-wrap gap-2" aria-label="Technology stack">
+              {
+                project.data.stack.map((item) => (
+                  <li>
+                    <Badge variant="tag">{item}</Badge>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+        </header>
+        <div class="prose-dark"><Content /></div>
+      </article>
+    </main>
+    <Footer />
+  </div>
 </BaseLayout>

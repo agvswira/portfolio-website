@@ -1,0 +1,26 @@
+---
+interface Props {
+  variant?: "frost" | "featured" | "tag" | "available";
+  class?: string;
+}
+
+const { variant = "frost", class: className = "" } = Astro.props;
+const variants = {
+  frost: "bg-frost/10 text-frost border border-frost/20",
+  featured: "bg-aurora-yellow/10 text-aurora-yellow border border-aurora-yellow/20",
+  tag: "bg-bg-elevated text-text-muted border border-nord-border/40 hover:border-frost/30 hover:text-text-secondary transition-colors",
+  available: "bg-frost/10 text-frost border border-frost/20",
+};
+---
+
+<span
+  class:list={[
+    "inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-medium",
+    variant === "available" && "gap-1.5 rounded-full px-3 py-1",
+    variants[variant],
+    className,
+  ]}
+>
+  {variant === "available" && <span class="h-1.5 w-1.5 rounded-full bg-frost" aria-hidden="true" />}
+  <slot />
+</span>

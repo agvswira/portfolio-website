@@ -1,0 +1,122 @@
+---
+import { Icon } from "astro-icon/components";
+
+import { PERSONAL, SOCIAL_LINKS } from "@/lib/constants";
+import Section from "@/ui/Section.astro";
+
+const icons: Record<string, string> = {
+  FiGithub: "simple-icons:github",
+  FiLinkedin: "simple-icons:linkedin",
+  FiInstagram: "simple-icons:instagram",
+  FaDiscord: "simple-icons:discord",
+  FiMail: "lucide:mail",
+};
+const inputClass =
+  "w-full rounded-lg border border-nord-border/60 bg-bg-elevated px-4 py-3 text-sm text-text-primary placeholder-text-muted/60 transition-colors focus:border-frost/60 focus:outline-none focus:ring-1 focus:ring-frost/30";
+---
+
+<Section
+  id="contact"
+  eyebrow="Kontak"
+  title="Mari Berkolaborasi"
+  subtitle="Tertarik berkolaborasi, diskusi teknologi, atau sekadar ngobrol? Silakan kirim pesan."
+>
+  <div class="mt-4 grid gap-10 lg:grid-cols-2">
+    <div class="hud-card spotlight-card p-6 sm:p-8" data-reveal data-spotlight>
+      <form action="/api/contact" method="post" data-contact-form>
+        <input
+          type="text"
+          name="website"
+          tabindex="-1"
+          autocomplete="off"
+          aria-hidden="true"
+          class="pointer-events-none absolute h-0 w-0 opacity-0"
+        />
+        <div class="flex flex-col gap-5">
+          <div>
+            <label for="contact-name" class="mb-1.5 block text-sm text-text-secondary">Nama</label>
+            <input
+              id="contact-name"
+              name="name"
+              type="text"
+              autocomplete="name"
+              minlength="2"
+              maxlength="100"
+              required
+              placeholder="Nama lengkap Anda"
+              class={inputClass}
+            />
+          </div>
+          <div>
+            <label for="contact-email" class="mb-1.5 block text-sm text-text-secondary">Email</label
+            >
+            <input
+              id="contact-email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              maxlength="254"
+              required
+              placeholder="email@anda.com"
+              class={inputClass}
+            />
+          </div>
+          <div>
+            <label for="contact-message" class="mb-1.5 block text-sm text-text-secondary"
+              >Pesan</label
+            >
+            <textarea
+              id="contact-message"
+              name="message"
+              required
+              minlength="10"
+              maxlength="3000"
+              rows="6"
+              placeholder="Ceritakan proyek atau pertanyaan Anda..."
+              class:list={[inputClass, "resize-none"]}></textarea>
+          </div>
+          <button
+            type="submit"
+            class="shimmer-btn inline-flex w-full items-center justify-center rounded-lg bg-frost px-5 py-2.5 text-sm font-semibold text-bg-base transition-all hover:bg-frost-cyan"
+            data-contact-submit
+          >
+            Kirim Pesan
+          </button>
+        </div>
+      </form>
+      <div role="status" aria-live="polite" aria-atomic="true" class="mt-4" data-contact-status>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-6" data-reveal>
+      <div>
+        <h3 class="mb-2 font-semibold text-text-primary">Atau hubungi langsung</h3>
+        <p class="text-sm leading-relaxed text-text-muted">
+          Temukan saya di platform berikut. Respons paling cepat melalui email atau LinkedIn.
+        </p>
+      </div>
+      <div class="flex flex-col gap-3">
+        {
+          SOCIAL_LINKS.map(({ label, href, icon }) => (
+            <a
+              href={href}
+              rel="noopener noreferrer"
+              target={href.startsWith("mailto") ? undefined : "_blank"}
+              class="group flex items-center gap-4 rounded-xl border border-nord-border/40 bg-bg-elevated/30 p-4 text-text-muted transition-all hover:border-frost/30 hover:bg-bg-elevated/60 hover:text-text-secondary"
+            >
+              <span class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-bg-elevated text-text-muted transition-colors group-hover:text-frost">
+                <Icon name={icons[icon]} size={18} aria-hidden="true" />
+              </span>
+              <span class="text-sm font-medium">{label}</span>
+            </a>
+          ))
+        }
+      </div>
+      <p class="text-xs text-text-muted">
+        Email: <a class="text-frost hover:underline" href={`mailto:${PERSONAL.email}`}
+          >{PERSONAL.email}</a
+        >
+      </p>
+    </div>
+  </div>
+</Section>

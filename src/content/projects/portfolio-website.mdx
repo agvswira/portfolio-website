@@ -5,6 +5,8 @@ summary: "Website pribadi tempat aku mengumpulkan proyek, tulisan, dan perjalana
 problem: "Versi awal portfolio sudah terlihat lengkap, tetapi proyek hanya tampil sebagai kartu pendek. Pengunjung belum bisa melihat masalah yang kukerjakan, keputusan teknis, peranku, atau hasil akhirnya."
 role: "Solo designer dan developer — menyusun konten, design system, frontend, motion, endpoint server, serta deployment."
 timeline: "22 Juni 2026–sekarang — versi awal, audit, perbaikan masalah utama, lalu migrasi proyek ke case study MDX."
+publishedDate: "2026-08-05"
+updatedDate: "2026-08-05"
 stack:
   - "Next.js 15"
   - "React 19"
@@ -20,7 +22,7 @@ outcome:
   - "Build terakhir menghasilkan First Load JS 344 kB untuk route proyek dan 462 kB untuk homepage."
 demoUrl: "https://aguswira.dev"
 repoUrl: "https://github.com/agvswira/portfolio-website"
-coverImage: "TODO: tambahkan screenshot homepage atau halaman case study dari deployment terbaru setelah branch konten dirilis."
+coverImage: null
 featured: false
 tags: ["Portfolio", "Next.js", "MDX", "Frontend"]
 evidence:
@@ -142,7 +144,8 @@ Masih ada pekerjaan teknis setelah konten: shared client bundle berada di
 `340 kB`, salah satu shared chunk berukuran `217 kB`, dan motion layer perlu
 diuji di browser nyata.
 
-TODO: setelah redesign dirilis, tulis apa yang paling berubah dari cara
-pandangmu, bagian mana yang ternyata terlalu rumit, dan indikator yang akan
-dipakai untuk menilai apakah portfolio ini benar-benar lebih berguna bagi
-pembaca.
+Audit ini juga mengubah cara aku menilai arsitektur portfolio. Framework dan
+animasi bukan tujuan akhirnya; keduanya hanya berguna kalau halaman tetap cepat,
+mudah dinavigasi, dan membantu pembaca memahami bukti dari setiap proyek. Karena
+itu, perubahan berikutnya perlu dinilai dengan metrik performa, aksesibilitas,
+dan apakah isi case study tetap mudah ditemukan tanpa JavaScript.

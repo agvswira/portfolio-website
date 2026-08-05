@@ -1,19 +1,96 @@
 ---
-import BaseLayout from "@/layouts/BaseLayout.astro";
+import { render } from "astro:content";
 
-export function getStaticPaths() {
-  return ["awal-perjalanan-masuk-informatika", "mulai-mencatat-dengan-obsidian"].map((slug) => ({
-    params: { slug },
-    props: { slug },
+import { formatIndonesianDate, getBlogPosts, type BlogEntry } from "@/lib/content";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Badge from "@/ui/Badge.astro";
+import Footer from "@/ui/Footer.astro";
+
+interface Props {
+  post: BlogEntry;
+  older: BlogEntry | null;
+  newer: BlogEntry | null;
+}
+
+export async function getStaticPaths() {
+  const posts = await getBlogPosts();
+  return posts.map((post, index) => ({
+    params: { slug: post.slug },
+    props: {
+      post,
+      older: posts[index + 1] ?? null,
+      newer: posts[index - 1] ?? null,
+    },
   }));
 }
 
-const { slug } = Astro.props;
+const { post, older, newer } = Astro.props;
+const { Content } = await render(post);
 ---
 
-<BaseLayout title="Blog" noindex>
-  <main id="main" class="mx-auto min-h-screen max-w-3xl px-6 py-24">
-    <p class="eyebrow">Blog migration</p>
-    <h1 class="mt-4 text-4xl font-semibold">{slug}</h1>
-  </main>
+<BaseLayout
+  title={post.data.title}
+  description={post.data.excerpt}
+  canonicalPath={`/blog/${post.slug}`}
+>
+  <div class="flex min-h-screen flex-col bg-bg-base">
+    <main id="main" class="mx-auto w-full max-w-3xl flex-1 px-6 py-24">
+      <a
+        href="/blog"
+        class="mb-10 inline-flex items-center gap-2 text-sm text-text-muted transition-colors hover:text-frost"
+        >← Semua Artikel</a
+      >
+      <article>
+        <header class="mb-10">
+          <div class="mb-4 flex flex-wrap gap-1.5">
+            {post.data.tags.map((tag) => <Badge variant="tag">{tag}</Badge>)}
+          </div>
+          <h1
+            class="mb-4 text-3xl font-semibold leading-tight tracking-tight text-text-primary sm:text-4xl"
+          >
+            {post.data.title}
+          </h1>
+          <div class="flex items-center gap-4 text-sm text-text-muted">
+            <time datetime={post.data.date.toISOString()}
+              >{formatIndonesianDate(post.data.date)}</time
+            >
+            <span aria-hidden="true">·</span><span>{post.readingTime} mnt baca</span>
+          </div>
+        </header>
+        <div class="prose-dark"><Content /></div>
+      </article>
+      {
+        (older || newer) && (
+          <nav
+            aria-label="Navigasi artikel"
+            class="mt-16 grid gap-4 border-t border-nord-border/30 pt-8 sm:grid-cols-2"
+          >
+            {older && (
+              <a
+                href={`/blog/${older.slug}`}
+                class="group flex flex-col rounded-xl border border-nord-border/40 p-4 transition-colors hover:border-frost/30"
+              >
+                <span class="mb-1 text-xs text-text-muted">← Lebih lama</span>
+                <span class="text-sm font-medium leading-snug text-text-secondary transition-colors group-hover:text-frost">
+                  {older.data.title}
+                </span>
+              </a>
+            )}
+            {newer && (
+              <a
+                href={`/blog/${newer.slug}`}
+                class="group flex flex-col rounded-xl border border-nord-border/40 p-4 transition-colors hover:border-frost/30 sm:col-start-2 sm:text-right"
+              >
+                <span class="mb-1 text-xs text-text-muted">Lebih baru →</span>
+                <span class="text-sm font-medium leading-snug text-text-secondary transition-colors group-hover:text-frost">
+                  {newer.data.title}
+                </span>
+              </a>
+            )}
+          </nav>
+        )
+      }
+    </main>
+    <Footer />
+  </div>
 </BaseLayout>

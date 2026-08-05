@@ -1,0 +1,44 @@
+---
+import { Icon } from "astro-icon/components";
+
+import { SITE, SOCIAL_LINKS } from "@/lib/constants";
+
+const icons: Record<string, string> = {
+  FiGithub: "simple-icons:github",
+  FiLinkedin: "simple-icons:linkedin",
+  FiInstagram: "simple-icons:instagram",
+  FaDiscord: "simple-icons:discord",
+  FiMail: "lucide:mail",
+};
+---
+
+<footer class="relative z-10 border-t border-nord-border/10 py-3">
+  <div
+    class="mx-auto flex max-w-5xl flex-col items-center justify-between gap-2 px-6 text-sm sm:flex-row"
+  >
+    <div class="text-text-muted">
+      <span class="font-semibold text-gradient">{SITE.name}</span>
+      <span class="mx-2">·</span>
+      <span>© {new Date().getFullYear()}</span>
+    </div>
+    <nav aria-label="Social links">
+      <ul class="flex items-center gap-3" role="list">
+        {
+          SOCIAL_LINKS.map(({ label, href, icon }) => (
+            <li>
+              <a
+                href={href}
+                aria-label={label}
+                rel="noopener noreferrer"
+                target={href.startsWith("mailto") ? undefined : "_blank"}
+                class="block p-1 text-text-muted transition-colors hover:text-frost"
+              >
+                <Icon name={icons[icon]} size={16} aria-hidden="true" />
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+</footer>
