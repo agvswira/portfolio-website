@@ -1,0 +1,19 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+export function getStaticPaths() {
+  return ["awal-perjalanan-masuk-informatika", "mulai-mencatat-dengan-obsidian"].map((slug) => ({
+    params: { slug },
+    props: { slug },
+  }));
+}
+
+const { slug } = Astro.props;
+---
+
+<BaseLayout title="Blog" noindex>
+  <main id="main" class="mx-auto min-h-screen max-w-3xl px-6 py-24">
+    <p class="eyebrow">Blog migration</p>
+    <h1 class="mt-4 text-4xl font-semibold">{slug}</h1>
+  </main>
+</BaseLayout>

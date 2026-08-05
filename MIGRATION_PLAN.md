@@ -5,7 +5,7 @@
 | Field              | Value                                      |
 | ------------------ | ------------------------------------------ |
 | Overall status     | In progress                                |
-| Current phase      | Phase 2 — Astro foundation                 |
+| Current phase      | Phase 3 — Content and static pages         |
 | Source branch      | `content/case-study-foundation`            |
 | Baseline commit    | `bdbb71824c4d32faaa152c6b6b5de05bc66c2981` |
 | Checkpoint commit  | `03e9168`                                  |
@@ -78,8 +78,8 @@ same phase commit.
 | ------------------------------------------- | ----------- | -------------------------------------------------------- |
 | 0. Tracker and checkpoint                   | Completed   | Checkpoint `03e9168`; lint, type-check, and build passed |
 | 1. Next.js baseline hardening               | Completed   | All gates passed; production audit reports 0 findings    |
-| 2. Astro foundation                         | In Progress | Pending                                                  |
-| 3. Content and static pages                 | Pending     | Pending                                                  |
+| 2. Astro foundation                         | Completed   | Astro/Vercel build passed; no React/Next dependency      |
+| 3. Content and static pages                 | In Progress | Pending                                                  |
 | 4. Interactions, motion, and accessibility  | Pending     | Pending                                                  |
 | 5. APIs, rate limiting, and security        | Pending     | Pending                                                  |
 | 6. SEO, headers, cleanup, and documentation | Pending     | Pending                                                  |
@@ -162,7 +162,17 @@ same phase commit.
 
 ### Evidence
 
-Pending.
+- Installed Astro 7.1.x, Vercel/MDX integrations, self-hosted variable fonts,
+  Tailwind, GSAP, Astro Icon, and Astro-native lint/type-check tooling.
+- Added a shared Astro layout plus static page, dynamic route, robots, sitemap,
+  and on-demand API skeletons.
+- `npm run lint`: passed.
+- `npm run typecheck`: 14 Astro files checked with 0 errors, warnings, or hints.
+- `npm run build`: passed; ten static routes were prerendered and both API
+  functions were bundled for Vercel.
+- `npm ls react react-dom next preact --all`: empty.
+- Built output contains no `react`, `nextjs`, or `__next` runtime marker.
+- `npm audit --omit=dev --audit-level=high`: passed with 0 production findings.
 
 ## Phase 3 — Content and static pages
 
@@ -321,6 +331,8 @@ Pending.
 | 2026-08-05 | Use a root-level `MIGRATION_PLAN.md`                 | `docs/` is ignored; the tracker must be versioned.                                                                                                 |
 | 2026-08-05 | Checkpoint the current dirty branch before isolation | Existing case-study work must be preserved before creating a migration worktree.                                                                   |
 | 2026-08-05 | Temporarily override Next's PostCSS and Sharp        | New advisories remained after Next 15.5.22; overrides avoid a second framework migration to Next 16 before Astro and are verified by a full build. |
+| 2026-08-05 | Keep legacy Next source temporarily but exclude it   | Old components remain as a parity reference while Astro builds only the new source; they will be deleted after parity.                             |
+| 2026-08-05 | Override `path-to-regexp` to 6.3.0                   | The Vercel adapter resolved vulnerable 6.1.0 transitively; patched compatible 6.x passes the complete adapter build.                               |
 
 ## Progress log
 
@@ -347,3 +359,13 @@ Pending.
   formatting.
 - Verified format, lint, TypeScript, production build, and production audit.
 - Started Phase 2 Astro foundation work.
+
+### 2026-08-05 — Phase 2 completed
+
+- Replaced the runtime/tooling foundation with Astro 7 and the official Vercel
+  adapter without a React or Preact integration.
+- Added Astro-native route skeletons, layout metadata, local fonts, Tailwind,
+  MDX, icon, lint, and type-check configuration.
+- Verified the Vercel build, empty React/Next dependency tree, clean production
+  audit, and generated output without Next runtime markers.
+- Started Phase 3 content collection and static-page migration.

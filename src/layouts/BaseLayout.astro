@@ -1,0 +1,52 @@
+---
+import "@fontsource-variable/geist-mono";
+import "@fontsource-variable/sora";
+import "../app/globals.css";
+
+import { PERSONAL, SITE } from "@/lib/constants";
+
+interface Props {
+  title?: string;
+  description?: string;
+  canonicalPath?: string;
+  noindex?: boolean;
+}
+
+const {
+  title = SITE.title,
+  description = SITE.description,
+  canonicalPath = Astro.url.pathname,
+  noindex = false,
+} = Astro.props;
+const canonical = new URL(canonicalPath, SITE.url);
+const pageTitle = title === SITE.title ? title : `${title} | ${PERSONAL.name}`;
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: PERSONAL.name,
+  url: SITE.url,
+  jobTitle: PERSONAL.role,
+  description: SITE.description,
+  sameAs: [PERSONAL.github, PERSONAL.linkedin, PERSONAL.instagram],
+};
+---
+
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#242933" />
+    <meta name="description" content={description} />
+    <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <title>{pageTitle}</title>
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Lewati ke konten</a>
+    <slot />
+  </body>
+</html>
