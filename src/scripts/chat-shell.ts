@@ -5,7 +5,10 @@ export function initChatShell(): void {
   const input = document.querySelector<HTMLInputElement>("[data-chat-input]");
   const form = document.querySelector<HTMLFormElement>("[data-chat-form]");
   const status = document.querySelector<HTMLElement>("[data-chat-status]");
-  if (!panel || !toggle || !close || !input || !form || !status) return;
+  const messages = document.querySelector<HTMLElement>("[data-chat-messages]");
+  if (!panel || !toggle || !close || !input || !form || !status || !messages) return;
+
+  let chatClient: Promise<typeof import("./chat-client")> | null = null;
 
   const setOpen = (open: boolean, returnFocus = false) => {
     panel.classList.toggle("hidden", !open);
@@ -13,6 +16,7 @@ export function initChatShell(): void {
     toggle.setAttribute("aria-expanded", String(open));
     toggle.setAttribute("aria-label", open ? "Tutup chat" : "Buka chat");
     if (open) input.focus();
+    if (!open) chatClient?.then(({ abortActiveChat }) => abortActiveChat());
     if (!open && returnFocus) toggle.focus();
   };
 
@@ -27,6 +31,7 @@ export function initChatShell(): void {
   });
   form.addEventListener("submit", (event) => {
     event.preventDefault();
-    status.textContent = "Chat akan tersambung setelah endpoint selesai dimigrasikan.";
+    chatClient ??= import("./chat-client");
+    void chatClient.then(({ submitChat }) => submitChat({ form, input, messages, status }));
   });
 }

@@ -2,17 +2,17 @@
 
 ## Migration status
 
-| Field              | Value                                       |
-| ------------------ | ------------------------------------------- |
-| Overall status     | In progress                                 |
-| Current phase      | Phase 5 — APIs, rate limiting, and security |
-| Source branch      | `content/case-study-foundation`             |
-| Baseline commit    | `bdbb71824c4d32faaa152c6b6b5de05bc66c2981`  |
-| Checkpoint commit  | `03e9168`                                   |
-| Migration branch   | `migration/astro`                           |
-| Migration worktree | `.worktrees/migration-astro`                |
-| Target platform    | Astro 7.1.x on Vercel                       |
-| Last updated       | 2026-08-05                                  |
+| Field              | Value                                      |
+| ------------------ | ------------------------------------------ |
+| Overall status     | In progress                                |
+| Current phase      | Phase 6 — SEO, headers, cleanup, and docs  |
+| Source branch      | `content/case-study-foundation`            |
+| Baseline commit    | `bdbb71824c4d32faaa152c6b6b5de05bc66c2981` |
+| Checkpoint commit  | `03e9168`                                  |
+| Migration branch   | `migration/astro`                          |
+| Migration worktree | `.worktrees/migration-astro`               |
+| Target platform    | Astro 7.1.x on Vercel                      |
+| Last updated       | 2026-08-05                                 |
 
 This file is the source of truth for the migration. A phase can only be marked
 `Completed` after its exit criteria have been run and their actual results have
@@ -81,8 +81,8 @@ same phase commit.
 | 2. Astro foundation                         | Completed   | Astro/Vercel build passed; no React/Next dependency      |
 | 3. Content and static pages                 | Completed   | 10 content tests and full static Astro build passed      |
 | 4. Interactions, motion, and accessibility  | Completed   | Playwright/axe: 5 passed, 1 intentionally skipped        |
-| 5. APIs, rate limiting, and security        | In Progress | Pending                                                  |
-| 6. SEO, headers, cleanup, and documentation | Pending     | Pending                                                  |
+| 5. APIs, rate limiting, and security        | Completed   | 46 unit/integration tests; 9 E2E passed, 1 skipped       |
+| 6. SEO, headers, cleanup, and documentation | In Progress | Pending                                                  |
 | 7. Quality and performance gates            | Pending     | Pending                                                  |
 | 8. Preview, cutover, and closeout           | Pending     | Pending                                                  |
 
@@ -265,7 +265,19 @@ same phase commit.
 
 ### Evidence
 
-Pending.
+- Replaced both route skeletons with Astro server endpoints and an explicit
+  dependency boundary around Upstash, Resend, and the OpenAI-compatible AI
+  provider; tests perform no live external requests.
+- Added fail-closed Upstash sliding-window limits (5/minute contact and
+  20/minute chat), salted SHA-256 client identifiers, environment namespaces,
+  limit/reset headers, and `Retry-After` on denial.
+- Enforced media types, 8 kB/25 kB bodies, strict contact/chat schemas, ten
+  messages, 2,000 characters per chat message, and a final user role.
+- Added the JSON contact contract, native 303 fallback, Resend/AI timeouts,
+  client abort propagation, SSE content checks, and a buffered client parser.
+- Fresh verification passed format, lint, Astro typecheck (zero diagnostics),
+  46 Vitest tests, 9 Playwright tests with one intentional desktop skip, the
+  Vercel serverless build, and production audit with zero vulnerabilities.
 
 ## Phase 6 — SEO, headers, cleanup, and documentation
 
@@ -360,6 +372,8 @@ Pending.
 | 2026-08-05 | Use explicit content dates in frontmatter            | File mtimes are unstable in deployments; frontmatter now drives sorting, structured metadata, and sitemap `lastModified`.                          |
 | 2026-08-05 | Pull Playwright/axe setup into Phase 4               | Keyboard, focus, reduced-motion, filter, chat-shell, and contrast behavior had to be verified before declaring the interaction phase complete.     |
 | 2026-08-05 | Lighten `text-muted` to `#A8B2C2`                    | Axe measured only 4.01:1 on elevated cards; the new token exceeds WCAG AA while preserving the Nord hierarchy.                                     |
+| 2026-08-05 | Fail closed when Upstash times out                   | SDK timeouts are permissive by default; timeout results are converted to 503 so missing rate-limit state never silently permits requests.          |
+| 2026-08-05 | Lazy-load the streaming chat client                  | The accessible shell remains eager, while the SSE parser and request/history logic load only after the visitor submits the first message.          |
 
 ## Progress log
 
@@ -415,3 +429,14 @@ Pending.
 - Verified five Playwright scenarios, a zero-violation axe scan, reduced motion,
   desktop/mobile focus return, and the 46 kB gzip homepage script budget.
 - Started Phase 5 API, Upstash, SSE, and server-side security work.
+
+### 2026-08-05 — Phase 5 completed
+
+- Ported contact and streaming chat to bounded Astro server endpoints backed
+  by hashed, environment-scoped Upstash sliding windows.
+- Added safe provider adapters, upstream deadlines, abort propagation, strict
+  validation/status contracts, native form fallback, and buffered SSE parsing.
+- Verified all server branches without live provider calls, browser-tested the
+  mocked contact/chat journeys on desktop and mobile, and retained a zero-findings
+  production dependency audit.
+- Started Phase 6 SEO, security headers, legacy cleanup, and documentation.

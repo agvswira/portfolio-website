@@ -14,6 +14,17 @@ export function initContactForm(): void {
   const status = document.querySelector<HTMLElement>("[data-contact-status]");
   if (!form || !submit || !status) return;
 
+  const contactState = new URLSearchParams(window.location.search).get("contact");
+  if (contactState === "success") {
+    renderStatus(status, "success", "Pesan berhasil terkirim! Saya akan segera menghubungi Anda.");
+  } else if (contactState === "error") {
+    renderStatus(
+      status,
+      "error",
+      "Pesan belum berhasil dikirim. Silakan periksa kembali atau coba nanti."
+    );
+  }
+
   form.addEventListener("submit", async (event) => {
     if (!form.reportValidity()) return;
     event.preventDefault();
