@@ -7,7 +7,21 @@ export default [
   ...tseslint.configs.recommended,
   ...astro.configs["flat/recommended"],
   {
-    ignores: ["node_modules/**", ".astro/**", ".vercel/**", "dist/**"],
+    ignores: [
+      "node_modules/**",
+      ".astro/**",
+      ".next/**",
+      ".vercel/**",
+      ".worktrees/**",
+      ".lighthouseci/**",
+      ".test-results/**",
+      "coverage/**",
+      "dist/**",
+      "out/**",
+      "build/**",
+      "next-env.d.ts",
+      "*.tsbuildinfo",
+    ],
   },
   {
     files: ["scripts/**/*.mjs"],
