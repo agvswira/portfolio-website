@@ -5,9 +5,12 @@
 | Field | Value |
 | --- | --- |
 | Overall status | In progress |
-| Current phase | Phase 0 — tracker and checkpoint |
+| Current phase | Phase 1 — Next.js baseline hardening |
 | Source branch | `content/case-study-foundation` |
 | Baseline commit | `bdbb71824c4d32faaa152c6b6b5de05bc66c2981` |
+| Checkpoint commit | `03e9168` |
+| Migration branch | `migration/astro` |
+| Migration worktree | `.worktrees/migration-astro` |
 | Target platform | Astro 7.1.x on Vercel |
 | Last updated | 2026-08-05 |
 
@@ -73,8 +76,8 @@ same phase commit.
 
 | Phase | Status | Exit evidence |
 | --- | --- | --- |
-| 0. Tracker and checkpoint | In Progress | Pending |
-| 1. Next.js baseline hardening | Pending | Pending |
+| 0. Tracker and checkpoint | Completed | Checkpoint `03e9168`; lint, type-check, and build passed |
+| 1. Next.js baseline hardening | In Progress | Pending |
 | 2. Astro foundation | Pending | Pending |
 | 3. Content and static pages | Pending | Pending |
 | 4. Interactions, motion, and accessibility | Pending | Pending |
@@ -101,7 +104,16 @@ same phase commit.
 
 ### Evidence
 
-Pending.
+- Tracker committed with all pre-existing case-study and configuration changes
+  in checkpoint `03e9168`.
+- Isolated branch `migration/astro` created at
+  `.worktrees/migration-astro` from that checkpoint.
+- `npm install`: completed; baseline audit reported five high-severity findings
+  for Phase 1.
+- `npm run lint`: passed.
+- `npx tsc --noEmit`: passed.
+- `npm run build`: passed; 15 static/dynamic routes generated. The build needed
+  network font retries but completed successfully.
 
 ## Phase 1 — Next.js baseline hardening
 
@@ -309,3 +321,12 @@ Pending.
 - Created the migration tracker structure.
 - Recorded the audit baseline and fixed implementation decisions.
 - Checkpoint and isolated migration workspace are still pending.
+
+### 2026-08-05 — Phase 0 completed
+
+- Saved the full working tree in checkpoint `03e9168`.
+- Created isolated branch/worktree `migration/astro` at
+  `.worktrees/migration-astro`.
+- Re-ran lint, TypeScript, and the production build successfully in the
+  isolated workspace.
+- Started Phase 1 baseline hardening; dependency audit remediation is pending.
