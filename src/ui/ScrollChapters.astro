@@ -13,7 +13,7 @@ const chapters = [
   data-chapter-scroll
 >
   <div class="relative hidden lg:block">
-    <nav aria-label="Bab halaman" class="chapter-rail sticky top-1/2 z-20 h-px" data-chapter-rail>
+    <nav aria-label="Bab halaman" aria-hidden="true" class="chapter-rail" data-chapter-rail inert>
       <div class="chapter-dial" data-chapter-dial>
         <ol class="chapter-dial-rotor" data-chapter-dial-rotor role="list">
           {
@@ -27,9 +27,6 @@ const chapters = [
                   data-chapter-link
                 >
                   <span class="chapter-dial-marker" data-chapter-label>
-                    <span class="chapter-dial-halo" aria-hidden="true">
-                      <span class="chapter-dial-dot" data-chapter-dot />
-                    </span>
                     <span class="chapter-dial-number" aria-hidden="true">
                       {chapter.number}
                     </span>
@@ -40,6 +37,9 @@ const chapters = [
             ))
           }
         </ol>
+        <span class="chapter-dial-halo" aria-hidden="true">
+          <span class="chapter-dial-dot" data-chapter-dot></span>
+        </span>
       </div>
     </nav>
   </div>
