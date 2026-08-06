@@ -5,6 +5,9 @@ import { shouldRunMotion } from "@/lib/ui-state";
 
 const CHAPTER_STEP_ANGLE = 30;
 
+const clamp = (value: number, minimum: number, maximum: number) =>
+  Math.min(maximum, Math.max(minimum, value));
+
 function setActiveChapter(links: HTMLAnchorElement[], activeIndex: number): void {
   links.forEach((link, index) => {
     if (index === activeIndex) {
@@ -16,7 +19,8 @@ function setActiveChapter(links: HTMLAnchorElement[], activeIndex: number): void
 }
 
 function getChapterProgress(chapters: HTMLElement[]): number {
-  if (chapters.length < 2) return 0;
+  const lastIndex = chapters.length - 1;
+  if (lastIndex < 1) return 0;
 
   const viewportCenter = window.scrollY + window.innerHeight * 0.5;
   const centers = chapters.map((chapter) => {
@@ -25,29 +29,100 @@ function getChapterProgress(chapters: HTMLElement[]): number {
   });
 
   if (viewportCenter <= centers[0]) return 0;
-  if (viewportCenter >= centers[centers.length - 1]) return centers.length - 1;
+  if (viewportCenter >= centers[lastIndex]) return lastIndex;
 
   for (let index = 0; index < centers.length - 1; index += 1) {
     const start = centers[index];
     const end = centers[index + 1];
     if (viewportCenter <= end) {
-      return index + (viewportCenter - start) / (end - start);
+      const segmentProgress = end === start ? 0 : (viewportCenter - start) / (end - start);
+      return clamp(index + segmentProgress, 0, lastIndex);
     }
   }
 
-  return centers.length - 1;
+  return lastIndex;
 }
 
-function initChapterState(manageActiveState: boolean): () => void {
+function getChapterOpacity(distance: number): number {
+  if (distance > 3) return 0;
+  if (distance <= 1) return 1 - distance * 0.55;
+  if (distance <= 2) return 0.45 - (distance - 1) * 0.25;
+  return 0.2 - (distance - 2) * 0.12;
+}
+
+function getChapterFontSizes(): { active: number; inactive: number } {
+  const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+  const viewportUnit = window.innerWidth / 100;
+
+  return {
+    active: clamp(1.9 * viewportUnit, 1.5 * rootFontSize, 2 * rootFontSize),
+    inactive: clamp(1.3 * viewportUnit, 1.05 * rootFontSize, 1.25 * rootFontSize),
+  };
+}
+
+function updateChapterPresentation(
+  links: HTMLAnchorElement[],
+  numbers: HTMLElement[],
+  progress: number
+): void {
+  const renderedProgress = clamp(progress, 0, links.length - 1);
+  const activeIndex = Math.round(renderedProgress + Number.EPSILON);
+  const fontSizes = getChapterFontSizes();
+  const focusedLink = links.find((link) => link === document.activeElement);
+
+  setActiveChapter(links, activeIndex);
+  links.forEach((link, index) => {
+    const distance = Math.abs(index - renderedProgress);
+    const emphasis = Math.max(0, 1 - distance);
+    const angularlyVisible = distance <= 3;
+    const fontSize = fontSizes.inactive + (fontSizes.active - fontSizes.inactive) * emphasis;
+
+    link.style.opacity = String(getChapterOpacity(distance));
+    link.style.pointerEvents = angularlyVisible ? "auto" : "none";
+    numbers[index]?.style.setProperty("font-size", `${fontSize}px`);
+
+    const bounds = link.getBoundingClientRect();
+    const intersectsViewport =
+      bounds.right > 0 &&
+      bounds.left < window.innerWidth &&
+      bounds.bottom > 0 &&
+      bounds.top < window.innerHeight;
+    link.tabIndex = angularlyVisible && intersectsViewport ? 0 : -1;
+  });
+
+  if (focusedLink?.tabIndex === -1) {
+    links[activeIndex]?.focus({ preventScroll: true });
+  }
+}
+
+function getChapterElements() {
   const rail = document.querySelector<HTMLElement>("[data-chapter-rail]");
+  const rotor = document.querySelector<HTMLElement>("[data-chapter-dial-rotor]");
   const links = Array.from(document.querySelectorAll<HTMLAnchorElement>("[data-chapter-link]"));
   const entries = links.flatMap((link) => {
     const chapter = document.querySelector<HTMLElement>(link.hash);
-    return chapter ? [{ link, chapter }] : [];
+    const label = link.querySelector<HTMLElement>("[data-chapter-label]");
+    const number = link.querySelector<HTMLElement>(".chapter-dial-number");
+    return chapter && label && number ? [{ chapter, label, link, number }] : [];
   });
-  const chapterLinks = entries.map(({ link }) => link);
-  const chapters = entries.map(({ chapter }) => chapter);
-  if (!rail || entries.length === 0) return () => undefined;
+
+  if (!rail || !rotor || entries.length !== links.length || entries.length === 0) return null;
+
+  return {
+    rail,
+    rotor,
+    links: entries.map(({ link }) => link),
+    labels: entries.map(({ label }) => label),
+    numbers: entries.map(({ number }) => number),
+    chapters: entries.map(({ chapter }) => chapter),
+  };
+}
+
+function initReducedChapterDial(): () => void {
+  const elements = getChapterElements();
+  if (!elements) return () => undefined;
+
+  const { chapters, labels, links, numbers, rail, rotor } = elements;
 
   let frame = 0;
   const update = () => {
@@ -56,10 +131,10 @@ function initChapterState(manageActiveState: boolean): () => void {
     const activeIndex = Math.round(progress);
     const angle = activeIndex * CHAPTER_STEP_ANGLE;
 
-    if (manageActiveState) setActiveChapter(chapterLinks, activeIndex);
-
     rail.style.setProperty("--chapter-rotor-angle", `${-angle}deg`);
     rail.style.setProperty("--chapter-label-angle", `${angle}deg`);
+    rotor.style.setProperty("--chapter-highlight-angle", `${angle}deg`);
+    updateChapterPresentation(links, numbers, activeIndex);
   };
   const requestUpdate = () => {
     if (frame === 0) frame = window.requestAnimationFrame(update);
@@ -69,38 +144,26 @@ function initChapterState(manageActiveState: boolean): () => void {
   window.addEventListener("scroll", requestUpdate, { passive: true });
   window.addEventListener("resize", requestUpdate);
 
-  const visibilityObserver = new IntersectionObserver((observations) => {
-    for (const observation of observations) {
-      const link = observation.target as HTMLAnchorElement;
-      link.tabIndex = observation.isIntersecting ? 0 : -1;
-    }
-  });
-  entries.forEach(({ link }) => visibilityObserver.observe(link));
-
   return () => {
     if (frame !== 0) window.cancelAnimationFrame(frame);
     window.removeEventListener("scroll", requestUpdate);
     window.removeEventListener("resize", requestUpdate);
-    visibilityObserver.disconnect();
-    entries.forEach(({ link }) => link.removeAttribute("tabindex"));
+    rail.style.removeProperty("--chapter-rotor-angle");
+    rail.style.removeProperty("--chapter-label-angle");
+    rotor.style.removeProperty("--chapter-highlight-angle");
+    labels.forEach((label) => label.style.removeProperty("transform"));
+    links.forEach((link) => {
+      link.style.removeProperty("opacity");
+      link.style.removeProperty("pointer-events");
+      link.removeAttribute("tabindex");
+    });
+    numbers.forEach((number) => number.style.removeProperty("font-size"));
   };
 }
 
 export function initMotion(): void {
   gsap.registerPlugin(ScrollTrigger);
   const media = gsap.matchMedia();
-
-  media.add(
-    {
-      chapterViewport: "(min-width: 1024px)",
-      noReduce: "(prefers-reduced-motion: no-preference)",
-    },
-    (context) => {
-      const conditions = context.conditions as { chapterViewport: boolean; noReduce: boolean };
-      if (!conditions.chapterViewport) return;
-      return initChapterState(!conditions.noReduce);
-    }
-  );
 
   media.add(
     {
@@ -158,59 +221,41 @@ export function initMotion(): void {
     },
     (context) => {
       const conditions = context.conditions as { chapterDesktop: boolean; noReduce: boolean };
-      if (!conditions.chapterDesktop || !conditions.noReduce) return;
+      if (!conditions.chapterDesktop) return;
+      if (!conditions.noReduce) return initReducedChapterDial();
 
-      const wrapper = document.querySelector<HTMLElement>("[data-chapter-scroll]");
-      const rail = document.querySelector<HTMLElement>("[data-chapter-rail]");
-      const rotor = document.querySelector<HTMLElement>("[data-chapter-dial-rotor]");
-      const labels = Array.from(document.querySelectorAll<HTMLElement>("[data-chapter-label]"));
-      const links = Array.from(document.querySelectorAll<HTMLAnchorElement>("[data-chapter-link]"));
-      const chapters = links.flatMap((link) => {
-        const chapter = document.querySelector<HTMLElement>(link.hash);
-        return chapter ? [chapter] : [];
-      });
-      const contact = document.querySelector<HTMLElement>("#contact");
-      if (
-        !wrapper ||
-        !rail ||
-        !rotor ||
-        !contact ||
-        labels.length !== chapters.length ||
-        chapters.length === 0
-      ) {
-        return;
-      }
+      const elements = getChapterElements();
+      if (!elements) return;
+
+      const { chapters, labels, links, numbers, rotor } = elements;
 
       const updateRenderedState = () => {
         const rotation = Number(gsap.getProperty(rotor, "rotation"));
-        const activeIndex = Math.round(-rotation / CHAPTER_STEP_ANGLE);
-        setActiveChapter(links, activeIndex);
+        const renderedProgress = clamp(-rotation / CHAPTER_STEP_ANGLE, 0, chapters.length - 1);
+        const counterRotation = -rotation;
+
+        labels.forEach((label, index) => {
+          label.style.transform = `rotate(${counterRotation - index * CHAPTER_STEP_ANGLE}deg)`;
+        });
+        rotor.style.setProperty(
+          "--chapter-highlight-angle",
+          `${renderedProgress * CHAPTER_STEP_ANGLE}deg`
+        );
+        updateChapterPresentation(links, numbers, renderedProgress);
       };
       const rotateRotor = gsap.quickTo(rotor, "rotation", {
         duration: 0.35,
         ease: "power2.out",
         onUpdate: updateRenderedState,
       });
-      const rotateLabels = labels.map((label) =>
-        gsap.quickTo(label, "rotation", {
-          duration: 0.35,
-          ease: "power2.out",
-        })
-      );
       const updateDial = () => {
         const progress = getChapterProgress(chapters);
-        const angle = progress * CHAPTER_STEP_ANGLE;
-        rotateRotor(-angle);
-        rotateLabels.forEach((rotateLabel, index) => {
-          rotateLabel(angle - index * CHAPTER_STEP_ANGLE);
-        });
+        rotateRotor(-progress * CHAPTER_STEP_ANGLE);
       };
 
       const dialTrigger = ScrollTrigger.create({
-        trigger: wrapper,
-        start: "top bottom",
-        endTrigger: contact,
-        end: "bottom top",
+        start: 0,
+        end: "max",
         invalidateOnRefresh: true,
         onRefresh: updateDial,
         onUpdate: updateDial,
@@ -221,6 +266,16 @@ export function initMotion(): void {
 
       return () => {
         dialTrigger.kill();
+        gsap.killTweensOf(rotor);
+        gsap.set(rotor, { clearProps: "transform" });
+        rotor.style.removeProperty("--chapter-highlight-angle");
+        labels.forEach((label) => label.style.removeProperty("transform"));
+        links.forEach((link) => {
+          link.style.removeProperty("opacity");
+          link.style.removeProperty("pointer-events");
+          link.removeAttribute("tabindex");
+        });
+        numbers.forEach((number) => number.style.removeProperty("font-size"));
       };
     }
   );

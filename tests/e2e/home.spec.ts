@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { readFileSync } from "node:fs";
 
 const vercelConfig = JSON.parse(readFileSync("vercel.json", "utf8")) as {
@@ -8,6 +8,25 @@ const vercelConfig = JSON.parse(readFileSync("vercel.json", "utf8")) as {
 const contentSecurityPolicy = vercelConfig.headers
   .find(({ source }) => source === "/(.*)")
   ?.headers.find(({ key }) => key === "Content-Security-Policy")?.value;
+
+const chapters = [
+  { id: "about", name: "01 About" },
+  { id: "skills", name: "02 Skills" },
+  { id: "projects", name: "03 Projects" },
+  { id: "blog", name: "04 Blog" },
+  { id: "contact", name: "05 Contact" },
+] as const;
+
+async function scrollToSectionCenter(page: Page, selector: string) {
+  await page.locator(selector).evaluate((section) => {
+    const root = document.documentElement;
+    const previousBehavior = root.style.scrollBehavior;
+    const bounds = section.getBoundingClientRect();
+    root.style.scrollBehavior = "auto";
+    window.scrollTo(0, window.scrollY + bounds.top + bounds.height / 2 - window.innerHeight / 2);
+    root.style.scrollBehavior = previousBehavior;
+  });
+}
 
 test("desktop homepage interactions and accessibility", async ({ page }) => {
   await page.goto("/");
@@ -33,7 +52,63 @@ test("desktop homepage interactions and accessibility", async ({ page }) => {
   expect(results.violations).toEqual([]);
 });
 
-test("desktop chapter dial stays pinned and tracks the active section", async ({
+test("desktop chapter dial keeps one fixed indicator through every scroll state", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, "desktop project only");
+  await page.goto("/");
+
+  const rail = page.getByRole("navigation", { name: "Bab halaman" });
+  const dot = rail.locator("[data-chapter-dot]");
+  await expect(rail).toBeVisible();
+  await expect(rail.getByRole("link")).toHaveCount(5);
+  await expect(rail.locator("[data-chapter-dial-rotor]")).toBeVisible();
+  await expect(rail.locator("[data-chapter-label]")).toHaveCount(5);
+  await expect(dot).toHaveCount(1);
+  expect(await rail.evaluate((element) => getComputedStyle(element).position)).toBe("fixed");
+  expect(
+    await rail
+      .locator("[data-chapter-dial]")
+      .evaluate((element) => getComputedStyle(element).position)
+  ).toBe("fixed");
+
+  const initialDot = await dot.boundingBox();
+  expect(initialDot).not.toBeNull();
+
+  const positions = ["hero", ...chapters.map(({ id }) => id)];
+  for (const id of positions) {
+    if (id === "hero") {
+      await page.evaluate(() => window.scrollTo(0, 0));
+    } else {
+      await scrollToSectionCenter(page, `#${id}`);
+      const chapter = chapters.find((item) => item.id === id);
+      if (!chapter) throw new Error(`Unknown chapter: ${id}`);
+      await expect(rail.getByRole("link", { name: chapter.name })).toHaveAttribute(
+        "aria-current",
+        "step"
+      );
+    }
+
+    const bounds = await dot.boundingBox();
+    expect(bounds, `dot bounds at #${id}`).not.toBeNull();
+    expect(
+      Math.abs((bounds?.x ?? 0) - (initialDot?.x ?? 0)),
+      `dot x at #${id}`
+    ).toBeLessThanOrEqual(1);
+    expect(
+      Math.abs((bounds?.y ?? 0) - (initialDot?.y ?? 0)),
+      `dot y at #${id}`
+    ).toBeLessThanOrEqual(1);
+  }
+
+  const contactLink = rail.getByRole("link", { name: "05 Contact" });
+  await contactLink.click();
+  await expect(page).toHaveURL(/#contact$/);
+  await expect(page.locator("#contact")).toBeInViewport();
+});
+
+test("chapter progress clamps and angular distance controls visibility", async ({
   page,
   isMobile,
 }) => {
@@ -42,30 +117,87 @@ test("desktop chapter dial stays pinned and tracks the active section", async ({
 
   const rail = page.getByRole("navigation", { name: "Bab halaman" });
   const rotor = rail.locator("[data-chapter-dial-rotor]");
-  await expect(rail).toBeVisible();
-  await expect(rail.getByRole("link")).toHaveCount(5);
-  await expect(rotor).toBeVisible();
-  await expect(rail.locator("[data-chapter-label]")).toHaveCount(5);
-  await expect(rail.locator("[data-chapter-dot]")).toHaveCount(5);
+  const rotorRotation = () =>
+    rotor.evaluate((element) => {
+      const matrix = new DOMMatrixReadOnly(getComputedStyle(element).transform);
+      return (Math.atan2(matrix.b, matrix.a) * 180) / Math.PI;
+    });
 
-  const aboutLink = rail.getByRole("link", { name: "01 About" });
-  const projectsLink = rail.getByRole("link", { name: "03 Projects" });
-  const contactLink = rail.getByRole("link", { name: "05 Contact" });
-  await page.locator("#about").evaluate((section) => {
-    const root = document.documentElement;
-    const previousBehavior = root.style.scrollBehavior;
-    const bounds = section.getBoundingClientRect();
-    root.style.scrollBehavior = "auto";
-    window.scrollTo(0, window.scrollY + bounds.top + bounds.height / 2 - window.innerHeight / 2);
-    root.style.scrollBehavior = previousBehavior;
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect.poll(rotorRotation).toBeCloseTo(0, 1);
+  await expect(rail.getByRole("link", { name: "01 About" })).toHaveAttribute(
+    "aria-current",
+    "step"
+  );
+
+  await scrollToSectionCenter(page, "#about");
+  await expect(rail.getByRole("link", { name: "01 About" })).toHaveAttribute(
+    "aria-current",
+    "step"
+  );
+  const aboutStyles = await rail.locator("[data-chapter-link]").evaluateAll((links) =>
+    links.map((link) => ({
+      opacity: Number.parseFloat(getComputedStyle(link).opacity),
+      pointerEvents: getComputedStyle(link).pointerEvents,
+    }))
+  );
+  aboutStyles.forEach(({ opacity }, index) => {
+    expect(opacity).toBeCloseTo([1, 0.45, 0.2, 0.08, 0][index] ?? 0, 4);
   });
-  await expect(aboutLink).toHaveAttribute("aria-current", "step");
-  const initialTop = (await rail.boundingBox())?.y;
-  const initialTransform = await rotor.evaluate((element) => getComputedStyle(element).transform);
-  const initialDot = await aboutLink.locator("[data-chapter-dot]").boundingBox();
-  expect(initialTop).toBeDefined();
-  expect(initialDot).not.toBeNull();
-  await expect(contactLink).toHaveAttribute("tabindex", "-1");
+  expect(aboutStyles[4]?.pointerEvents).toBe("none");
+  await expect(rail.getByRole("link", { name: "05 Contact" })).toHaveAttribute("tabindex", "-1");
+
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await expect.poll(rotorRotation).toBeCloseTo(-120, 1);
+  await expect(rail.getByRole("link", { name: "05 Contact" })).toHaveAttribute(
+    "aria-current",
+    "step"
+  );
+});
+
+test("chapter dial never leaves keyboard focus on a hidden step", async ({ page, isMobile }) => {
+  test.skip(isMobile, "desktop project only");
+  await page.goto("/");
+
+  const rail = page.getByRole("navigation", { name: "Bab halaman" });
+  const aboutLink = rail.getByRole("link", { name: "01 About" });
+  await scrollToSectionCenter(page, "#about");
+  await aboutLink.focus();
+  await expect(aboutLink).toBeFocused();
+
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await expect(rail.getByRole("link", { name: "05 Contact" })).toHaveAttribute(
+    "aria-current",
+    "step"
+  );
+
+  const focusedState = await page.evaluate(() => {
+    const focused = document.activeElement as HTMLElement | null;
+    return {
+      isChapterLink: focused?.matches("[data-chapter-link]") ?? false,
+      opacity: focused ? Number.parseFloat(getComputedStyle(focused).opacity) : 0,
+      pointerEvents: focused ? getComputedStyle(focused).pointerEvents : "none",
+      tabIndex: focused?.tabIndex ?? -1,
+    };
+  });
+  expect(focusedState).toEqual({
+    isChapterLink: true,
+    opacity: expect.any(Number),
+    pointerEvents: "auto",
+    tabIndex: 0,
+  });
+  expect(focusedState.opacity).toBeGreaterThan(0);
+});
+
+test("chapter labels remain upright and crossfade at fractional progress", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, "desktop project only");
+  await page.goto("/");
+
+  const rail = page.getByRole("navigation", { name: "Bab halaman" });
+  const rotor = rail.locator("[data-chapter-dial-rotor]");
 
   await page.evaluate(() => {
     const root = document.documentElement;
@@ -90,7 +222,7 @@ test("desktop chapter dial stays pinned and tracks the active section", async ({
       })
     )
     .toBeCloseTo(-15, 1);
-  const orientationErrors = await rail.locator("[data-step-index]").evaluateAll((steps) => {
+  const renderedState = await rail.locator("[data-step-index]").evaluateAll((steps) => {
     const getRotation = (element: Element) => {
       const matrix = new DOMMatrixReadOnly(getComputedStyle(element).transform);
       return (Math.atan2(matrix.b, matrix.a) * 180) / Math.PI;
@@ -100,52 +232,104 @@ test("desktop chapter dial stays pinned and tracks the active section", async ({
     const rotorRotation = getRotation(rotor);
     return steps.map((step) => {
       const label = step.querySelector<HTMLElement>("[data-chapter-label]");
-      if (!label) throw new Error("Chapter label is missing");
-      const combined = rotorRotation + getRotation(step) + getRotation(label);
-      return Math.abs(((combined + 180) % 360) - 180);
+      const link = step.querySelector<HTMLElement>("[data-chapter-link]");
+      const number = step.querySelector<HTMLElement>(".chapter-dial-number");
+      if (!label || !link || !number) throw new Error("Chapter label is incomplete");
+      const effectiveRotation = rotorRotation + getRotation(step) + getRotation(label);
+      return {
+        fontSize: Number.parseFloat(getComputedStyle(number).fontSize),
+        opacity: Number.parseFloat(getComputedStyle(link).opacity),
+        orientationError: Math.abs(((effectiveRotation + 180) % 360) - 180),
+      };
     });
   });
-  for (const error of orientationErrors) expect(error).toBeLessThanOrEqual(0.5);
+  for (const { orientationError } of renderedState) {
+    expect(orientationError).toBeLessThanOrEqual(0.5);
+  }
 
-  await page.locator("#projects").evaluate((section) => {
-    const root = document.documentElement;
-    const previousBehavior = root.style.scrollBehavior;
-    const bounds = section.getBoundingClientRect();
-    root.style.scrollBehavior = "auto";
-    window.scrollTo(0, window.scrollY + bounds.top + bounds.height / 2 - window.innerHeight / 2);
-    root.style.scrollBehavior = previousBehavior;
-  });
-  await expect(projectsLink).toHaveAttribute("aria-current", "step");
-  await expect
-    .poll(() => rotor.evaluate((element) => getComputedStyle(element).transform))
-    .not.toBe(initialTransform);
-  const projectTop = (await rail.boundingBox())?.y;
-  const projectDot = projectsLink.locator("[data-chapter-dot]");
-  expect(projectTop).toBeDefined();
-  expect(Math.abs((projectTop ?? 0) - (initialTop ?? 0))).toBeLessThanOrEqual(2);
-  await expect
-    .poll(async () => {
-      const bounds = await projectDot.boundingBox();
-      return Math.abs((bounds?.x ?? 0) - (initialDot?.x ?? 0));
-    })
-    .toBeLessThanOrEqual(2);
-  await expect
-    .poll(async () => {
-      const bounds = await projectDot.boundingBox();
-      return Math.abs((bounds?.y ?? 0) - (initialDot?.y ?? 0));
-    })
-    .toBeLessThanOrEqual(2);
-
-  await expect(contactLink).toHaveAttribute("tabindex", "0");
-  await contactLink.click();
-  await expect(page).toHaveURL(/#contact$/);
-  await expect(page.locator("#contact")).toBeInViewport();
+  const expectedMidpointFontSize =
+    (Math.max(16.8, Math.min(16 * 1.25, 12.8 * 1.3)) + Math.max(24, Math.min(32, 12.8 * 1.9))) / 2;
+  expect(renderedState[0]?.opacity).toBeCloseTo(0.725, 2);
+  expect(renderedState[1]?.opacity).toBeCloseTo(0.725, 2);
+  expect(renderedState[0]?.fontSize).toBeCloseTo(expectedMidpointFontSize, 1);
+  expect(renderedState[1]?.fontSize).toBeCloseTo(expectedMidpointFontSize, 1);
+  await expect(rail.getByRole("link", { name: "02 Skills" })).toHaveAttribute(
+    "aria-current",
+    "step"
+  );
 });
 
-test("chapter dial keeps a cropped composition on ultrawide screens", async ({
-  page,
-  isMobile,
-}) => {
+test("chapter dial renders the frost ring and fixed halo", async ({ page, isMobile }) => {
+  test.skip(isMobile, "desktop project only");
+  await page.goto("/");
+
+  const styles = await page.evaluate(() => {
+    const rotor = document.querySelector<HTMLElement>("[data-chapter-dial-rotor]");
+    const dot = document.querySelector<HTMLElement>("[data-chapter-dot]");
+    if (!rotor || !dot) throw new Error("Chapter dial is missing");
+    const rotorStyle = getComputedStyle(rotor);
+    const highlightStyle = getComputedStyle(rotor, "::before");
+    const dotStyle = getComputedStyle(dot);
+
+    return {
+      borderColor: rotorStyle.borderTopColor,
+      dotBoxShadow: dotStyle.boxShadow,
+      dotHeight: Number.parseFloat(dotStyle.height),
+      dotWidth: Number.parseFloat(dotStyle.width),
+      highlightBackground: highlightStyle.backgroundImage,
+    };
+  });
+
+  expect(styles.borderColor).toBe("rgba(136, 192, 208, 0.22)");
+  expect(styles.highlightBackground).toContain("conic-gradient");
+  expect(styles.dotWidth).toBe(7);
+  expect(styles.dotHeight).toBe(7);
+  expect(styles.dotBoxShadow).toContain("rgba(136, 192, 208, 0.12) 0px 0px 0px 6px");
+  expect(styles.dotBoxShadow).toContain("rgba(136, 192, 208, 0.45) 0px 0px 22px 0px");
+});
+
+test("desktop chapter dial stays clear of the content gutter", async ({ page, isMobile }) => {
+  test.skip(isMobile, "desktop project only");
+
+  for (const width of [1024, 1280, 1440, 1920]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/");
+
+    for (const chapter of chapters) {
+      await scrollToSectionCenter(page, `#${chapter.id}`);
+      await expect(page.getByRole("link", { name: chapter.name })).toHaveAttribute(
+        "aria-current",
+        "step"
+      );
+
+      const geometry = await page.evaluate(() => {
+        const content = document.querySelector<HTMLElement>("#about > div");
+        const candidates = Array.from(
+          document.querySelectorAll<HTMLElement>("[data-chapter-label], [data-chapter-dot]")
+        ).filter((element) => {
+          if (element.matches("[data-chapter-dot]")) return true;
+          const link = element.closest<HTMLElement>("[data-chapter-link]");
+          return link && Number.parseFloat(getComputedStyle(link).opacity) > 0;
+        });
+        if (!content || candidates.length === 0) throw new Error("Chapter geometry is missing");
+
+        return {
+          contentLeft: content.getBoundingClientRect().left,
+          visualRight: Math.max(
+            ...candidates.map((element) => element.getBoundingClientRect().right)
+          ),
+        };
+      });
+
+      expect(
+        geometry.visualRight,
+        `${width}px at #${chapter.id}: dial right ${geometry.visualRight}, content left ${geometry.contentLeft}`
+      ).toBeLessThanOrEqual(geometry.contentLeft - 16);
+    }
+  }
+});
+
+test("chapter dial follows the content gutter on ultrawide screens", async ({ page, isMobile }) => {
   test.skip(isMobile, "desktop project only");
   await page.setViewportSize({ width: 2560, height: 1000 });
   await page.goto("/");
@@ -159,7 +343,7 @@ test("chapter dial keeps a cropped composition on ultrawide screens", async ({
   const rotorBounds = await page.locator("[data-chapter-dial-rotor]").boundingBox();
   expect(rotorBounds).not.toBeNull();
   expect(rotorBounds?.x).toBeLessThan(0);
-  expect((rotorBounds?.x ?? 0) + (rotorBounds?.width ?? 0)).toBeLessThan(640);
+  expect((rotorBounds?.x ?? 0) + (rotorBounds?.width ?? 0)).toBeCloseTo(680, 0);
 });
 
 test("project cards use covers and concise summaries", async ({ page }) => {
@@ -201,6 +385,16 @@ test("mobile menu closes with Escape and returns focus", async ({ page, isMobile
   await expect(page.getByRole("navigation", { name: "Bab halaman" })).toBeHidden();
 });
 
+test("chapter dial stays hidden below the desktop breakpoint", async ({ page, isMobile }) => {
+  test.skip(isMobile, "covered by the desktop breakpoint boundary");
+  await page.setViewportSize({ width: 1023, height: 768 });
+  await page.goto("/");
+  await expect(page.getByRole("navigation", { name: "Bab halaman" })).toBeHidden();
+
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await expect(page.getByRole("navigation", { name: "Bab halaman" })).toBeVisible();
+});
+
 test("reduced motion disables continuous homepage animation", async ({ page, isMobile }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
@@ -215,7 +409,7 @@ test("reduced motion disables continuous homepage animation", async ({ page, isM
   const railPosition = await page
     .locator("[data-chapter-rail]")
     .evaluate((element) => getComputedStyle(element).position);
-  expect(railPosition).toBe("sticky");
+  expect(railPosition).toBe("fixed");
 
   const rotor = page.locator("[data-chapter-dial-rotor]");
   await page.locator("#projects").scrollIntoViewIfNeeded();
