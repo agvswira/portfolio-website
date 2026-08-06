@@ -23,7 +23,7 @@ const { project } = Astro.props;
 const { Content } = await render(project);
 const canonicalPath = `/projects/${project.data.slug}`;
 const canonicalUrl = new URL(canonicalPath, SITE.url).href;
-const projectImage = project.data.coverImage ?? SITE.ogImage;
+const projectImage = project.data.coverImage;
 const projectJsonLd = {
   "@context": "https://schema.org",
   "@type": "CreativeWork",
@@ -58,6 +58,11 @@ const projectJsonLd = {
         <header class="mb-14">
           <div class="mb-5 flex flex-wrap items-center gap-2">
             {project.data.featured && <Badge variant="featured">Featured</Badge>}
+            {
+              project.data.status === "discontinued" && (
+                <Badge variant="discontinued">Discontinued</Badge>
+              )
+            }
             {project.data.tags.map((tag) => <Badge variant="tag">{tag}</Badge>)}
           </div>
           <h1

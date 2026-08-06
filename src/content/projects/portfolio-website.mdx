@@ -6,7 +6,7 @@ problem: "Versi awal portfolio sudah terlihat lengkap, tetapi proyek hanya tampi
 role: "Solo designer dan developer — menyusun konten, design system, frontend, motion, endpoint server, serta deployment."
 timeline: "22 Juni 2026–sekarang — versi awal, audit menyeluruh, case study MDX, lalu migrasi bertahap dari Next.js ke Astro."
 publishedDate: "2026-08-05"
-updatedDate: "2026-08-05"
+updatedDate: "2026-08-06"
 stack:
   - "Astro 7"
   - "TypeScript"
@@ -19,12 +19,13 @@ stack:
   - "OpenAI-compatible API"
 outcome:
   - "Semua halaman publik diprerender lewat Astro; hanya endpoint contact dan chat yang berjalan sebagai serverless function."
-  - "Runtime React, Framer Motion, Lenis, dan canvas lama dihapus; halaman blog dan proyek tidak mengirim JavaScript eager."
-  - "Homepage mengirim sekitar 46 kB JavaScript gzip dan streaming chat baru dimuat setelah pesan pertama dikirim."
+  - "Runtime React, Framer Motion, Lenis, dan canvas lama dihapus; halaman konten hanya memuat sekitar 0,9 kB JavaScript gzip untuk navbar global."
+  - "Homepage mengirim sekitar 47 kB JavaScript gzip dan streaming chat baru dimuat setelah pesan pertama dikirim."
 demoUrl: "https://aguswira.dev"
 repoUrl: "https://github.com/agvswira/portfolio-website"
-coverImage: null
+coverImage: "/images/og.png"
 featured: false
+status: "active"
 tags: ["Portfolio", "Astro", "MDX", "Frontend"]
 evidence:
   - label: "Live website"
@@ -60,9 +61,9 @@ Semua case study memakai urutan yang sama: Problem, Approach, Architecture,
 Outcome, lalu Lessons. Urutan ini bukan supaya setiap tulisan terdengar seragam,
 tetapi supaya pembaca tahu di mana harus mencari informasi.
 
-Homepage juga diubah agar kartu proyek menampilkan outcome, bukan deskripsi
-generik. Pengunjung bisa membaca hasil utamanya dengan cepat, lalu membuka case
-study jika ingin melihat detail.
+Homepage menampilkan cover proyek dan ringkasan singkat pada setiap kartu agar
+pengunjung bisa mengenali konteksnya dengan cepat. Outcome yang lebih rinci
+tetap berada di case study supaya kartu tidak berubah menjadi dinding teks.
 
 Astro Content Collections memeriksa frontmatter sebelum build.
 Slug harus valid, field wajib tidak boleh kosong, dan body MDX tidak boleh
@@ -117,15 +118,15 @@ Website publik dapat dibuka di [aguswira.dev](https://aguswira.dev), sedangkan
 source-nya tersedia di
 [GitHub](https://github.com/agvswira/portfolio-website).
 
-Pada build kandidat migrasi, seluruh slug blog dan proyek dibuat sebagai static
-page. Setiap halaman memiliki satu H1, canonical URL, social metadata, serta
+Pada build Astro, seluruh slug blog dan proyek dibuat sebagai static page.
+Setiap halaman memiliki satu H1, canonical URL, social metadata, serta
 structured data sesuai jenis kontennya.
 
 | Route              | Rendering         | JavaScript eager (gzip) |
 | ------------------ | ----------------- | ----------------------: |
-| `/`                | Static            |           sekitar 46 kB |
-| `/blog/[slug]`     | Static            |                    0 kB |
-| `/projects/[slug]` | Static            |                    0 kB |
+| `/`                | Static            |           sekitar 47 kB |
+| `/blog/[slug]`     | Static            |          sekitar 0,9 kB |
+| `/projects/[slug]` | Static            |          sekitar 0,9 kB |
 | `/api/*`           | Vercel serverless |                       — |
 
 Vitest mencakup schema, validasi API, rate-limit key, timeout, abort, provider,
@@ -133,8 +134,8 @@ dan parser SSE. Playwright memeriksa keyboard flow, reduced motion, axe,
 contact, dan streaming chat di viewport desktop serta mobile tanpa memanggil
 provider live.
 
-Kandidat Astro ini masih berada di branch migrasi. Cutover ke production baru
-dilakukan setelah audit performa, Preview Vercel, dan smoke test selesai.
+Implementasi Astro kini menjadi versi utama. Perubahan berikutnya tetap
+melewati build, audit performa, Preview Vercel, dan smoke test sebelum dirilis.
 
 ## Lessons
 
@@ -148,7 +149,8 @@ sebagai referensi sampai halaman, interaksi, dan API Astro terbukti setara, baru
 kemudian dihapus.
 
 Pelajaran teknis terbesarnya adalah menjaga JavaScript sebagai pilihan per
-route. Halaman konten tidak memerlukannya, homepage hanya memuat interaksi yang
-terlihat, dan parser streaming chat masuk ke lazy chunk setelah pengguna benar-
-benar mengirim pesan. Hasil performa akhir tetap harus dibuktikan lewat
-Lighthouse dan Preview production-like, bukan hanya ukuran bundle lokal.
+route. Halaman konten hanya memuat script kecil untuk navigasi global, homepage
+memuat interaksi yang terlihat, dan parser streaming chat masuk ke lazy chunk
+setelah pengguna benar-benar mengirim pesan. Hasil performa akhir tetap harus
+dibuktikan lewat Lighthouse dan Preview production-like, bukan hanya ukuran
+bundle lokal.

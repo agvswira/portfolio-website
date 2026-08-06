@@ -1,7 +1,7 @@
 ---
 import { Icon } from "astro-icon/components";
 
-import { PERSONAL, SOCIAL_LINKS } from "@/lib/constants";
+import { SOCIAL_LINKS } from "@/lib/constants";
 import Section from "@/ui/Section.astro";
 
 const icons: Record<string, string> = {
@@ -124,11 +124,6 @@ const inputClass =
           ))
         }
       </div>
-      <p class="text-xs text-text-muted">
-        Email: <a class="text-frost hover:underline" href={`mailto:${PERSONAL.email}`}
-          >{PERSONAL.email}</a
-        >
-      </p>
     </div>
   </div>
 </Section>

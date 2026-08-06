@@ -33,6 +33,65 @@ test("desktop homepage interactions and accessibility", async ({ page }) => {
   expect(results.violations).toEqual([]);
 });
 
+test("desktop chapter rail stays pinned and tracks the active section", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, "desktop project only");
+  await page.goto("/");
+
+  const rail = page.getByRole("navigation", { name: "Bab halaman" });
+  await expect(rail).toBeVisible();
+  await expect(rail.getByRole("link")).toHaveCount(5);
+
+  await page.locator("#about").scrollIntoViewIfNeeded();
+  await expect(rail.getByRole("link", { name: "01 About" })).toHaveAttribute(
+    "aria-current",
+    "step"
+  );
+  const initialTop = (await rail.boundingBox())?.y;
+  expect(initialTop).toBeDefined();
+
+  await page.locator("#projects").scrollIntoViewIfNeeded();
+  await expect(rail.getByRole("link", { name: "03 Projects" })).toHaveAttribute(
+    "aria-current",
+    "step"
+  );
+  const projectTop = (await rail.boundingBox())?.y;
+  expect(projectTop).toBeDefined();
+  expect(Math.abs((projectTop ?? 0) - (initialTop ?? 0))).toBeLessThanOrEqual(2);
+
+  await rail.getByRole("link", { name: "05 Contact" }).click();
+  await expect(page).toHaveURL(/#contact$/);
+  await expect(page.locator("#contact")).toBeInViewport();
+});
+
+test("project cards use covers and concise summaries", async ({ page }) => {
+  await page.goto("/");
+
+  const cards = page.locator("[data-project-card]");
+  await expect(cards).toHaveCount(3);
+  await expect(cards.locator("img")).toHaveCount(3);
+  await expect(cards.filter({ hasText: "Outcome" })).toHaveCount(0);
+
+  const elingCard = cards.filter({ hasText: "Eling — WhatsApp Reminder Bot" });
+  await expect(elingCard.getByText("Discontinued", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Discontinued", exact: true })).toHaveCount(0);
+  await expect(page.locator('#contact a[href^="mailto:"]')).toHaveCount(1);
+
+  for (const image of await cards.locator("img").all()) {
+    await image.scrollIntoViewIfNeeded();
+    await expect
+      .poll(() =>
+        image.evaluate((element) => ({
+          width: (element as HTMLImageElement).naturalWidth,
+          height: (element as HTMLImageElement).naturalHeight,
+        }))
+      )
+      .toEqual({ width: 1200, height: 630 });
+  }
+});
+
 test("mobile menu closes with Escape and returns focus", async ({ page, isMobile }) => {
   test.skip(!isMobile, "mobile project only");
   await page.goto("/");
@@ -43,6 +102,7 @@ test("mobile menu closes with Escape and returns focus", async ({ page, isMobile
   await page.keyboard.press("Escape");
   await expect(page.getByRole("navigation", { name: "Navigasi mobile" })).toBeHidden();
   await expect(toggle).toBeFocused();
+  await expect(page.getByRole("navigation", { name: "Bab halaman" })).toBeHidden();
 });
 
 test("reduced motion disables continuous marquee animation", async ({ page }) => {
@@ -53,6 +113,11 @@ test("reduced motion disables continuous marquee animation", async ({ page }) =>
     .locator("[data-marquee]")
     .evaluate((element) => getComputedStyle(element).animationDuration);
   expect(duration).toBe("0s");
+
+  const railPosition = await page
+    .locator("[data-chapter-rail]")
+    .evaluate((element) => getComputedStyle(element).position);
+  expect(railPosition).toBe("sticky");
 });
 
 test("contact form preserves its JSON contract without a live provider", async ({ page }) => {

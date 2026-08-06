@@ -1,0 +1,57 @@
+---
+const chapters = [
+  { number: "01", label: "About", href: "#about" },
+  { number: "02", label: "Skills", href: "#skills" },
+  { number: "03", label: "Projects", href: "#projects" },
+  { number: "04", label: "Blog", href: "#blog" },
+  { number: "05", label: "Contact", href: "#contact" },
+] as const;
+---
+
+<div
+  class="relative mx-auto max-w-[84rem] lg:grid lg:grid-cols-[5rem_minmax(0,1fr)]"
+  data-chapter-scroll
+>
+  <div class="relative hidden lg:block" aria-hidden="false">
+    <nav
+      aria-label="Bab halaman"
+      class="chapter-rail sticky top-[calc(50vh-10rem)] z-20 h-80"
+      data-chapter-rail
+    >
+      <div
+        aria-hidden="true"
+        class="absolute bottom-3 left-[0.4375rem] top-3 w-px bg-nord-border/50"
+      >
+        <span
+          class="chapter-rail-progress block h-full w-px origin-top bg-frost"
+          data-chapter-progress></span>
+      </div>
+      <ol class="relative flex h-full flex-col justify-between py-1" role="list">
+        {
+          chapters.map((chapter, index) => (
+            <li>
+              <a
+                href={chapter.href}
+                aria-label={`${chapter.number} ${chapter.label}`}
+                aria-current={index === 0 ? "step" : undefined}
+                class="chapter-rail-link group relative flex w-full items-center gap-2 py-2 font-mono text-xs tracking-[0.12em]"
+                data-chapter-link
+              >
+                <span
+                  aria-hidden="true"
+                  class="chapter-rail-dot h-3.5 w-3.5 flex-none rounded-full border border-nord-border bg-bg-base transition-colors"
+                />
+                <span aria-hidden="true">{chapter.number}</span>
+                <span class="sr-only">{chapter.label}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </nav>
+  </div>
+
+  <div class="min-w-0" data-chapter-content>
+    <slot />
+  </div>
+</div>

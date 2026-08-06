@@ -4,7 +4,11 @@ const inactiveClasses = ["text-text-muted"];
 function setActiveLink(links: HTMLAnchorElement[], id: string): void {
   for (const link of links) {
     const active = link.hash === `#${id}`;
-    link.toggleAttribute("aria-current", active);
+    if (active) {
+      link.setAttribute("aria-current", "location");
+    } else {
+      link.removeAttribute("aria-current");
+    }
     activeClasses.forEach((name) => link.classList.toggle(name, active));
     inactiveClasses.forEach((name) => link.classList.toggle(name, !active));
   }
@@ -17,6 +21,9 @@ export function initNavigation(): void {
   const closedIcon = document.querySelector<SVGElement>("[data-menu-closed-icon]");
   const openIcon = document.querySelector<SVGElement>("[data-menu-open-icon]");
   const links = Array.from(document.querySelectorAll<HTMLAnchorElement>("[data-nav-link]"));
+  const scrollLinks = Array.from(
+    document.querySelectorAll<HTMLAnchorElement>("[data-nav-link], [data-chapter-link]")
+  );
   if (!header || !toggle || !mobileNav) return;
 
   const setMenuOpen = (open: boolean, returnFocus = false) => {
@@ -43,12 +50,13 @@ export function initNavigation(): void {
     }
   });
 
-  for (const link of links) {
+  for (const link of scrollLinks) {
     link.addEventListener("click", (event) => {
       const target = document.querySelector<HTMLElement>(link.hash);
       if (!target) return;
       event.preventDefault();
       setMenuOpen(false);
+      window.history.pushState(null, "", link.hash);
       const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       if (link.hash === "#hero") {
         window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });

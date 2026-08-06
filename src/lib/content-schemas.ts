@@ -26,9 +26,9 @@ export const projectSchema = z.object({
   repoUrl: z.url(),
   coverImage: z
     .string()
-    .refine(isLocalOrPublicImage, "coverImage wajib berupa URL publik atau path lokal")
-    .nullable(),
+    .refine(isLocalOrPublicImage, "coverImage wajib berupa URL publik atau path lokal"),
   featured: z.boolean(),
+  status: z.enum(["active", "discontinued"]),
   tags: stringList,
   evidence: z.array(
     z.object({

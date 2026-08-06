@@ -13,8 +13,9 @@ const project = {
   outcome: ["Berhasil dirilis"],
   demoUrl: null,
   repoUrl: "https://github.com/agvswira/botpass",
-  coverImage: null,
+  coverImage: "/images/projects/botpass.png",
   featured: true,
+  status: "active",
   tags: ["Web3"],
   evidence: [{ label: "Repository", url: "https://github.com/agvswira/botpass" }],
   publishedDate: "2026-08-05",
@@ -35,8 +36,39 @@ describe("blogSchema", () => {
 });
 
 describe("projectSchema", () => {
-  test("allows unavailable demo and cover values to be null", () => {
-    expect(projectSchema.safeParse(project).success).toBe(true);
+  test("keeps a valid lifecycle status and cover image", () => {
+    const result = projectSchema.safeParse(project);
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.status).toBe("active");
+      expect(result.data.coverImage).toBe("/images/projects/botpass.png");
+    }
+  });
+
+  test("rejects a project without a cover image", () => {
+    const result = projectSchema.safeParse({
+      ...project,
+      coverImage: null,
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  test("rejects an unknown lifecycle status", () => {
+    const result = projectSchema.safeParse({
+      ...project,
+      status: "archived",
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  test("rejects a project without a lifecycle status", () => {
+    const withoutStatus = { ...project };
+    Reflect.deleteProperty(withoutStatus, "status");
+
+    expect(projectSchema.safeParse(withoutStatus).success).toBe(false);
   });
 
   test("rejects placeholder cover text", () => {

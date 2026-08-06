@@ -2,28 +2,44 @@
 import { Icon } from "astro-icon/components";
 
 import { NAV_ITEMS, SITE } from "@/lib/constants";
+
+const pathname = Astro.url.pathname.replace(/\/+$/, "") || "/";
+const isHome = pathname === "/";
+const activeRoute = pathname.startsWith("/blog")
+  ? "#blog"
+  : pathname.startsWith("/projects")
+    ? "#projects"
+    : isHome
+      ? "#hero"
+      : null;
+const hrefFor = (href: (typeof NAV_ITEMS)[number]["href"]) => (isHome ? href : `/${href}`);
+const isActive = (href: (typeof NAV_ITEMS)[number]["href"]) => href === activeRoute;
 ---
 
-<header class="fixed inset-x-0 top-0 z-40 transition-all duration-300" data-navbar>
+<header
+  class="fixed inset-x-0 top-0 z-40 transition-all duration-300"
+  data-navbar
+  data-page={isHome ? "home" : "content"}
+>
   <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
     <a
-      href="#hero"
+      href={isHome ? "#hero" : "/"}
       class="text-lg font-semibold tracking-tight"
-      aria-label={`${SITE.name} — ke atas`}
+      aria-label={isHome ? `${SITE.name} — ke atas` : `${SITE.name} — ke beranda`}
     >
       <span class="text-gradient">{SITE.name}</span><span class="text-frost">.</span>
     </a>
     <nav aria-label="Navigasi utama" class="hidden md:block">
       <ul class="flex items-center gap-1" role="list">
         {
-          NAV_ITEMS.map((item, index) => (
+          NAV_ITEMS.map((item) => (
             <li>
               <a
-                href={item.href}
-                aria-current={index === 0 ? "location" : undefined}
+                href={hrefFor(item.href)}
+                aria-current={isActive(item.href) ? (isHome ? "location" : "page") : undefined}
                 class:list={[
                   "block rounded-lg px-4 py-2 text-sm transition-colors",
-                  index === 0
+                  isActive(item.href)
                     ? "border border-nord-border/50 bg-bg-elevated text-text-primary"
                     : "text-text-muted hover:text-text-secondary",
                 ]}
@@ -59,8 +75,12 @@ import { NAV_ITEMS, SITE } from "@/lib/constants";
         NAV_ITEMS.map((item) => (
           <li>
             <a
-              href={item.href}
-              class="block rounded-lg px-4 py-3 text-sm text-text-muted transition-colors hover:bg-bg-elevated/50 hover:text-text-secondary"
+              href={hrefFor(item.href)}
+              aria-current={isActive(item.href) ? (isHome ? "location" : "page") : undefined}
+              class:list={[
+                "block rounded-lg px-4 py-3 text-sm transition-colors hover:bg-bg-elevated/50 hover:text-text-secondary",
+                isActive(item.href) ? "text-text-primary" : "text-text-muted",
+              ]}
               data-nav-link
             >
               {item.label}
@@ -71,3 +91,9 @@ import { NAV_ITEMS, SITE } from "@/lib/constants";
     </ul>
   </nav>
 </header>
+
+<script>
+  import { initNavigation } from "@/scripts/navigation";
+
+  initNavigation();
+</script>

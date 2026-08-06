@@ -54,6 +54,7 @@ body {
   display: none !important;
 }
 
+[data-navbar][data-page="content"],
 [data-navbar][data-scrolled="true"] {
   border-bottom: 1px solid rgba(136, 192, 208, 0.1);
   background: rgba(36, 41, 51, 0.8);
@@ -241,6 +242,35 @@ body {
   color: var(--frost);
 }
 
+/* Homepage chapter rail */
+.chapter-rail-link {
+  color: var(--text-muted);
+  opacity: 0.5;
+  transform: translateX(0);
+  transition:
+    color 220ms ease,
+    opacity 220ms ease,
+    transform 220ms ease;
+}
+.chapter-rail-link:hover,
+.chapter-rail-link:focus-visible {
+  color: var(--text-secondary);
+  opacity: 0.85;
+}
+.chapter-rail-link[aria-current="step"] {
+  color: var(--frost);
+  opacity: 1;
+  transform: translateX(0.2rem);
+}
+.chapter-rail-link[aria-current="step"] .chapter-rail-dot {
+  border-color: var(--frost);
+  background: var(--frost);
+  box-shadow: 0 0 0 4px rgba(136, 192, 208, 0.1);
+}
+.chapter-rail-progress {
+  transform: scaleY(0);
+}
+
 /* Marquee */
 .marquee-container {
   overflow: hidden;
@@ -403,6 +433,9 @@ body {
   }
   .parallax-layer {
     transform: none !important;
+  }
+  .chapter-rail-progress {
+    transform: scaleY(1) !important;
   }
 }
 

@@ -1,6 +1,6 @@
 ---
 interface Props {
-  variant?: "frost" | "featured" | "tag" | "available";
+  variant?: "frost" | "featured" | "discontinued" | "tag" | "available";
   class?: string;
 }
 
@@ -8,6 +8,7 @@ const { variant = "frost", class: className = "" } = Astro.props;
 const variants = {
   frost: "bg-frost/10 text-frost border border-frost/20",
   featured: "bg-aurora-yellow/10 text-aurora-yellow border border-aurora-yellow/20",
+  discontinued: "bg-aurora-red/10 text-[#E099A0] border border-aurora-red/25",
   tag: "bg-bg-elevated text-text-muted border border-nord-border/40 hover:border-frost/30 hover:text-text-secondary transition-colors",
   available: "bg-frost/10 text-frost border border-frost/20",
 };

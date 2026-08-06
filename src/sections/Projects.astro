@@ -50,7 +50,7 @@ const tags = Array.from(new Set(projects.flatMap((project) => project.data.tags)
       projects.map((project) => (
         <article
           class:list={[
-            "project-card hud-card spotlight-card flex flex-col gap-4 p-5",
+            "project-card hud-card spotlight-card flex flex-col overflow-hidden",
             project.data.featured && "border-beam",
           ]}
           data-project-card
@@ -58,61 +58,78 @@ const tags = Array.from(new Set(projects.flatMap((project) => project.data.tags)
           data-reveal
           data-spotlight
         >
-          <div class="flex flex-1 flex-col gap-2">
-            <div class="flex items-start justify-between gap-2">
-              <h3 class="text-sm font-semibold leading-snug text-text-primary">
-                {project.data.title}
-              </h3>
-              {project.data.featured && <Badge variant="featured">Featured</Badge>}
-            </div>
-            <div class="flex-1">
-              <p class="mb-2 text-[10px] uppercase tracking-wider text-text-muted">Outcome</p>
-              <ul class="space-y-2 text-xs leading-relaxed text-text-muted">
-                {project.data.outcome.map((item) => (
-                  <li class="flex gap-2">
-                    <span aria-hidden="true" class="text-frost">
-                      →
-                    </span>
-                    <span>{item}</span>
-                  </li>
+          <a
+            href={`/projects/${project.data.slug}`}
+            aria-label={`Buka case study ${project.data.title}`}
+            class="group relative block aspect-[40/21] overflow-hidden border-b border-nord-border/30 bg-bg-elevated"
+          >
+            <img
+              src={project.data.coverImage}
+              alt={`Cover proyek ${project.data.title}`}
+              width="1200"
+              height="630"
+              loading="lazy"
+              decoding="async"
+              class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]"
+            />
+            <span
+              aria-hidden="true"
+              class="absolute inset-0 bg-gradient-to-t from-bg-base/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+            />
+          </a>
+
+          <div class="relative z-10 flex flex-1 flex-col gap-4 p-5">
+            <div class="flex flex-1 flex-col gap-3">
+              <div class="flex items-start justify-between gap-3">
+                <h3 class="text-sm font-semibold leading-snug text-text-primary">
+                  {project.data.title}
+                </h3>
+                <div class="flex flex-shrink-0 flex-wrap justify-end gap-1.5">
+                  {project.data.featured && <Badge variant="featured">Featured</Badge>}
+                  {project.data.status === "discontinued" && (
+                    <Badge variant="discontinued">Discontinued</Badge>
+                  )}
+                </div>
+              </div>
+              <p class="line-clamp-3 text-xs leading-relaxed text-text-muted">
+                {project.data.summary}
+              </p>
+              <div class="mt-auto flex flex-wrap gap-1.5 pt-1">
+                {project.data.tags.map((tag) => (
+                  <Badge variant="tag">{tag}</Badge>
                 ))}
-              </ul>
+              </div>
             </div>
-            <div class="mt-1 flex flex-wrap gap-1.5">
-              {project.data.tags.map((tag) => (
-                <Badge variant="tag">{tag}</Badge>
-              ))}
-            </div>
-          </div>
-          <div class="flex flex-wrap items-center gap-3 border-t border-nord-border/20 pt-3">
-            <a
-              href={`/projects/${project.data.slug}`}
-              class="text-xs font-medium text-frost transition-colors hover:text-frost-cyan"
-            >
-              Case study →
-            </a>
-            <a
-              href={project.data.repoUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`GitHub — ${project.data.title}`}
-              class="flex items-center gap-1.5 text-xs text-text-muted transition-colors hover:text-frost"
-            >
-              <Icon name="simple-icons:github" size={13} aria-hidden="true" />
-              GitHub
-            </a>
-            {project.data.demoUrl && (
+            <div class="flex flex-wrap items-center gap-3 border-t border-nord-border/20 pt-3">
               <a
-                href={project.data.demoUrl}
+                href={`/projects/${project.data.slug}`}
+                class="text-xs font-medium text-frost transition-colors hover:text-frost-cyan"
+              >
+                Case study →
+              </a>
+              <a
+                href={project.data.repoUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label={`Live Demo — ${project.data.title}`}
+                aria-label={`GitHub — ${project.data.title}`}
                 class="flex items-center gap-1.5 text-xs text-text-muted transition-colors hover:text-frost"
               >
-                <Icon name="lucide:external-link" size={13} aria-hidden="true" />
-                Live Demo
+                <Icon name="simple-icons:github" size={13} aria-hidden="true" />
+                GitHub
               </a>
-            )}
+              {project.data.demoUrl && (
+                <a
+                  href={project.data.demoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Live Demo — ${project.data.title}`}
+                  class="flex items-center gap-1.5 text-xs text-text-muted transition-colors hover:text-frost"
+                >
+                  <Icon name="lucide:external-link" size={13} aria-hidden="true" />
+                  Live Demo
+                </a>
+              )}
+            </div>
           </div>
         </article>
       ))

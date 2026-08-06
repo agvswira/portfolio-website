@@ -9,7 +9,7 @@ import Skills from "@/sections/Skills.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Footer from "@/ui/Footer.astro";
 import ChatWidget from "@/ui/ChatWidget.astro";
-import Navbar from "@/ui/Navbar.astro";
+import ScrollChapters from "@/ui/ScrollChapters.astro";
 
 const [posts, projects] = await Promise.all([getBlogPosts(), getProjects()]);
 ---
@@ -21,14 +21,15 @@ const [posts, projects] = await Promise.all([getBlogPosts(), getProjects()]);
     >
     </div>
   </div>
-  <Navbar />
   <main id="main" class="relative">
     <Hero />
-    <About {posts} {projects} />
-    <Skills />
-    <Projects {projects} />
-    <BlogSection {posts} />
-    <Contact />
+    <ScrollChapters>
+      <About {posts} {projects} />
+      <Skills />
+      <Projects {projects} />
+      <BlogSection {posts} />
+      <Contact />
+    </ScrollChapters>
   </main>
   <Footer />
   <ChatWidget />
