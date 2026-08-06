@@ -3,30 +3,63 @@ import ScrollTrigger from "gsap/ScrollTrigger";
 
 import { shouldRunMotion } from "@/lib/ui-state";
 
-function initChapterState(): void {
+const CHAPTER_STEP_ANGLE = 30;
+
+function setActiveChapter(links: HTMLAnchorElement[], activeIndex: number): void {
+  links.forEach((link, index) => {
+    if (index === activeIndex) {
+      link.setAttribute("aria-current", "step");
+    } else {
+      link.removeAttribute("aria-current");
+    }
+  });
+}
+
+function getChapterProgress(chapters: HTMLElement[]): number {
+  if (chapters.length < 2) return 0;
+
+  const viewportCenter = window.scrollY + window.innerHeight * 0.5;
+  const centers = chapters.map((chapter) => {
+    const bounds = chapter.getBoundingClientRect();
+    return window.scrollY + bounds.top + bounds.height * 0.5;
+  });
+
+  if (viewportCenter <= centers[0]) return 0;
+  if (viewportCenter >= centers[centers.length - 1]) return centers.length - 1;
+
+  for (let index = 0; index < centers.length - 1; index += 1) {
+    const start = centers[index];
+    const end = centers[index + 1];
+    if (viewportCenter <= end) {
+      return index + (viewportCenter - start) / (end - start);
+    }
+  }
+
+  return centers.length - 1;
+}
+
+function initChapterState(manageActiveState: boolean): () => void {
+  const rail = document.querySelector<HTMLElement>("[data-chapter-rail]");
   const links = Array.from(document.querySelectorAll<HTMLAnchorElement>("[data-chapter-link]"));
-  const chapters = links
-    .map((link) => document.querySelector<HTMLElement>(link.hash))
-    .filter((section): section is HTMLElement => section !== null);
-  if (links.length === 0 || chapters.length === 0) return;
+  const entries = links.flatMap((link) => {
+    const chapter = document.querySelector<HTMLElement>(link.hash);
+    return chapter ? [{ link, chapter }] : [];
+  });
+  const chapterLinks = entries.map(({ link }) => link);
+  const chapters = entries.map(({ chapter }) => chapter);
+  if (!rail || entries.length === 0) return () => undefined;
 
   let frame = 0;
   const update = () => {
     frame = 0;
-    const viewportMarker = window.innerHeight * 0.5;
-    let active = chapters[0];
+    const progress = getChapterProgress(chapters);
+    const activeIndex = Math.round(progress);
+    const angle = activeIndex * CHAPTER_STEP_ANGLE;
 
-    for (const chapter of chapters) {
-      if (chapter.getBoundingClientRect().top <= viewportMarker) active = chapter;
-    }
+    if (manageActiveState) setActiveChapter(chapterLinks, activeIndex);
 
-    for (const link of links) {
-      if (link.hash === `#${active.id}`) {
-        link.setAttribute("aria-current", "step");
-      } else {
-        link.removeAttribute("aria-current");
-      }
-    }
+    rail.style.setProperty("--chapter-rotor-angle", `${-angle}deg`);
+    rail.style.setProperty("--chapter-label-angle", `${angle}deg`);
   };
   const requestUpdate = () => {
     if (frame === 0) frame = window.requestAnimationFrame(update);
@@ -35,13 +68,39 @@ function initChapterState(): void {
   update();
   window.addEventListener("scroll", requestUpdate, { passive: true });
   window.addEventListener("resize", requestUpdate);
+
+  const visibilityObserver = new IntersectionObserver((observations) => {
+    for (const observation of observations) {
+      const link = observation.target as HTMLAnchorElement;
+      link.tabIndex = observation.isIntersecting ? 0 : -1;
+    }
+  });
+  entries.forEach(({ link }) => visibilityObserver.observe(link));
+
+  return () => {
+    if (frame !== 0) window.cancelAnimationFrame(frame);
+    window.removeEventListener("scroll", requestUpdate);
+    window.removeEventListener("resize", requestUpdate);
+    visibilityObserver.disconnect();
+    entries.forEach(({ link }) => link.removeAttribute("tabindex"));
+  };
 }
 
 export function initMotion(): void {
   gsap.registerPlugin(ScrollTrigger);
   const media = gsap.matchMedia();
 
-  initChapterState();
+  media.add(
+    {
+      chapterViewport: "(min-width: 1024px)",
+      noReduce: "(prefers-reduced-motion: no-preference)",
+    },
+    (context) => {
+      const conditions = context.conditions as { chapterViewport: boolean; noReduce: boolean };
+      if (!conditions.chapterViewport) return;
+      return initChapterState(!conditions.noReduce);
+    }
+  );
 
   media.add(
     {
@@ -103,32 +162,66 @@ export function initMotion(): void {
 
       const wrapper = document.querySelector<HTMLElement>("[data-chapter-scroll]");
       const rail = document.querySelector<HTMLElement>("[data-chapter-rail]");
-      const progress = document.querySelector<HTMLElement>("[data-chapter-progress]");
+      const rotor = document.querySelector<HTMLElement>("[data-chapter-dial-rotor]");
+      const labels = Array.from(document.querySelectorAll<HTMLElement>("[data-chapter-label]"));
+      const links = Array.from(document.querySelectorAll<HTMLAnchorElement>("[data-chapter-link]"));
+      const chapters = links.flatMap((link) => {
+        const chapter = document.querySelector<HTMLElement>(link.hash);
+        return chapter ? [chapter] : [];
+      });
       const contact = document.querySelector<HTMLElement>("#contact");
-      if (!wrapper || !rail || !progress || !contact) return;
+      if (
+        !wrapper ||
+        !rail ||
+        !rotor ||
+        !contact ||
+        labels.length !== chapters.length ||
+        chapters.length === 0
+      ) {
+        return;
+      }
 
-      ScrollTrigger.create({
+      const updateRenderedState = () => {
+        const rotation = Number(gsap.getProperty(rotor, "rotation"));
+        const activeIndex = Math.round(-rotation / CHAPTER_STEP_ANGLE);
+        setActiveChapter(links, activeIndex);
+      };
+      const rotateRotor = gsap.quickTo(rotor, "rotation", {
+        duration: 0.35,
+        ease: "power2.out",
+        onUpdate: updateRenderedState,
+      });
+      const rotateLabels = labels.map((label) =>
+        gsap.quickTo(label, "rotation", {
+          duration: 0.35,
+          ease: "power2.out",
+        })
+      );
+      const updateDial = () => {
+        const progress = getChapterProgress(chapters);
+        const angle = progress * CHAPTER_STEP_ANGLE;
+        rotateRotor(-angle);
+        rotateLabels.forEach((rotateLabel, index) => {
+          rotateLabel(angle - index * CHAPTER_STEP_ANGLE);
+        });
+      };
+
+      const dialTrigger = ScrollTrigger.create({
         trigger: wrapper,
-        start: "top top+=64",
+        start: "top bottom",
         endTrigger: contact,
-        end: "bottom bottom",
-        pin: rail,
-        pinSpacing: false,
-        anticipatePin: 1,
+        end: "bottom top",
         invalidateOnRefresh: true,
+        onRefresh: updateDial,
+        onUpdate: updateDial,
       });
 
-      gsap.to(progress, {
-        scaleY: 1,
-        ease: "none",
-        scrollTrigger: {
-          trigger: wrapper,
-          start: "top center",
-          endTrigger: contact,
-          end: "bottom center",
-          scrub: 0.6,
-        },
-      });
+      updateDial();
+      updateRenderedState();
+
+      return () => {
+        dialTrigger.kill();
+      };
     }
   );
 }

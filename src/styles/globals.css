@@ -242,33 +242,131 @@ body {
   color: var(--frost);
 }
 
-/* Homepage chapter rail */
-.chapter-rail-link {
+/* Homepage chapter dial */
+.chapter-rail {
+  --chapter-rotor-angle: 0deg;
+  --chapter-label-angle: 0deg;
+}
+.chapter-dial {
+  position: absolute;
+  top: 50%;
+  right: calc(5rem - clamp(21.75rem, 30vw, 30rem));
+  width: clamp(42rem, 52vw, 47rem);
+  height: clamp(42rem, 52vw, 47rem);
+  transform: translateY(-50%);
+}
+@media (min-width: 84rem) {
+  .chapter-dial {
+    right: calc((100vw - 84rem) / 2 + 5rem - clamp(21.75rem, 30vw, 30rem));
+  }
+}
+.chapter-dial-rotor {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(136, 192, 208, 0.14);
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 4rem rgba(136, 192, 208, 0.015),
+    0 0 3rem rgba(19, 23, 31, 0.12);
+  list-style: none;
+  pointer-events: none;
+  transform: rotate(var(--chapter-rotor-angle));
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+.chapter-dial-step {
+  position: absolute;
+  inset: 0;
+  transform: rotate(var(--step-angle));
+  transform-origin: 50% 50%;
+}
+.chapter-dial-step:nth-child(1) {
+  --step-angle: 0deg;
+}
+.chapter-dial-step:nth-child(2) {
+  --step-angle: 30deg;
+}
+.chapter-dial-step:nth-child(3) {
+  --step-angle: 60deg;
+}
+.chapter-dial-step:nth-child(4) {
+  --step-angle: 90deg;
+}
+.chapter-dial-step:nth-child(5) {
+  --step-angle: 120deg;
+}
+.chapter-dial-link {
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  display: block;
   color: var(--text-muted);
-  opacity: 0.5;
-  transform: translateX(0);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  opacity: 0.52;
+  pointer-events: auto;
+  transform: translate(-0.6875rem, -50%);
   transition:
     color 220ms ease,
+    opacity 220ms ease;
+}
+.chapter-dial-marker {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  transform: rotate(calc(var(--chapter-label-angle) - var(--step-angle)));
+  transform-origin: 0.6875rem 50%;
+  will-change: transform;
+}
+.chapter-dial-halo {
+  display: grid;
+  width: 1.375rem;
+  height: 1.375rem;
+  flex: none;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.72);
+  transition:
+    border-color 220ms ease,
     opacity 220ms ease,
     transform 220ms ease;
 }
-.chapter-rail-link:hover,
-.chapter-rail-link:focus-visible {
-  color: var(--text-secondary);
-  opacity: 0.85;
+.chapter-dial-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background: var(--frost);
+  box-shadow: 0 2px 0.5rem rgba(136, 192, 208, 0.24);
 }
-.chapter-rail-link[aria-current="step"] {
+.chapter-dial-number {
+  display: block;
+  min-width: 2ch;
+  line-height: 1;
+  text-shadow: 0 0 1.25rem rgba(36, 41, 51, 0.9);
+}
+.chapter-dial-link:hover,
+.chapter-dial-link:focus-visible {
+  color: var(--text-secondary);
+  opacity: 0.9;
+}
+.chapter-dial-link:active {
+  opacity: 0.75;
+}
+.chapter-dial-link[aria-current="step"] {
   color: var(--frost);
   opacity: 1;
-  transform: translateX(0.2rem);
 }
-.chapter-rail-link[aria-current="step"] .chapter-rail-dot {
-  border-color: var(--frost);
-  background: var(--frost);
-  box-shadow: 0 0 0 4px rgba(136, 192, 208, 0.1);
-}
-.chapter-rail-progress {
-  transform: scaleY(0);
+.chapter-dial-link[aria-current="step"] .chapter-dial-halo {
+  border-color: rgba(136, 192, 208, 0.25);
+  opacity: 1;
+  transform: scale(1);
 }
 
 /* Marquee */
@@ -434,8 +532,9 @@ body {
   .parallax-layer {
     transform: none !important;
   }
-  .chapter-rail-progress {
-    transform: scaleY(1) !important;
+  .chapter-dial-rotor,
+  .chapter-dial-marker {
+    will-change: auto;
   }
 }
 
