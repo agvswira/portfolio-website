@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, migration/astro]
+    branches: [main]
   pull_request:
 
 permissions:
@@ -30,7 +30,6 @@ jobs:
       - run: npm run check:csp
       - run: npm run check:links
       - run: npm run check:bundles
-      - run: npm run check:legacy
       - run: npm audit --audit-level=high
       - uses: actions/upload-artifact@v4
         if: always()

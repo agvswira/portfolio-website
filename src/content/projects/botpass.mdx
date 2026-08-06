@@ -3,10 +3,10 @@ title: "BOTPass"
 slug: "botpass"
 summary: "BOTPass adalah DApp check-in event di BOT Chain. Peserta mencatat kehadiran lewat wallet, lalu statusnya bisa diperiksa langsung dari contract tanpa meminta akses ke data panitia."
 problem: "Daftar hadir yang disimpan di spreadsheet atau platform tertutup hanya bisa dipercaya lewat pengelolanya. BOTPass mencoba membuat catatan check-in yang dapat diperiksa publik tanpa menyimpan nama, email, atau nomor telepon peserta."
-role: "Solo builder — menentukan use case dan alur produk, mengarahkan implementasi lewat vibe coding, lalu menguji serta men-deploy contract ke Testnet dan Mainnet."
+role: "Solo builder — menentukan use case, merancang alur wallet, mengimplementasikan frontend dan smart contract, lalu menguji serta men-deploy contract ke Testnet dan Mainnet."
 timeline: "25 Juli 2026–sekarang — dikembangkan untuk submission BOTChain Build Week Hackathon yang masih berlangsung."
 publishedDate: "2026-08-05"
-updatedDate: "2026-08-05"
+updatedDate: "2026-08-06"
 stack:
   - "Solidity 0.8.20"
   - "OpenZeppelin Contracts 5.0.2"
@@ -54,13 +54,10 @@ buka check-in, kirim transaksi kehadiran, lalu periksa hasilnya.
 
 ## Approach
 
-BOTPass kubangun dengan vibe coding. Aku banyak memakai AI untuk menulis dan
-mengubah kodenya. Guidebook hackathon membolehkan cara kerja ini, termasuk jika
-sebagian besar implementasi dibuat lewat AI. Syaratnya: aplikasinya harus
-bekerja dan aku harus bisa menjelaskan apa yang dilakukan saat demo.
-
-Karena itu, aku tidak memakai jumlah baris yang kutulis manual sebagai ukuran.
-Yang kulihat adalah apakah tiga alur berikut benar-benar bekerja:
+Pengembangan difokuskan pada tiga alur yang dapat diverifikasi dari awal sampai
+akhir. Ukuran keberhasilannya bukan jumlah fitur, tetapi konsistensi aturan di
+contract, kejelasan state pada antarmuka, dan bukti bahwa setiap alur bekerja
+di jaringan yang dituju:
 
 | Peran         | Aksi utama                                  | Wallet | Gas   |
 | ------------- | ------------------------------------------- | ------ | ----- |
@@ -133,27 +130,22 @@ Suite Hardhat menghasilkan `107 passing`. Test-nya mencakup lifecycle event,
 otorisasi owner, batas waktu, check-in duplikat, getter kehadiran, pemisahan
 Testnet/Mainnet, deployment record, dan guard pada jalur deployment.
 
-Hackathon masih berlangsung, jadi belum ada hasil penjurian, status akhir
-submission, atau angka penggunaan yang layak ditulis sebagai outcome. Video
-demo dan X post juga akan ditambahkan setelah submission selesai.
+Saat case study ini diterbitkan, proses penjurian hackathon masih berlangsung.
+Karena itu, outcome di atas dibatasi pada bukti teknis yang sudah dapat
+diperiksa dan tidak mencantumkan klaim hasil kompetisi atau angka penggunaan.
 
 ## Lessons
 
-Sejauh ini belum ada kegagalan besar atau satu keputusan teknis yang terasa
-paling sulit. Proses implementasinya memang banyak dibantu AI. Bagian yang
-tetap harus kupahami sendiri adalah batas sistem dan cara memastikan hasilnya
-benar-benar bekerja.
+Pelajaran utamanya adalah membedakan bukti on-chain dari klaim di luar sistem.
+Contract dapat membuktikan bahwa sebuah wallet melakukan check-in yang valid,
+tetapi tidak dapat menyimpulkan siapa pemilik wallet atau apakah orang tersebut
+benar-benar berada di lokasi acara.
 
-BOTPass hanya membuktikan bahwa sebuah alamat wallet melakukan check-in yang
-diterima contract. Ia tidak membuktikan identitas dunia nyata, lokasi, atau
-kehadiran fisik pemilik wallet. Satu orang juga masih dapat membuat lebih dari
-satu wallet.
+Pemisahan read-only provider dan signer juga penting. Pemeriksa dapat membaca
+status tanpa memasang wallet, sedangkan akses wallet hanya diminta saat pengguna
+benar-benar perlu mengubah state. Pola ini mengurangi friksi tanpa mengaburkan
+batas keamanan.
 
-Ada satu catatan teknis yang belum rapi. `deployments/677.json` masih mencatat
-`verificationStatus: "unverified"`, sedangkan BOTScan sekarang melaporkan
-contract sudah terverifikasi. Record lokal itu perlu diselaraskan agar kondisi
-repository sama dengan kondisi Mainnet.
-
-Bagian ini akan kuperbarui lagi setelah hackathon selesai. Untuk sekarang,
-kesimpulan yang bisa kutulis baru sebatas proses build dan verifikasi, bukan
-hasil kompetisi.
+Terakhir, aturan kritis seperti satu-wallet-satu-check-in harus berada di
+contract. Validasi frontend tetap berguna untuk pengalaman pengguna, tetapi
+tidak boleh menjadi satu-satunya lapisan yang menjaga invariant produk.

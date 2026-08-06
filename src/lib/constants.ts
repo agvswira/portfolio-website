@@ -38,8 +38,6 @@ export const SOCIAL_LINKS = [
   { label: "Email", href: `mailto:${PERSONAL.email}`, icon: "FiMail" },
 ] as const;
 
-export const HERO_STATS = [] as const;
-
 interface TimelineItem {
   year: string;
   title: string;
