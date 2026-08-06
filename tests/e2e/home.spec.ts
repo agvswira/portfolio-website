@@ -28,6 +28,20 @@ async function scrollToSectionCenter(page: Page, selector: string) {
   });
 }
 
+async function scrollToAboutRevealProgress(page: Page, progress: number) {
+  await page.locator("#about").evaluate((section, revealProgress) => {
+    const root = document.documentElement;
+    const previousBehavior = root.style.scrollBehavior;
+    const bounds = section.getBoundingClientRect();
+    const absoluteTop = window.scrollY + bounds.top;
+    const revealStart = absoluteTop - window.innerHeight * 0.75;
+    const revealEnd = absoluteTop + bounds.height / 2 - window.innerHeight / 2;
+    root.style.scrollBehavior = "auto";
+    window.scrollTo(0, revealStart + (revealEnd - revealStart) * revealProgress);
+    root.style.scrollBehavior = previousBehavior;
+  }, progress);
+}
+
 test("desktop homepage interactions and accessibility", async ({ page }) => {
   await page.goto("/");
 
@@ -52,6 +66,97 @@ test("desktop homepage interactions and accessibility", async ({ page }) => {
   expect(results.violations).toEqual([]);
 });
 
+test("chapter dial stays hidden and outside keyboard navigation in the hero", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, "desktop project only");
+  await page.goto("/");
+
+  const rail = page.locator("[data-chapter-rail]");
+  await expect(rail).toBeHidden();
+  await expect(rail).toHaveAttribute("aria-hidden", "true");
+  await expect(rail).toHaveAttribute("inert", "");
+
+  const focusedChapterLinks: string[] = [];
+  for (let index = 0; index < 30; index += 1) {
+    await page.keyboard.press("Tab");
+    const focusedHref = await page.evaluate(() => {
+      const focused = document.activeElement as HTMLElement | null;
+      return focused?.matches("[data-chapter-link]") ? focused.getAttribute("href") : null;
+    });
+    if (focusedHref) focusedChapterLinks.push(focusedHref);
+  }
+  expect(focusedChapterLinks).toEqual([]);
+});
+
+test("chapter dial fades in with About and hides again when returning to the hero", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, "desktop project only");
+  await page.goto("/");
+
+  const rail = page.locator("[data-chapter-rail]");
+  const rotor = rail.locator("[data-chapter-dial-rotor]");
+  const opacity = () =>
+    rail.evaluate((element) => Number.parseFloat(getComputedStyle(element).opacity));
+
+  await scrollToAboutRevealProgress(page, 0);
+  await expect.poll(opacity).toBeCloseTo(0, 2);
+  await expect(rail).toHaveAttribute("aria-hidden", "true");
+
+  await scrollToAboutRevealProgress(page, 0.5);
+  await expect(rail).not.toHaveAttribute("aria-hidden");
+  await expect(rail).not.toHaveAttribute("inert");
+  await expect(rail).toBeVisible();
+  await expect.poll(opacity).toBeCloseTo(0.5, 2);
+
+  await scrollToSectionCenter(page, "#about");
+  await expect.poll(opacity).toBeCloseTo(1, 2);
+  await expect(rail.getByRole("link", { name: "01 About" })).toHaveAttribute("tabindex", "0");
+  await expect
+    .poll(() =>
+      rotor.evaluate((element) => {
+        const matrix = new DOMMatrixReadOnly(getComputedStyle(element).transform);
+        return (Math.atan2(matrix.b, matrix.a) * 180) / Math.PI;
+      })
+    )
+    .toBeCloseTo(0, 1);
+
+  await scrollToAboutRevealProgress(page, 0.5);
+  await expect(rail).toBeVisible();
+  await expect.poll(opacity).toBeCloseTo(0.5, 2);
+
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect(rail).toHaveAttribute("aria-hidden", "true");
+  await expect(rail).toHaveAttribute("inert", "");
+  await expect(rail).toBeHidden();
+  await expect.poll(opacity).toBeCloseTo(0, 2);
+});
+
+test("chapter numbers inherit the site font family", async ({ page, isMobile }) => {
+  test.skip(isMobile, "desktop project only");
+  await page.goto("/");
+  await scrollToSectionCenter(page, "#about");
+
+  const fontFamilies = await page.evaluate(() => {
+    const label = document.querySelector<HTMLElement>("[data-chapter-label]");
+    if (!label) throw new Error("Chapter label is missing");
+    return {
+      body: getComputedStyle(document.body).fontFamily,
+      label: getComputedStyle(label).fontFamily,
+    };
+  });
+  const genericFamilies = fontFamilies.label
+    .split(",")
+    .map((family) => family.trim().replaceAll('"', "").toLowerCase());
+
+  expect(fontFamilies.label).toBe(fontFamilies.body);
+  expect(genericFamilies).not.toContain("monospace");
+  expect(genericFamilies).not.toContain("serif");
+});
+
 test("desktop chapter dial keeps one fixed indicator through every scroll state", async ({
   page,
   isMobile,
@@ -59,8 +164,9 @@ test("desktop chapter dial keeps one fixed indicator through every scroll state"
   test.skip(isMobile, "desktop project only");
   await page.goto("/");
 
-  const rail = page.getByRole("navigation", { name: "Bab halaman" });
+  const rail = page.locator("[data-chapter-rail]");
   const dot = rail.locator("[data-chapter-dot]");
+  await scrollToSectionCenter(page, "#about");
   await expect(rail).toBeVisible();
   await expect(rail.getByRole("link")).toHaveCount(5);
   await expect(rail.locator("[data-chapter-dial-rotor]")).toBeVisible();
@@ -76,29 +182,22 @@ test("desktop chapter dial keeps one fixed indicator through every scroll state"
   const initialDot = await dot.boundingBox();
   expect(initialDot).not.toBeNull();
 
-  const positions = ["hero", ...chapters.map(({ id }) => id)];
-  for (const id of positions) {
-    if (id === "hero") {
-      await page.evaluate(() => window.scrollTo(0, 0));
-    } else {
-      await scrollToSectionCenter(page, `#${id}`);
-      const chapter = chapters.find((item) => item.id === id);
-      if (!chapter) throw new Error(`Unknown chapter: ${id}`);
-      await expect(rail.getByRole("link", { name: chapter.name })).toHaveAttribute(
-        "aria-current",
-        "step"
-      );
-    }
+  for (const chapter of chapters) {
+    await scrollToSectionCenter(page, `#${chapter.id}`);
+    await expect(rail.getByRole("link", { name: chapter.name })).toHaveAttribute(
+      "aria-current",
+      "step"
+    );
 
     const bounds = await dot.boundingBox();
-    expect(bounds, `dot bounds at #${id}`).not.toBeNull();
+    expect(bounds, `dot bounds at #${chapter.id}`).not.toBeNull();
     expect(
       Math.abs((bounds?.x ?? 0) - (initialDot?.x ?? 0)),
-      `dot x at #${id}`
+      `dot x at #${chapter.id}`
     ).toBeLessThanOrEqual(1);
     expect(
       Math.abs((bounds?.y ?? 0) - (initialDot?.y ?? 0)),
-      `dot y at #${id}`
+      `dot y at #${chapter.id}`
     ).toBeLessThanOrEqual(1);
   }
 
@@ -115,7 +214,7 @@ test("chapter progress clamps and angular distance controls visibility", async (
   test.skip(isMobile, "desktop project only");
   await page.goto("/");
 
-  const rail = page.getByRole("navigation", { name: "Bab halaman" });
+  const rail = page.locator("[data-chapter-rail]");
   const rotor = rail.locator("[data-chapter-dial-rotor]");
   const rotorRotation = () =>
     rotor.evaluate((element) => {
@@ -125,7 +224,7 @@ test("chapter progress clamps and angular distance controls visibility", async (
 
   await page.evaluate(() => window.scrollTo(0, 0));
   await expect.poll(rotorRotation).toBeCloseTo(0, 1);
-  await expect(rail.getByRole("link", { name: "01 About" })).toHaveAttribute(
+  await expect(rail.locator('[data-chapter-link][href="#about"]')).toHaveAttribute(
     "aria-current",
     "step"
   );
@@ -389,10 +488,12 @@ test("chapter dial stays hidden below the desktop breakpoint", async ({ page, is
   test.skip(isMobile, "covered by the desktop breakpoint boundary");
   await page.setViewportSize({ width: 1023, height: 768 });
   await page.goto("/");
-  await expect(page.getByRole("navigation", { name: "Bab halaman" })).toBeHidden();
+  const rail = page.locator("[data-chapter-rail]");
+  await expect(rail).toBeHidden();
 
   await page.setViewportSize({ width: 1024, height: 768 });
-  await expect(page.getByRole("navigation", { name: "Bab halaman" })).toBeVisible();
+  await scrollToSectionCenter(page, "#about");
+  await expect(rail).toBeVisible();
 });
 
 test("reduced motion disables continuous homepage animation", async ({ page, isMobile }) => {
@@ -406,10 +507,32 @@ test("reduced motion disables continuous homepage animation", async ({ page, isM
 
   if (isMobile) return;
 
+  const rail = page.locator("[data-chapter-rail]");
+  await expect(rail).toBeHidden();
+  await expect(rail).toHaveAttribute("aria-hidden", "true");
+  await expect(rail).toHaveAttribute("inert", "");
+
+  await scrollToAboutRevealProgress(page, 0.5);
+  await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
+  const reducedVisibility = await rail.evaluate((element) => ({
+    ariaHidden: element.getAttribute("aria-hidden"),
+    inert: element.hasAttribute("inert"),
+    opacity: Number.parseFloat(getComputedStyle(element).opacity),
+  }));
+  expect(reducedVisibility).toMatchObject({ ariaHidden: null, inert: false });
+  expect(reducedVisibility.opacity).toBeCloseTo(0.5, 3);
+
   const railPosition = await page
     .locator("[data-chapter-rail]")
     .evaluate((element) => getComputedStyle(element).position);
   expect(railPosition).toBe("fixed");
+
+  const visibilityTransition = await rail.evaluate((element) =>
+    getComputedStyle(element)
+      .transitionDuration.split(",")
+      .map((duration) => Number.parseFloat(duration) * (duration.includes("ms") ? 0.001 : 1))
+  );
+  expect(Math.max(...visibilityTransition)).toBeLessThanOrEqual(0.01);
 
   const rotor = page.locator("[data-chapter-dial-rotor]");
   await page.locator("#projects").scrollIntoViewIfNeeded();

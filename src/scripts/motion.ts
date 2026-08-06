@@ -43,6 +43,32 @@ function getChapterProgress(chapters: HTMLElement[]): number {
   return lastIndex;
 }
 
+function getChapterRailVisibility(about: HTMLElement): number {
+  const bounds = about.getBoundingClientRect();
+  const revealStart = window.innerHeight * 0.75;
+  const revealEnd = window.innerHeight * 0.5 - bounds.height * 0.5;
+  const revealDistance = revealStart - revealEnd;
+
+  if (revealDistance <= 0) return bounds.top <= revealStart ? 1 : 0;
+  return clamp((revealStart - bounds.top) / revealDistance, 0, 1);
+}
+
+function setChapterRailAccessibility(rail: HTMLElement, visible: boolean): void {
+  if (visible) {
+    rail.style.visibility = "visible";
+    rail.removeAttribute("aria-hidden");
+    rail.removeAttribute("inert");
+    return;
+  }
+
+  if (rail.contains(document.activeElement) && document.activeElement instanceof HTMLElement) {
+    document.activeElement.blur();
+  }
+  rail.style.visibility = "hidden";
+  rail.setAttribute("aria-hidden", "true");
+  rail.setAttribute("inert", "");
+}
+
 function getChapterOpacity(distance: number): number {
   if (distance > 3) return 0;
   if (distance <= 1) return 1 - distance * 0.55;
@@ -128,9 +154,12 @@ function initReducedChapterDial(): () => void {
   const update = () => {
     frame = 0;
     const progress = getChapterProgress(chapters);
+    const visibility = getChapterRailVisibility(chapters[0]);
     const activeIndex = Math.round(progress);
     const angle = activeIndex * CHAPTER_STEP_ANGLE;
 
+    rail.style.opacity = String(visibility);
+    setChapterRailAccessibility(rail, visibility > 0);
     rail.style.setProperty("--chapter-rotor-angle", `${-angle}deg`);
     rail.style.setProperty("--chapter-label-angle", `${angle}deg`);
     rotor.style.setProperty("--chapter-highlight-angle", `${angle}deg`);
@@ -150,6 +179,9 @@ function initReducedChapterDial(): () => void {
     window.removeEventListener("resize", requestUpdate);
     rail.style.removeProperty("--chapter-rotor-angle");
     rail.style.removeProperty("--chapter-label-angle");
+    rail.style.removeProperty("opacity");
+    rail.style.removeProperty("visibility");
+    setChapterRailAccessibility(rail, false);
     rotor.style.removeProperty("--chapter-highlight-angle");
     labels.forEach((label) => label.style.removeProperty("transform"));
     links.forEach((link) => {
@@ -227,7 +259,9 @@ export function initMotion(): void {
       const elements = getChapterElements();
       if (!elements) return;
 
-      const { chapters, labels, links, numbers, rotor } = elements;
+      const { chapters, labels, links, numbers, rail, rotor } = elements;
+
+      let railVisibilityTarget = 0;
 
       const updateRenderedState = () => {
         const rotation = Number(gsap.getProperty(rotor, "rotation"));
@@ -248,8 +282,20 @@ export function initMotion(): void {
         ease: "power2.out",
         onUpdate: updateRenderedState,
       });
+      const fadeRail = gsap.quickTo(rail, "opacity", {
+        duration: 0.3,
+        ease: "power2.out",
+        onComplete: () => {
+          if (railVisibilityTarget === 0) setChapterRailAccessibility(rail, false);
+        },
+      });
       const updateDial = () => {
         const progress = getChapterProgress(chapters);
+        const visibility = getChapterRailVisibility(chapters[0]);
+
+        railVisibilityTarget = visibility;
+        if (visibility > 0) setChapterRailAccessibility(rail, true);
+        fadeRail(visibility);
         rotateRotor(-progress * CHAPTER_STEP_ANGLE);
       };
 
@@ -266,8 +312,10 @@ export function initMotion(): void {
 
       return () => {
         dialTrigger.kill();
-        gsap.killTweensOf(rotor);
+        gsap.killTweensOf([rail, rotor]);
         gsap.set(rotor, { clearProps: "transform" });
+        gsap.set(rail, { clearProps: "opacity,visibility" });
+        setChapterRailAccessibility(rail, false);
         rotor.style.removeProperty("--chapter-highlight-angle");
         labels.forEach((label) => label.style.removeProperty("transform"));
         links.forEach((link) => {

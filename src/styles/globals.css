@@ -252,7 +252,10 @@ body {
   position: fixed;
   inset: 0;
   z-index: 20;
+  visibility: hidden;
+  opacity: 0;
   pointer-events: none;
+  will-change: opacity;
 }
 .chapter-dial {
   position: fixed;
@@ -321,13 +324,13 @@ body {
   left: 100%;
   display: block;
   color: var(--text-muted);
-  font-family: var(--font-mono), monospace;
+  font-family: inherit;
   font-variant-numeric: tabular-nums;
   font-weight: 250;
   letter-spacing: 0.04em;
   opacity: 0;
   pointer-events: auto;
-  transform: translate(0.5rem, -50%);
+  transform: translate(0.125rem, -50%);
   transition: color 220ms ease;
 }
 .chapter-dial-marker {
