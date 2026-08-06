@@ -86,14 +86,46 @@ function getChapterFontSizes(): { active: number; inactive: number } {
   };
 }
 
+function getChapterLabelGap(): number {
+  const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+  return clamp(window.innerWidth * 0.011, rootFontSize * 0.875, rootFontSize * 1.25);
+}
+
+function getChapterLabelOffset(
+  anchorRadius: number,
+  ringRadius: number,
+  labelHeight: number,
+  relativeAngle: number,
+  gap: number
+): number {
+  const radians = (relativeAngle * Math.PI) / 180;
+  const sine = Math.abs(Math.sin(radians));
+  const cosine = Math.abs(Math.cos(radians));
+  const targetRadius = ringRadius + gap;
+  const halfHeight = labelHeight / 2;
+  const horizontalIntersection = cosine > 0 ? targetRadius / cosine : Number.POSITIVE_INFINITY;
+
+  if (horizontalIntersection * sine <= halfHeight) {
+    return Math.max(gap, horizontalIntersection - anchorRadius);
+  }
+
+  const radialDistance =
+    (labelHeight * sine + Math.sqrt(4 * targetRadius ** 2 - labelHeight ** 2 * cosine ** 2)) / 2;
+  return Math.max(gap, radialDistance - anchorRadius);
+}
+
 function updateChapterPresentation(
   links: HTMLAnchorElement[],
   numbers: HTMLElement[],
+  rotor: HTMLElement,
   progress: number
 ): void {
   const renderedProgress = clamp(progress, 0, links.length - 1);
   const activeIndex = Math.round(renderedProgress + Number.EPSILON);
   const fontSizes = getChapterFontSizes();
+  const labelGap = getChapterLabelGap();
+  const anchorRadius = rotor.clientWidth / 2;
+  const ringRadius = rotor.offsetWidth / 2;
   const focusedLink = links.find((link) => link === document.activeElement);
 
   setActiveChapter(links, activeIndex);
@@ -106,6 +138,17 @@ function updateChapterPresentation(
     link.style.opacity = String(getChapterOpacity(distance));
     link.style.pointerEvents = angularlyVisible ? "auto" : "none";
     numbers[index]?.style.setProperty("font-size", `${fontSize}px`);
+
+    const labelHeight = numbers[index]?.getBoundingClientRect().height ?? 0;
+    const relativeAngle = (index - renderedProgress) * CHAPTER_STEP_ANGLE;
+    const labelOffset = getChapterLabelOffset(
+      anchorRadius,
+      ringRadius,
+      labelHeight,
+      relativeAngle,
+      labelGap
+    );
+    link.style.setProperty("--chapter-label-offset", `${labelOffset}px`);
 
     const bounds = link.getBoundingClientRect();
     const intersectsViewport =
@@ -163,7 +206,7 @@ function initReducedChapterDial(): () => void {
     rail.style.setProperty("--chapter-rotor-angle", `${-angle}deg`);
     rail.style.setProperty("--chapter-label-angle", `${angle}deg`);
     rotor.style.setProperty("--chapter-highlight-angle", `${angle}deg`);
-    updateChapterPresentation(links, numbers, activeIndex);
+    updateChapterPresentation(links, numbers, rotor, activeIndex);
   };
   const requestUpdate = () => {
     if (frame === 0) frame = window.requestAnimationFrame(update);
@@ -187,6 +230,7 @@ function initReducedChapterDial(): () => void {
     links.forEach((link) => {
       link.style.removeProperty("opacity");
       link.style.removeProperty("pointer-events");
+      link.style.removeProperty("--chapter-label-offset");
       link.removeAttribute("tabindex");
     });
     numbers.forEach((number) => number.style.removeProperty("font-size"));
@@ -275,7 +319,7 @@ export function initMotion(): void {
           "--chapter-highlight-angle",
           `${renderedProgress * CHAPTER_STEP_ANGLE}deg`
         );
-        updateChapterPresentation(links, numbers, renderedProgress);
+        updateChapterPresentation(links, numbers, rotor, renderedProgress);
       };
       const rotateRotor = gsap.quickTo(rotor, "rotation", {
         duration: 0.35,
@@ -321,6 +365,7 @@ export function initMotion(): void {
         links.forEach((link) => {
           link.style.removeProperty("opacity");
           link.style.removeProperty("pointer-events");
+          link.style.removeProperty("--chapter-label-offset");
           link.removeAttribute("tabindex");
         });
         numbers.forEach((number) => number.style.removeProperty("font-size"));

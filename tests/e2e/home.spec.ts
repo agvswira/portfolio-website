@@ -157,6 +157,26 @@ test("chapter numbers inherit the site font family", async ({ page, isMobile }) 
   expect(genericFamilies).not.toContain("serif");
 });
 
+test("chapter numbers are never lighter than the body text", async ({ page, isMobile }) => {
+  test.skip(isMobile, "desktop project only");
+  await page.goto("/");
+  await scrollToSectionCenter(page, "#about");
+
+  const weights = await page.evaluate(() => {
+    return {
+      body: Number.parseInt(getComputedStyle(document.body).fontWeight, 10),
+      labels: Array.from(document.querySelectorAll<HTMLElement>("[data-chapter-label]")).map(
+        (label) => Number.parseInt(getComputedStyle(label).fontWeight, 10)
+      ),
+    };
+  });
+
+  expect(weights.labels).toHaveLength(5);
+  for (const labelWeight of weights.labels) {
+    expect(labelWeight).toBeGreaterThanOrEqual(weights.body);
+  }
+});
+
 test("desktop chapter dial keeps one fixed indicator through every scroll state", async ({
   page,
   isMobile,
@@ -387,6 +407,56 @@ test("chapter dial renders the frost ring and fixed halo", async ({ page, isMobi
   expect(styles.dotBoxShadow).toContain("rgba(136, 192, 208, 0.45) 0px 0px 22px 0px");
 });
 
+test("visible chapter labels keep measured radial space outside the ring", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, "desktop project only");
+  await page.goto("/");
+
+  for (const chapterId of ["about", "skills", "contact"]) {
+    await scrollToSectionCenter(page, `#${chapterId}`);
+
+    const geometry = await page.evaluate(() => {
+      const dial = document.querySelector<HTMLElement>("[data-chapter-dial]");
+      if (!dial) throw new Error("Chapter dial is missing");
+
+      const ring = dial.getBoundingClientRect();
+      const center = {
+        x: ring.left + ring.width / 2,
+        y: ring.top + ring.height / 2,
+      };
+      const radius = Math.min(ring.width, ring.height) / 2;
+
+      const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+      return {
+        expectedGap: Math.min(
+          Math.max(rootFontSize * 0.875, window.innerWidth * 0.011),
+          rootFontSize * 1.25
+        ),
+        gaps: Array.from(document.querySelectorAll<HTMLElement>("[data-chapter-label]"))
+          .filter((label) => {
+            const link = label.closest<HTMLElement>("[data-chapter-link]");
+            return link && Number.parseFloat(getComputedStyle(link).opacity) > 0;
+          })
+          .map((label) => {
+            const bounds = label.getBoundingClientRect();
+            const closestX = Math.min(Math.max(center.x, bounds.left), bounds.right);
+            const closestY = Math.min(Math.max(center.y, bounds.top), bounds.bottom);
+            return Math.hypot(closestX - center.x, closestY - center.y) - radius;
+          }),
+      };
+    });
+
+    expect(geometry.gaps.length, `visible labels at #${chapterId}`).toBeGreaterThanOrEqual(3);
+    for (const gap of geometry.gaps) {
+      expect(gap, `radial label gap at #${chapterId}`).toBeGreaterThanOrEqual(
+        geometry.expectedGap - 0.5
+      );
+    }
+  }
+});
+
 test("desktop chapter dial stays clear of the content gutter", async ({ page, isMobile }) => {
   test.skip(isMobile, "desktop project only");
 
@@ -442,7 +512,7 @@ test("chapter dial follows the content gutter on ultrawide screens", async ({ pa
   const rotorBounds = await page.locator("[data-chapter-dial-rotor]").boundingBox();
   expect(rotorBounds).not.toBeNull();
   expect(rotorBounds?.x).toBeLessThan(0);
-  expect((rotorBounds?.x ?? 0) + (rotorBounds?.width ?? 0)).toBeCloseTo(680, 0);
+  expect((rotorBounds?.x ?? 0) + (rotorBounds?.width ?? 0)).toBeCloseTo(660, 0);
 });
 
 test("project cards use covers and concise summaries", async ({ page }) => {

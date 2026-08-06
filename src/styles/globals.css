@@ -246,7 +246,11 @@ body {
 .chapter-rail {
   --content-max-width: 72rem;
   --dial-size: clamp(34rem, 40vw, 44rem);
-  --rail-right: max(1rem, calc((100vw - var(--content-max-width)) / 2 - 1.5rem));
+  --chapter-label-gap: clamp(0.875rem, 1.1vw, 1.25rem);
+  --rail-right: max(
+    0.75rem,
+    calc((100vw - var(--content-max-width)) / 2 - 1.5rem - var(--chapter-label-gap))
+  );
   --chapter-rotor-angle: 0deg;
   --chapter-label-angle: 0deg;
   position: fixed;
@@ -319,6 +323,7 @@ body {
   --step-angle: 120deg;
 }
 .chapter-dial-link {
+  --chapter-label-offset: var(--chapter-label-gap);
   position: absolute;
   top: 50%;
   left: 100%;
@@ -326,11 +331,11 @@ body {
   color: var(--text-muted);
   font-family: inherit;
   font-variant-numeric: tabular-nums;
-  font-weight: 250;
+  font-weight: inherit;
   letter-spacing: 0.04em;
   opacity: 0;
   pointer-events: auto;
-  transform: translate(0.125rem, -50%);
+  transform: translate(var(--chapter-label-offset), -50%);
   transition: color 220ms ease;
 }
 .chapter-dial-marker {
