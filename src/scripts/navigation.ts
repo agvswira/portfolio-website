@@ -60,6 +60,12 @@ export function initNavigation(): void {
       const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       if (link.hash === "#hero") {
         window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
+      } else if (link.matches("[data-chapter-link]")) {
+        const bounds = target.getBoundingClientRect();
+        window.scrollTo({
+          top: window.scrollY + bounds.top + bounds.height / 2 - window.innerHeight / 2,
+          behavior: reducedMotion ? "auto" : "smooth",
+        });
       } else {
         target.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
       }

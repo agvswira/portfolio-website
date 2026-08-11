@@ -24,6 +24,20 @@ async function freezeChapterDialForFullPageCapture(page: Page) {
   });
 }
 
+async function scrollToSectionCenter(page: Page, selector: string) {
+  await page.locator(selector).evaluate((section) => {
+    const bounds = section.getBoundingClientRect();
+    window.scrollTo(0, window.scrollY + bounds.top + bounds.height / 2 - window.innerHeight / 2);
+  });
+}
+
+async function scrollToAboutHalfEntry(page: Page) {
+  await page.locator("#about").evaluate((section) => {
+    const bounds = section.getBoundingClientRect();
+    window.scrollTo(0, window.scrollY + bounds.top - window.innerHeight / 2);
+  });
+}
+
 test.beforeEach(async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
 });
@@ -62,35 +76,50 @@ test("homepage chapter dial visual states", async ({ page, isMobile }) => {
     element.style.height = "100vh";
   });
 
-  await page.locator("#about").evaluate((section) => {
-    const bounds = section.getBoundingClientRect();
-    window.scrollTo(0, window.scrollY + bounds.top + bounds.height / 2 - window.innerHeight / 2);
-  });
-  await expect(page.getByRole("link", { name: "01 About" })).toHaveAttribute(
-    "aria-current",
-    "step"
-  );
-  await expect.poll(rotorRotation).toBeCloseTo(0, 2);
-  await expect(rail).toHaveScreenshot(snapshotName("homepage-dial-about.png"), {
-    animations: "disabled",
-    maxDiffPixels: 50,
-  });
+  const states = [
+    {
+      name: "hero",
+      activeName: "01 About",
+      rotation: 0,
+      scroll: () => page.evaluate(() => window.scrollTo(0, 0)),
+    },
+    {
+      name: "about-half",
+      activeName: "01 About",
+      rotation: 0,
+      scroll: () => scrollToAboutHalfEntry(page),
+    },
+    {
+      name: "about",
+      activeName: "01 About",
+      rotation: 0,
+      scroll: () => scrollToSectionCenter(page, "#about"),
+    },
+    {
+      name: "skills",
+      activeName: "02 Skills",
+      rotation: -30,
+      scroll: () => scrollToSectionCenter(page, "#skills"),
+    },
+    {
+      name: "contact",
+      activeName: "05 Contact",
+      rotation: -120,
+      scroll: () => scrollToSectionCenter(page, "#contact"),
+    },
+  ];
 
-  await page.evaluate(() => {
-    const about = document.querySelector<HTMLElement>("#about");
-    const skills = document.querySelector<HTMLElement>("#skills");
-    if (!about || !skills) throw new Error("Chapter sections are missing");
-    const center = (section: HTMLElement) => {
-      const bounds = section.getBoundingClientRect();
-      return window.scrollY + bounds.top + bounds.height / 2;
-    };
-    window.scrollTo(0, (center(about) + center(skills)) / 2 - window.innerHeight / 2);
-  });
-  await expect.poll(rotorRotation).toBeCloseTo(-15, 2);
-  await expect(rail).toHaveScreenshot(snapshotName("homepage-dial-midpoint.png"), {
-    animations: "disabled",
-    maxDiffPixels: 50,
-  });
+  for (const state of states) {
+    await state.scroll();
+    await expect(
+      page.locator(`[data-chapter-link][aria-label="${state.activeName}"]`)
+    ).toHaveAttribute("aria-current", "step");
+    await expect.poll(rotorRotation).toBeCloseTo(state.rotation, 1);
+    await expect(rail).toHaveScreenshot(snapshotName(`homepage-dial-${state.name}.png`), {
+      animations: "disabled",
+      maxDiffPixels: 50,
+    });
+  }
 });
 
 test("project case-study visual baseline", async ({ page }) => {

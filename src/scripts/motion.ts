@@ -43,32 +43,6 @@ function getChapterProgress(chapters: HTMLElement[]): number {
   return lastIndex;
 }
 
-function getChapterRailVisibility(about: HTMLElement): number {
-  const bounds = about.getBoundingClientRect();
-  const revealStart = window.innerHeight * 0.75;
-  const revealEnd = window.innerHeight * 0.5 - bounds.height * 0.5;
-  const revealDistance = revealStart - revealEnd;
-
-  if (revealDistance <= 0) return bounds.top <= revealStart ? 1 : 0;
-  return clamp((revealStart - bounds.top) / revealDistance, 0, 1);
-}
-
-function setChapterRailAccessibility(rail: HTMLElement, visible: boolean): void {
-  if (visible) {
-    rail.style.visibility = "visible";
-    rail.removeAttribute("aria-hidden");
-    rail.removeAttribute("inert");
-    return;
-  }
-
-  if (rail.contains(document.activeElement) && document.activeElement instanceof HTMLElement) {
-    document.activeElement.blur();
-  }
-  rail.style.visibility = "hidden";
-  rail.setAttribute("aria-hidden", "true");
-  rail.setAttribute("inert", "");
-}
-
 function getChapterOpacity(distance: number): number {
   if (distance > 3) return 0;
   if (distance <= 1) return 1 - distance * 0.55;
@@ -132,11 +106,18 @@ function updateChapterPresentation(
   links.forEach((link, index) => {
     const distance = Math.abs(index - renderedProgress);
     const emphasis = Math.max(0, 1 - distance);
-    const angularlyVisible = distance <= 3;
     const fontSize = fontSizes.inactive + (fontSizes.active - fontSizes.inactive) * emphasis;
+    const opacity = getChapterOpacity(distance);
+    const hidden = opacity < 0.05;
 
-    link.style.opacity = String(getChapterOpacity(distance));
-    link.style.pointerEvents = angularlyVisible ? "auto" : "none";
+    link.style.opacity = String(opacity);
+    link.style.pointerEvents = hidden ? "none" : "auto";
+    link.tabIndex = hidden ? -1 : 0;
+    if (hidden) {
+      link.setAttribute("aria-hidden", "true");
+    } else {
+      link.removeAttribute("aria-hidden");
+    }
     numbers[index]?.style.setProperty("font-size", `${fontSize}px`);
 
     const labelHeight = numbers[index]?.getBoundingClientRect().height ?? 0;
@@ -149,14 +130,6 @@ function updateChapterPresentation(
       labelGap
     );
     link.style.setProperty("--chapter-label-offset", `${labelOffset}px`);
-
-    const bounds = link.getBoundingClientRect();
-    const intersectsViewport =
-      bounds.right > 0 &&
-      bounds.left < window.innerWidth &&
-      bounds.bottom > 0 &&
-      bounds.top < window.innerHeight;
-    link.tabIndex = angularlyVisible && intersectsViewport ? 0 : -1;
   });
 
   if (focusedLink?.tabIndex === -1) {
@@ -166,73 +139,209 @@ function updateChapterPresentation(
 
 function getChapterElements() {
   const rail = document.querySelector<HTMLElement>("[data-chapter-rail]");
+  const dial = document.querySelector<HTMLElement>("[data-chapter-dial]");
   const rotor = document.querySelector<HTMLElement>("[data-chapter-dial-rotor]");
   const links = Array.from(document.querySelectorAll<HTMLAnchorElement>("[data-chapter-link]"));
   const entries = links.flatMap((link) => {
     const chapter = document.querySelector<HTMLElement>(link.hash);
     const label = link.querySelector<HTMLElement>("[data-chapter-label]");
     const number = link.querySelector<HTMLElement>(".chapter-dial-number");
-    return chapter && label && number ? [{ chapter, label, link, number }] : [];
+    const dot = link
+      .closest<HTMLElement>("[data-step-index]")
+      ?.querySelector<HTMLElement>("[data-chapter-dot]");
+    return chapter && dot && label && number ? [{ chapter, dot, label, link, number }] : [];
   });
 
-  if (!rail || !rotor || entries.length !== links.length || entries.length === 0) return null;
+  if (!dial || !rail || !rotor || entries.length !== links.length || entries.length === 0) {
+    return null;
+  }
 
   return {
+    dial,
     rail,
     rotor,
     links: entries.map(({ link }) => link),
+    dots: entries.map(({ dot }) => dot),
     labels: entries.map(({ label }) => label),
     numbers: entries.map(({ number }) => number),
     chapters: entries.map(({ chapter }) => chapter),
   };
 }
 
-function initReducedChapterDial(): () => void {
+function getDocumentCenter(element: HTMLElement): number {
+  const bounds = element.getBoundingClientRect();
+  return window.scrollY + bounds.top + bounds.height / 2;
+}
+
+function waitForChapterLayoutAssets(): Promise<void> {
+  const images = Array.from(document.querySelectorAll<HTMLImageElement>("#hero img, #about img"));
+  const imagePromises = images.map((image) => {
+    if (image.complete) return image.decode().catch(() => undefined);
+    return new Promise<void>((resolve) => {
+      image.addEventListener("load", () => resolve(), { once: true });
+      image.addEventListener("error", () => resolve(), { once: true });
+    });
+  });
+
+  return Promise.all([document.fonts.ready, ...imagePromises]).then(() => undefined);
+}
+
+function setRailInert(rail: HTMLElement, dialTop: number, dialHeight: number): void {
+  const outsideViewport = dialTop >= window.innerHeight || dialTop + dialHeight <= 0;
+
+  if (
+    outsideViewport &&
+    rail.contains(document.activeElement) &&
+    document.activeElement instanceof HTMLElement
+  ) {
+    document.activeElement.blur();
+  }
+  rail.toggleAttribute("inert", outsideViewport);
+}
+
+function initChapterDial(reducedMotion: boolean): () => void {
   const elements = getChapterElements();
   if (!elements) return () => undefined;
 
-  const { chapters, labels, links, numbers, rail, rotor } = elements;
+  const { chapters, dial, dots, labels, links, numbers, rail, rotor } = elements;
+  const about = chapters[0];
+  const contact = chapters.at(-1);
+  if (!about || !contact) return () => undefined;
 
-  let frame = 0;
-  const update = () => {
-    frame = 0;
+  let aboutCenterDocY = getDocumentCenter(about);
+  let contactCenterDocY = getDocumentCenter(contact);
+  let activeDotIndex = -1;
+  let dotTimeline: gsap.core.Timeline | null = null;
+  let active = true;
+
+  const measureAnchors = () => {
+    aboutCenterDocY = getDocumentCenter(about);
+    contactCenterDocY = getDocumentCenter(contact);
+  };
+  const positionDial = () => {
+    const viewportCenter = window.innerHeight / 2;
+    const centerY = Math.min(
+      Math.max(viewportCenter, aboutCenterDocY - window.scrollY),
+      contactCenterDocY - window.scrollY
+    );
+    const dialHeight = dial.offsetHeight;
+    const dialTop = centerY - dialHeight / 2;
+
+    dial.style.transform = `translate3d(0, ${dialTop}px, 0)`;
+    setRailInert(rail, dialTop, dialHeight);
+  };
+  const reconcileDots = (activeIndex: number) => {
+    dots.forEach((dot, index) => {
+      gsap.set(dot, { opacity: index === activeIndex ? 1 : 0 });
+    });
+  };
+  const updateActiveDot = (nextIndex: number) => {
+    if (nextIndex === activeDotIndex) return;
+
+    const previousIndex = activeDotIndex;
+    activeDotIndex = nextIndex;
+    dotTimeline?.kill();
+    gsap.killTweensOf(dots);
+
+    if (reducedMotion || previousIndex < 0) {
+      reconcileDots(nextIndex);
+      return;
+    }
+
+    dots.forEach((dot, index) => {
+      if (index !== previousIndex && index !== nextIndex) gsap.set(dot, { opacity: 0 });
+    });
+    const previousDot = dots[previousIndex];
+    const nextDot = dots[nextIndex];
+    if (!previousDot || !nextDot) {
+      reconcileDots(nextIndex);
+      return;
+    }
+
+    gsap.set(nextDot, { opacity: 0 });
+    dotTimeline = gsap
+      .timeline({ onComplete: () => reconcileDots(nextIndex) })
+      .to(previousDot, { duration: 0.25, ease: "none", opacity: 0, overwrite: "auto" }, 0)
+      .to(nextDot, { duration: 0.25, ease: "none", opacity: 1, overwrite: "auto" }, 0.125);
+  };
+  const renderPresentation = (renderedProgress: number, counterRotation: number) => {
+    labels.forEach((label, index) => {
+      label.style.transform = `rotate(${counterRotation - index * CHAPTER_STEP_ANGLE}deg)`;
+    });
+    rotor.style.setProperty(
+      "--chapter-highlight-angle",
+      `${renderedProgress * CHAPTER_STEP_ANGLE}deg`
+    );
+    updateChapterPresentation(links, numbers, rotor, renderedProgress);
+    updateActiveDot(Math.round(renderedProgress + Number.EPSILON));
+  };
+
+  const rotateRotor = reducedMotion
+    ? null
+    : gsap.quickTo(rotor, "rotation", {
+        duration: 0.35,
+        ease: "power2.out",
+        onUpdate: () => {
+          const rotation = Number(gsap.getProperty(rotor, "rotation"));
+          const renderedProgress = clamp(-rotation / CHAPTER_STEP_ANGLE, 0, chapters.length - 1);
+          renderPresentation(renderedProgress, -rotation);
+        },
+      });
+  const updateDial = () => {
     const progress = getChapterProgress(chapters);
-    const visibility = getChapterRailVisibility(chapters[0]);
-    const activeIndex = Math.round(progress);
-    const angle = activeIndex * CHAPTER_STEP_ANGLE;
 
-    rail.style.opacity = String(visibility);
-    setChapterRailAccessibility(rail, visibility > 0);
-    rail.style.setProperty("--chapter-rotor-angle", `${-angle}deg`);
-    rail.style.setProperty("--chapter-label-angle", `${angle}deg`);
-    rotor.style.setProperty("--chapter-highlight-angle", `${angle}deg`);
-    updateChapterPresentation(links, numbers, rotor, activeIndex);
-  };
-  const requestUpdate = () => {
-    if (frame === 0) frame = window.requestAnimationFrame(update);
+    positionDial();
+    if (reducedMotion) {
+      const activeIndex = Math.round(progress + Number.EPSILON);
+      const angle = activeIndex * CHAPTER_STEP_ANGLE;
+      rail.style.setProperty("--chapter-rotor-angle", `${-angle}deg`);
+      renderPresentation(activeIndex, angle);
+    } else {
+      rotateRotor?.(-progress * CHAPTER_STEP_ANGLE);
+    }
   };
 
-  update();
-  window.addEventListener("scroll", requestUpdate, { passive: true });
-  window.addEventListener("resize", requestUpdate);
+  const dialTrigger = ScrollTrigger.create({
+    start: 0,
+    end: "max",
+    invalidateOnRefresh: true,
+    onRefreshInit: measureAnchors,
+    onRefresh: () => {
+      measureAnchors();
+      updateDial();
+    },
+    onUpdate: updateDial,
+  });
+
+  measureAnchors();
+  updateDial();
+  if (!reducedMotion) renderPresentation(0, 0);
+  void waitForChapterLayoutAssets().then(() => {
+    if (!active) return;
+    window.requestAnimationFrame(() => {
+      if (active) ScrollTrigger.refresh();
+    });
+  });
 
   return () => {
-    if (frame !== 0) window.cancelAnimationFrame(frame);
-    window.removeEventListener("scroll", requestUpdate);
-    window.removeEventListener("resize", requestUpdate);
+    active = false;
+    dialTrigger.kill();
+    dotTimeline?.kill();
+    gsap.killTweensOf([rotor, ...dots]);
+    gsap.set(rotor, { clearProps: "transform" });
+    dial.style.removeProperty("transform");
     rail.style.removeProperty("--chapter-rotor-angle");
-    rail.style.removeProperty("--chapter-label-angle");
-    rail.style.removeProperty("opacity");
-    rail.style.removeProperty("visibility");
-    setChapterRailAccessibility(rail, false);
+    rail.removeAttribute("inert");
     rotor.style.removeProperty("--chapter-highlight-angle");
     labels.forEach((label) => label.style.removeProperty("transform"));
     links.forEach((link) => {
       link.style.removeProperty("opacity");
       link.style.removeProperty("pointer-events");
       link.style.removeProperty("--chapter-label-offset");
+      link.removeAttribute("aria-hidden");
       link.removeAttribute("tabindex");
     });
+    dots.forEach((dot) => dot.style.removeProperty("opacity"));
     numbers.forEach((number) => number.style.removeProperty("font-size"));
   };
 }
@@ -298,78 +407,7 @@ export function initMotion(): void {
     (context) => {
       const conditions = context.conditions as { chapterDesktop: boolean; noReduce: boolean };
       if (!conditions.chapterDesktop) return;
-      if (!conditions.noReduce) return initReducedChapterDial();
-
-      const elements = getChapterElements();
-      if (!elements) return;
-
-      const { chapters, labels, links, numbers, rail, rotor } = elements;
-
-      let railVisibilityTarget = 0;
-
-      const updateRenderedState = () => {
-        const rotation = Number(gsap.getProperty(rotor, "rotation"));
-        const renderedProgress = clamp(-rotation / CHAPTER_STEP_ANGLE, 0, chapters.length - 1);
-        const counterRotation = -rotation;
-
-        labels.forEach((label, index) => {
-          label.style.transform = `rotate(${counterRotation - index * CHAPTER_STEP_ANGLE}deg)`;
-        });
-        rotor.style.setProperty(
-          "--chapter-highlight-angle",
-          `${renderedProgress * CHAPTER_STEP_ANGLE}deg`
-        );
-        updateChapterPresentation(links, numbers, rotor, renderedProgress);
-      };
-      const rotateRotor = gsap.quickTo(rotor, "rotation", {
-        duration: 0.35,
-        ease: "power2.out",
-        onUpdate: updateRenderedState,
-      });
-      const fadeRail = gsap.quickTo(rail, "opacity", {
-        duration: 0.3,
-        ease: "power2.out",
-        onComplete: () => {
-          if (railVisibilityTarget === 0) setChapterRailAccessibility(rail, false);
-        },
-      });
-      const updateDial = () => {
-        const progress = getChapterProgress(chapters);
-        const visibility = getChapterRailVisibility(chapters[0]);
-
-        railVisibilityTarget = visibility;
-        if (visibility > 0) setChapterRailAccessibility(rail, true);
-        fadeRail(visibility);
-        rotateRotor(-progress * CHAPTER_STEP_ANGLE);
-      };
-
-      const dialTrigger = ScrollTrigger.create({
-        start: 0,
-        end: "max",
-        invalidateOnRefresh: true,
-        onRefresh: updateDial,
-        onUpdate: updateDial,
-      });
-
-      updateDial();
-      updateRenderedState();
-
-      return () => {
-        dialTrigger.kill();
-        gsap.killTweensOf([rail, rotor]);
-        gsap.set(rotor, { clearProps: "transform" });
-        gsap.set(rail, { clearProps: "opacity,visibility" });
-        setChapterRailAccessibility(rail, false);
-        rotor.style.removeProperty("--chapter-highlight-angle");
-        labels.forEach((label) => label.style.removeProperty("transform"));
-        links.forEach((link) => {
-          link.style.removeProperty("opacity");
-          link.style.removeProperty("pointer-events");
-          link.style.removeProperty("--chapter-label-offset");
-          link.removeAttribute("tabindex");
-        });
-        numbers.forEach((number) => number.style.removeProperty("font-size"));
-      };
+      return initChapterDial(!conditions.noReduce);
     }
   );
 }
