@@ -256,19 +256,17 @@ body {
   position: fixed;
   inset: 0;
   z-index: 20;
-  visibility: hidden;
-  opacity: 0;
   pointer-events: none;
-  will-change: opacity;
 }
 .chapter-dial {
   position: fixed;
-  top: 50%;
+  top: 0;
   left: calc(var(--rail-right) - var(--dial-size));
   width: var(--dial-size);
   height: var(--dial-size);
-  transform: translateY(-50%);
+  transform: translate3d(0, calc(100vh - var(--dial-size) / 2), 0);
   pointer-events: none;
+  will-change: transform;
 }
 .chapter-dial-rotor {
   --chapter-highlight-angle: 0deg;
@@ -360,9 +358,14 @@ body {
   height: 7px;
   border-radius: 50%;
   background: var(--frost);
+  opacity: 0;
   box-shadow:
     0 0 0 6px rgba(136, 192, 208, 0.12),
     0 0 22px rgba(136, 192, 208, 0.45);
+  will-change: opacity;
+}
+.chapter-dial-step:first-child .chapter-dial-dot {
+  opacity: 1;
 }
 .chapter-dial-number {
   display: block;

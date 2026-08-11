@@ -28,18 +28,38 @@ async function scrollToSectionCenter(page: Page, selector: string) {
   });
 }
 
-async function scrollToAboutRevealProgress(page: Page, progress: number) {
-  await page.locator("#about").evaluate((section, revealProgress) => {
+async function scrollToAboutEntryHalf(page: Page) {
+  await page.locator("#about").evaluate((section) => {
     const root = document.documentElement;
     const previousBehavior = root.style.scrollBehavior;
     const bounds = section.getBoundingClientRect();
     const absoluteTop = window.scrollY + bounds.top;
-    const revealStart = absoluteTop - window.innerHeight * 0.75;
-    const revealEnd = absoluteTop + bounds.height / 2 - window.innerHeight / 2;
     root.style.scrollBehavior = "auto";
-    window.scrollTo(0, revealStart + (revealEnd - revealStart) * revealProgress);
+    window.scrollTo(0, absoluteTop - window.innerHeight / 2);
     root.style.scrollBehavior = previousBehavior;
-  }, progress);
+  });
+}
+
+async function getDialCenterY(page: Page) {
+  return page.locator("[data-chapter-dial]").evaluate((dial) => {
+    const bounds = dial.getBoundingClientRect();
+    return bounds.top + bounds.height / 2;
+  });
+}
+
+async function getViewportCenterY(page: Page) {
+  return page.evaluate(() => window.innerHeight / 2);
+}
+
+async function scrollToY(page: Page, scrollY: number) {
+  await page.evaluate((nextScrollY) => {
+    const root = document.documentElement;
+    const previousBehavior = root.style.scrollBehavior;
+    root.style.scrollBehavior = "auto";
+    window.scrollTo(0, nextScrollY);
+    root.style.scrollBehavior = previousBehavior;
+    return new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  }, scrollY);
 }
 
 test("desktop homepage interactions and accessibility", async ({ page }) => {
@@ -66,31 +86,7 @@ test("desktop homepage interactions and accessibility", async ({ page }) => {
   expect(results.violations).toEqual([]);
 });
 
-test("chapter dial stays hidden and outside keyboard navigation in the hero", async ({
-  page,
-  isMobile,
-}) => {
-  test.skip(isMobile, "desktop project only");
-  await page.goto("/");
-
-  const rail = page.locator("[data-chapter-rail]");
-  await expect(rail).toBeHidden();
-  await expect(rail).toHaveAttribute("aria-hidden", "true");
-  await expect(rail).toHaveAttribute("inert", "");
-
-  const focusedChapterLinks: string[] = [];
-  for (let index = 0; index < 30; index += 1) {
-    await page.keyboard.press("Tab");
-    const focusedHref = await page.evaluate(() => {
-      const focused = document.activeElement as HTMLElement | null;
-      return focused?.matches("[data-chapter-link]") ? focused.getAttribute("href") : null;
-    });
-    if (focusedHref) focusedChapterLinks.push(focusedHref);
-  }
-  expect(focusedChapterLinks).toEqual([]);
-});
-
-test("chapter dial fades in with About and hides again when returning to the hero", async ({
+test("chapter dial flows with About, pins, and releases with Contact", async ({
   page,
   isMobile,
 }) => {
@@ -99,21 +95,37 @@ test("chapter dial fades in with About and hides again when returning to the her
 
   const rail = page.locator("[data-chapter-rail]");
   const rotor = rail.locator("[data-chapter-dial-rotor]");
-  const opacity = () =>
-    rail.evaluate((element) => Number.parseFloat(getComputedStyle(element).opacity));
+  const railState = () =>
+    rail.evaluate((element) => ({
+      ariaHidden: element.getAttribute("aria-hidden"),
+      inert: element.hasAttribute("inert"),
+      opacity: Number.parseFloat(getComputedStyle(element).opacity),
+      visibility: getComputedStyle(element).visibility,
+    }));
 
-  await scrollToAboutRevealProgress(page, 0);
-  await expect.poll(opacity).toBeCloseTo(0, 2);
-  await expect(rail).toHaveAttribute("aria-hidden", "true");
-
-  await scrollToAboutRevealProgress(page, 0.5);
-  await expect(rail).not.toHaveAttribute("aria-hidden");
-  await expect(rail).not.toHaveAttribute("inert");
-  await expect(rail).toBeVisible();
-  await expect.poll(opacity).toBeCloseTo(0.5, 2);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  const viewportCenter = await getViewportCenterY(page);
+  const heroCenter = await getDialCenterY(page);
+  const expectedHeroCenter = await page.locator("#about").evaluate((about) => {
+    const bounds = about.getBoundingClientRect();
+    return window.scrollY + bounds.top + bounds.height / 2;
+  });
+  const heroDialBounds = await page.locator("[data-chapter-dial]").boundingBox();
+  const heroOffscreen =
+    !heroDialBounds ||
+    heroDialBounds.y >= (await page.evaluate(() => window.innerHeight)) ||
+    heroDialBounds.y + heroDialBounds.height <= 0;
+  expect(heroCenter).toBeGreaterThan(viewportCenter);
+  expect(heroCenter).toBeCloseTo(expectedHeroCenter, 0);
+  expect(await railState()).toEqual({
+    ariaHidden: null,
+    inert: heroOffscreen,
+    opacity: 1,
+    visibility: "visible",
+  });
 
   await scrollToSectionCenter(page, "#about");
-  await expect.poll(opacity).toBeCloseTo(1, 2);
+  await expect.poll(() => getDialCenterY(page)).toBeCloseTo(viewportCenter, 0);
   await expect(rail.getByRole("link", { name: "01 About" })).toHaveAttribute("tabindex", "0");
   await expect
     .poll(() =>
@@ -124,15 +136,133 @@ test("chapter dial fades in with About and hides again when returning to the her
     )
     .toBeCloseTo(0, 1);
 
-  await scrollToAboutRevealProgress(page, 0.5);
-  await expect(rail).toBeVisible();
-  await expect.poll(opacity).toBeCloseTo(0.5, 2);
+  for (const chapterId of ["skills", "projects", "contact"]) {
+    await scrollToSectionCenter(page, `#${chapterId}`);
+    await expect.poll(() => getDialCenterY(page)).toBeCloseTo(viewportCenter, 0);
+  }
+
+  const transitionScrollYs = await page.evaluate(() => {
+    const about = document.querySelector<HTMLElement>("#about");
+    const contact = document.querySelector<HTMLElement>("#contact");
+    if (!about || !contact) throw new Error("Chapter anchors are missing");
+    const center = (section: HTMLElement) => {
+      const bounds = section.getBoundingClientRect();
+      return window.scrollY + bounds.top + bounds.height / 2;
+    };
+    return {
+      about: center(about) - window.innerHeight / 2,
+      contact: center(contact) - window.innerHeight / 2,
+    };
+  });
+
+  for (const transition of [transitionScrollYs.about, transitionScrollYs.contact]) {
+    const samples: number[] = [];
+    for (const offset of [-1, 0, 1]) {
+      await scrollToY(page, transition + offset);
+      samples.push(await getDialCenterY(page));
+    }
+    expect(Math.abs((samples[1] ?? 0) - (samples[0] ?? 0))).toBeLessThanOrEqual(1.1);
+    expect(Math.abs((samples[2] ?? 0) - (samples[1] ?? 0))).toBeLessThanOrEqual(1.1);
+  }
+
+  await scrollToY(page, transitionScrollYs.contact + 120);
+  const releasedCenter = await getDialCenterY(page);
+  const releasedScrollY = await page.evaluate(() => window.scrollY);
+  expect(releasedCenter).toBeCloseTo(viewportCenter - 120, 0);
+  await scrollToY(page, transitionScrollYs.contact + 200);
+  const laterScrollY = await page.evaluate(() => window.scrollY);
+  expect(await getDialCenterY(page)).toBeCloseTo(
+    releasedCenter - (laterScrollY - releasedScrollY),
+    0
+  );
+
+  await scrollToY(page, await page.evaluate(() => document.documentElement.scrollHeight));
+  expect(await getDialCenterY(page)).toBeLessThan(viewportCenter);
 
   await page.evaluate(() => window.scrollTo(0, 0));
-  await expect(rail).toHaveAttribute("aria-hidden", "true");
+  await expect.poll(() => getDialCenterY(page)).toBeCloseTo(heroCenter, 0);
+  expect(await railState()).toEqual({
+    ariaHidden: null,
+    inert: heroOffscreen,
+    opacity: 1,
+    visibility: "visible",
+  });
+});
+
+test("chapter dial remeasures its document anchors after viewport resize", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, "desktop project only");
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/");
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    await Promise.all(
+      Array.from(document.querySelectorAll<HTMLImageElement>("#hero img, #about img")).map(
+        async (image) => {
+          if (!image.complete) {
+            await new Promise<void>((resolve) => {
+              image.addEventListener("load", () => resolve(), { once: true });
+              image.addEventListener("error", () => resolve(), { once: true });
+            });
+          }
+        }
+      )
+    );
+  });
+  await page.waitForTimeout(500);
+  await page.evaluate(() => window.scrollTo(0, 0));
+
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.waitForTimeout(500);
+  await expect
+    .poll(async () => {
+      const [dialCenter, aboutCenter] = await Promise.all([
+        getDialCenterY(page),
+        page.locator("#about").evaluate((about) => {
+          const bounds = about.getBoundingClientRect();
+          return window.scrollY + bounds.top + bounds.height / 2;
+        }),
+      ]);
+      return Math.abs(dialCenter - aboutCenter);
+    })
+    .toBeLessThanOrEqual(1);
+});
+
+test("chapter dial exposes links from angular opacity and becomes inert only offscreen", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, "desktop project only");
+  await page.goto("/");
+
+  const rail = page.locator("[data-chapter-rail]");
+  await scrollToSectionCenter(page, "#about");
+  const linkStates = await page.locator("[data-chapter-link]").evaluateAll((links) =>
+    links.map((link) => ({
+      ariaHidden: link.getAttribute("aria-hidden"),
+      opacity: Number.parseFloat(getComputedStyle(link).opacity),
+      tabIndex: (link as HTMLAnchorElement).tabIndex,
+    }))
+  );
+  for (const state of linkStates) {
+    if (state.opacity < 0.05) {
+      expect(state).toMatchObject({ ariaHidden: "true", tabIndex: -1 });
+    } else {
+      expect(state).toMatchObject({ ariaHidden: null, tabIndex: 0 });
+    }
+  }
+  await expect(rail).not.toHaveAttribute("inert");
+
+  await page.setViewportSize({ width: 1024, height: 100 });
+  await scrollToY(page, await page.evaluate(() => document.documentElement.scrollHeight));
+  const dialBounds = await page.locator("[data-chapter-dial]").boundingBox();
+  expect(dialBounds).not.toBeNull();
+  expect((dialBounds?.y ?? 0) + (dialBounds?.height ?? 0)).toBeLessThanOrEqual(0);
   await expect(rail).toHaveAttribute("inert", "");
-  await expect(rail).toBeHidden();
-  await expect.poll(opacity).toBeCloseTo(0, 2);
+  const results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations).toEqual([]);
 });
 
 test("chapter numbers inherit the site font family", async ({ page, isMobile }) => {
@@ -177,7 +307,7 @@ test("chapter numbers are never lighter than the body text", async ({ page, isMo
   }
 });
 
-test("desktop chapter dial keeps one fixed indicator through every scroll state", async ({
+test("desktop chapter dial keeps one active dot attached to its number", async ({
   page,
   isMobile,
 }) => {
@@ -185,13 +315,12 @@ test("desktop chapter dial keeps one fixed indicator through every scroll state"
   await page.goto("/");
 
   const rail = page.locator("[data-chapter-rail]");
-  const dot = rail.locator("[data-chapter-dot]");
   await scrollToSectionCenter(page, "#about");
   await expect(rail).toBeVisible();
-  await expect(rail.getByRole("link")).toHaveCount(5);
+  await expect(rail.locator("[data-chapter-link]")).toHaveCount(5);
   await expect(rail.locator("[data-chapter-dial-rotor]")).toBeVisible();
   await expect(rail.locator("[data-chapter-label]")).toHaveCount(5);
-  await expect(dot).toHaveCount(1);
+  await expect(rail.locator("[data-chapter-dot]")).toHaveCount(5);
   expect(await rail.evaluate((element) => getComputedStyle(element).position)).toBe("fixed");
   expect(
     await rail
@@ -199,32 +328,137 @@ test("desktop chapter dial keeps one fixed indicator through every scroll state"
       .evaluate((element) => getComputedStyle(element).position)
   ).toBe("fixed");
 
-  const initialDot = await dot.boundingBox();
-  expect(initialDot).not.toBeNull();
+  const distances: number[] = [];
 
-  for (const chapter of chapters) {
+  for (const [index, chapter] of chapters.entries()) {
     await scrollToSectionCenter(page, `#${chapter.id}`);
     await expect(rail.getByRole("link", { name: chapter.name })).toHaveAttribute(
       "aria-current",
       "step"
     );
+    await page.waitForTimeout(450);
 
-    const bounds = await dot.boundingBox();
-    expect(bounds, `dot bounds at #${chapter.id}`).not.toBeNull();
-    expect(
-      Math.abs((bounds?.x ?? 0) - (initialDot?.x ?? 0)),
-      `dot x at #${chapter.id}`
-    ).toBeLessThanOrEqual(1);
-    expect(
-      Math.abs((bounds?.y ?? 0) - (initialDot?.y ?? 0)),
-      `dot y at #${chapter.id}`
-    ).toBeLessThanOrEqual(1);
+    const dotState = await rail.locator("[data-step-index]").evaluateAll((steps) => {
+      const visibleDots = steps.flatMap((step) => {
+        const dot = step.querySelector<HTMLElement>("[data-chapter-dot]");
+        const label = step.querySelector<HTMLElement>("[data-chapter-label]");
+        if (!dot || !label || Number.parseFloat(getComputedStyle(dot).opacity) <= 0.5) return [];
+
+        const dotBounds = dot.getBoundingClientRect();
+        const labelBounds = label.getBoundingClientRect();
+        const dotCenter = {
+          x: dotBounds.left + dotBounds.width / 2,
+          y: dotBounds.top + dotBounds.height / 2,
+        };
+        const nearestX = Math.min(Math.max(dotCenter.x, labelBounds.left), labelBounds.right);
+        const nearestY = Math.min(Math.max(dotCenter.y, labelBounds.top), labelBounds.bottom);
+        return [Math.hypot(nearestX - dotCenter.x, nearestY - dotCenter.y)];
+      });
+      return visibleDots;
+    });
+
+    expect(dotState, `visible dot at #${chapter.id}`).toHaveLength(1);
+    if (index === 0 || index === 2 || index === 4) distances.push(dotState[0] ?? 0);
   }
 
+  expect(Math.max(...distances) - Math.min(...distances)).toBeLessThanOrEqual(2);
+
+  await scrollToSectionCenter(page, "#blog");
+  await expect(rail.getByRole("link", { name: "04 Blog" })).toHaveAttribute("aria-current", "step");
   const contactLink = rail.getByRole("link", { name: "05 Contact" });
   await contactLink.click();
   await expect(page).toHaveURL(/#contact$/);
   await expect(page.locator("#contact")).toBeInViewport();
+  await expect
+    .poll(() => getDialCenterY(page), { timeout: 3_000 })
+    .toBeCloseTo(await getViewportCenterY(page), 0);
+
+  await scrollToSectionCenter(page, "#about");
+  const interrupted = await page.evaluate(async () => {
+    const projects = document.querySelector<HTMLElement>("#projects");
+    const contact = document.querySelector<HTMLElement>("#contact");
+    const dots = Array.from(document.querySelectorAll<HTMLElement>("[data-chapter-dot]"));
+    if (!projects || !contact || dots.length === 0) throw new Error("Chapter dots are missing");
+
+    const root = document.documentElement;
+    const previousBehavior = root.style.scrollBehavior;
+    root.style.scrollBehavior = "auto";
+    const centeredScrollY = (section: HTMLElement) => {
+      const bounds = section.getBoundingClientRect();
+      return window.scrollY + bounds.top + bounds.height / 2 - window.innerHeight / 2;
+    };
+    const readOpacities = () => dots.map((dot) => Number.parseFloat(getComputedStyle(dot).opacity));
+
+    window.scrollTo(0, centeredScrollY(projects));
+    let inFlight = false;
+    for (let frame = 0; frame < 120; frame += 1) {
+      const opacities = readOpacities();
+      if (opacities.some((opacity) => opacity > 0 && opacity < 1)) {
+        inFlight = true;
+        break;
+      }
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    }
+
+    window.scrollTo(0, centeredScrollY(contact));
+    const frames: number[][] = [];
+    for (let frame = 0; frame < 30; frame += 1) {
+      frames.push(readOpacities());
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    }
+    root.style.scrollBehavior = previousBehavior;
+    return { frames, inFlight };
+  });
+  expect(interrupted.inFlight).toBe(true);
+  for (const opacities of interrupted.frames) {
+    expect(opacities.filter((opacity) => opacity > 0.001).length).toBeLessThanOrEqual(2);
+  }
+  await page.waitForTimeout(500);
+  const reconciledDots = await rail
+    .locator("[data-chapter-dot]")
+    .evaluateAll((dots) => dots.map((dot) => Number.parseFloat(getComputedStyle(dot).opacity)));
+  expect(reconciledDots.filter((opacity) => opacity > 0.5)).toHaveLength(1);
+  expect(reconciledDots.filter((opacity) => opacity > 0 && opacity <= 0.5)).toHaveLength(0);
+});
+
+test("chapter dot cross-fade never leaves two strong halos", async ({ page, isMobile }) => {
+  test.skip(isMobile, "desktop project only");
+  await page.goto("/");
+  await scrollToSectionCenter(page, "#about");
+  await page.waitForTimeout(450);
+
+  const samples = await page.evaluate(async () => {
+    const contact = document.querySelector<HTMLElement>("#contact");
+    const contactLink = document.querySelector<HTMLAnchorElement>(
+      '[data-chapter-link][href="#contact"]'
+    );
+    const dots = Array.from(document.querySelectorAll<HTMLElement>("[data-chapter-dot]"));
+    if (!contact || !contactLink || dots.length === 0) throw new Error("Chapter dots are missing");
+
+    const root = document.documentElement;
+    const previousBehavior = root.style.scrollBehavior;
+    const bounds = contact.getBoundingClientRect();
+    root.style.scrollBehavior = "auto";
+    window.scrollTo(0, window.scrollY + bounds.top + bounds.height / 2 - window.innerHeight / 2);
+    root.style.scrollBehavior = previousBehavior;
+
+    while (contactLink.getAttribute("aria-current") !== "step") {
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    }
+
+    const frames: number[][] = [];
+    for (let frame = 0; frame < 30; frame += 1) {
+      frames.push(dots.map((dot) => Number.parseFloat(getComputedStyle(dot).opacity)));
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    }
+    return frames;
+  });
+
+  for (const opacities of samples) {
+    expect(opacities.filter((opacity) => opacity > 0.5).length).toBeLessThanOrEqual(1);
+    const overlap = opacities.filter((opacity) => opacity > 0.001);
+    if (overlap.length > 1) expect(Math.max(...overlap)).toBeLessThanOrEqual(0.55);
+  }
 });
 
 test("chapter progress clamps and angular distance controls visibility", async ({
@@ -256,15 +490,24 @@ test("chapter progress clamps and angular distance controls visibility", async (
   );
   const aboutStyles = await rail.locator("[data-chapter-link]").evaluateAll((links) =>
     links.map((link) => ({
+      ariaHidden: link.getAttribute("aria-hidden"),
       opacity: Number.parseFloat(getComputedStyle(link).opacity),
       pointerEvents: getComputedStyle(link).pointerEvents,
+      tabIndex: (link as HTMLAnchorElement).tabIndex,
     }))
   );
   aboutStyles.forEach(({ opacity }, index) => {
     expect(opacity).toBeCloseTo([1, 0.45, 0.2, 0.08, 0][index] ?? 0, 4);
   });
   expect(aboutStyles[4]?.pointerEvents).toBe("none");
-  await expect(rail.getByRole("link", { name: "05 Contact" })).toHaveAttribute("tabindex", "-1");
+  expect(aboutStyles[4]).toMatchObject({ ariaHidden: "true", tabIndex: -1 });
+  for (const visibleStyle of aboutStyles.slice(0, 4)) {
+    expect(visibleStyle).toMatchObject({ ariaHidden: null, tabIndex: 0 });
+  }
+  await expect(rail.locator('[data-chapter-link][href="#contact"]')).toHaveAttribute(
+    "tabindex",
+    "-1"
+  );
 
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
   await expect.poll(rotorRotation).toBeCloseTo(-120, 1);
@@ -378,13 +621,14 @@ test("chapter labels remain upright and crossfade at fractional progress", async
   );
 });
 
-test("chapter dial renders the frost ring and fixed halo", async ({ page, isMobile }) => {
+test("chapter dial renders the frost ring and per-step dot halo", async ({ page, isMobile }) => {
   test.skip(isMobile, "desktop project only");
   await page.goto("/");
 
   const styles = await page.evaluate(() => {
     const rotor = document.querySelector<HTMLElement>("[data-chapter-dial-rotor]");
-    const dot = document.querySelector<HTMLElement>("[data-chapter-dot]");
+    const dots = Array.from(document.querySelectorAll<HTMLElement>("[data-chapter-dot]"));
+    const dot = dots[0];
     if (!rotor || !dot) throw new Error("Chapter dial is missing");
     const rotorStyle = getComputedStyle(rotor);
     const highlightStyle = getComputedStyle(rotor, "::before");
@@ -395,12 +639,14 @@ test("chapter dial renders the frost ring and fixed halo", async ({ page, isMobi
       dotBoxShadow: dotStyle.boxShadow,
       dotHeight: Number.parseFloat(dotStyle.height),
       dotWidth: Number.parseFloat(dotStyle.width),
+      dotCount: dots.length,
       highlightBackground: highlightStyle.backgroundImage,
     };
   });
 
   expect(styles.borderColor).toBe("rgba(136, 192, 208, 0.22)");
   expect(styles.highlightBackground).toContain("conic-gradient");
+  expect(styles.dotCount).toBe(5);
   expect(styles.dotWidth).toBe(7);
   expect(styles.dotHeight).toBe(7);
   expect(styles.dotBoxShadow).toContain("rgba(136, 192, 208, 0.12) 0px 0px 0px 6px");
@@ -464,19 +710,25 @@ test("desktop chapter dial stays clear of the content gutter", async ({ page, is
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/");
 
-    for (const chapter of chapters) {
-      await scrollToSectionCenter(page, `#${chapter.id}`);
-      await expect(page.getByRole("link", { name: chapter.name })).toHaveAttribute(
-        "aria-current",
-        "step"
-      );
+    const scrollStates = [
+      { name: "hero", scroll: () => page.evaluate(() => window.scrollTo(0, 0)) },
+      { name: "About half-entry", scroll: () => scrollToAboutEntryHalf(page) },
+      { name: "About center", scroll: () => scrollToSectionCenter(page, "#about") },
+      { name: "Contact", scroll: () => scrollToSectionCenter(page, "#contact") },
+    ];
+
+    for (const state of scrollStates) {
+      await state.scroll();
+      await page.waitForTimeout(450);
 
       const geometry = await page.evaluate(() => {
         const content = document.querySelector<HTMLElement>("#about > div");
         const candidates = Array.from(
           document.querySelectorAll<HTMLElement>("[data-chapter-label], [data-chapter-dot]")
         ).filter((element) => {
-          if (element.matches("[data-chapter-dot]")) return true;
+          if (element.matches("[data-chapter-dot]")) {
+            return Number.parseFloat(getComputedStyle(element).opacity) > 0;
+          }
           const link = element.closest<HTMLElement>("[data-chapter-link]");
           return link && Number.parseFloat(getComputedStyle(link).opacity) > 0;
         });
@@ -492,7 +744,7 @@ test("desktop chapter dial stays clear of the content gutter", async ({ page, is
 
       expect(
         geometry.visualRight,
-        `${width}px at #${chapter.id}: dial right ${geometry.visualRight}, content left ${geometry.contentLeft}`
+        `${width}px at ${state.name}: dial right ${geometry.visualRight}, content left ${geometry.contentLeft}`
       ).toBeLessThanOrEqual(geometry.contentLeft - 16);
     }
   }
@@ -578,31 +830,23 @@ test("reduced motion disables continuous homepage animation", async ({ page, isM
   if (isMobile) return;
 
   const rail = page.locator("[data-chapter-rail]");
-  await expect(rail).toBeHidden();
-  await expect(rail).toHaveAttribute("aria-hidden", "true");
-  await expect(rail).toHaveAttribute("inert", "");
-
-  await scrollToAboutRevealProgress(page, 0.5);
-  await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
-  const reducedVisibility = await rail.evaluate((element) => ({
+  const heroState = await rail.evaluate((element) => ({
     ariaHidden: element.getAttribute("aria-hidden"),
     inert: element.hasAttribute("inert"),
     opacity: Number.parseFloat(getComputedStyle(element).opacity),
   }));
-  expect(reducedVisibility).toMatchObject({ ariaHidden: null, inert: false });
-  expect(reducedVisibility.opacity).toBeCloseTo(0.5, 3);
+  const reducedHeroBounds = await page.locator("[data-chapter-dial]").boundingBox();
+  const reducedHeroOffscreen =
+    !reducedHeroBounds ||
+    reducedHeroBounds.y >= (await page.evaluate(() => window.innerHeight)) ||
+    reducedHeroBounds.y + reducedHeroBounds.height <= 0;
+  expect(heroState).toEqual({ ariaHidden: null, inert: reducedHeroOffscreen, opacity: 1 });
+  expect(await getDialCenterY(page)).toBeGreaterThan(await getViewportCenterY(page));
 
   const railPosition = await page
     .locator("[data-chapter-rail]")
     .evaluate((element) => getComputedStyle(element).position);
   expect(railPosition).toBe("fixed");
-
-  const visibilityTransition = await rail.evaluate((element) =>
-    getComputedStyle(element)
-      .transitionDuration.split(",")
-      .map((duration) => Number.parseFloat(duration) * (duration.includes("ms") ? 0.001 : 1))
-  );
-  expect(Math.max(...visibilityTransition)).toBeLessThanOrEqual(0.01);
 
   const rotor = page.locator("[data-chapter-dial-rotor]");
   await page.locator("#projects").scrollIntoViewIfNeeded();
@@ -620,6 +864,11 @@ test("reduced motion disables continuous homepage animation", async ({ page, isM
   });
   expect(reducedMotionState.inlineTransform).toBe("");
   expect(reducedMotionState.rotation).toBeCloseTo(-60, 1);
+  const reducedDots = await rail
+    .locator("[data-chapter-dot]")
+    .evaluateAll((dots) => dots.map((dot) => Number.parseFloat(getComputedStyle(dot).opacity)));
+  expect(reducedDots.filter((opacity) => opacity === 1)).toHaveLength(1);
+  expect(reducedDots.filter((opacity) => opacity !== 0 && opacity !== 1)).toHaveLength(0);
 });
 
 test("contact form preserves its JSON contract without a live provider", async ({ page }) => {
