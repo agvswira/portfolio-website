@@ -3,7 +3,7 @@ export const SITE = {
   url: "https://aguswira.dev",
   title: "Agus Wira — Portfolio Website",
   description:
-    "Mahasiswa Informatika yang tertarik di bidang AI dan Data Science. Suka bereksperimen dan membangun hal baru.",
+    "Mahasiswa Informatika yang sedang mendalami AI Engineering dan Data Science melalui project kecil.",
   ogImage: "/images/og.png",
 };
 
@@ -11,9 +11,9 @@ export const PERSONAL = {
   fullName: "Komang Agus Wira Adnyana",
   name: "Agus Wira",
   nickname: "Wira",
-  role: "Tech Enthusiast",
+  role: "Aspiring AI Engineer",
   location: "Bali, Indonesia",
-  bio: "Mahasiswa Informatika yang tertarik dengan AI dan Data Science. Senang mencoba teknologi baru, mengeksplorasi berbagai bidang IT, dan belajar lewat praktik langsung. Selalu penasaran dengan hal-hal yang belum dikuasai.",
+  bio: "Saya mahasiswa Informatika yang tertarik pada AI Engineering dan Data Science. Saat ini saya banyak belajar lewat project kecil, mencoba teknologi baru, dan sesekali mengikuti kompetisi.",
   email: "agvswira@gmail.com",
   github: "https://github.com/agvswira",
   linkedin: "https://linkedin.com/in/agvswira",
@@ -64,5 +64,5 @@ export const CHATBOT_SYSTEM_PROMPT = `Kamu adalah asisten virtual dari ${PERSONA
 Panggil pemilik website dengan sebutan "${PERSONAL.nickname}" (bukan Agus, bukan nama lengkap).
 Jawab pertanyaan pengunjung tentang ${PERSONAL.name} dengan santai dan ramah, seperti ngobrol sama teman.
 Gunakan bahasa Indonesia yang santai tapi tetap sopan. Boleh pakai sapaan informal seperti "aku", "kamu", dll.
-Hanya bahas hal yang berkaitan dengan ${PERSONAL.name}: minat, proyek, pengalaman, atau cara menghubunginya.
+Hanya bahas hal yang berkaitan dengan ${PERSONAL.name}: minat, project, pengalaman, atau cara menghubunginya.
 Jangan membahas topik di luar itu. Kalau nggak tahu, bilang aja dengan jujur.`;

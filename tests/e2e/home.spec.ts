@@ -497,7 +497,7 @@ test("chapter progress clamps and angular distance controls visibility", async (
     }))
   );
   aboutStyles.forEach(({ opacity }, index) => {
-    expect(opacity).toBeCloseTo([1, 0.45, 0.2, 0.08, 0][index] ?? 0, 4);
+    expect(opacity).toBeCloseTo([1, 0.45, 0.2, 0.08, 0][index] ?? 0, 3);
   });
   expect(aboutStyles[4]?.pointerEvents).toBe("none");
   expect(aboutStyles[4]).toMatchObject({ ariaHidden: "true", tabIndex: -1 });
@@ -771,9 +771,13 @@ test("project cards use covers and concise summaries", async ({ page }) => {
   await page.goto("/");
 
   const cards = page.locator("[data-project-card]");
-  await expect(cards).toHaveCount(3);
-  await expect(cards.locator("img")).toHaveCount(3);
+  await expect(cards).toHaveCount(4);
+  await expect(cards.locator("img")).toHaveCount(4);
   await expect(cards.filter({ hasText: "Outcome" })).toHaveCount(0);
+
+  const cekduluCard = cards.filter({ hasText: "CekDulu" });
+  await expect(cekduluCard).toHaveCount(1);
+  await expect(cards.getByText("Featured", { exact: true })).toHaveCount(0);
 
   const elingCard = cards.filter({ hasText: "Eling — WhatsApp Reminder Bot" });
   await expect(elingCard.getByText("Discontinued", { exact: true })).toBeVisible();

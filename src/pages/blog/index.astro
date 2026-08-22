@@ -10,7 +10,7 @@ const posts = await getBlogPosts();
 
 <BaseLayout
   title="Blog"
-  description={`Tulisan tentang perjalanan belajar, teknologi, dan eksperimen oleh ${PERSONAL.name}.`}
+  description={`Tulisan ${PERSONAL.name} tentang kuliah Informatika, tools, dan proses belajar.`}
 >
   <div class="flex min-h-screen flex-col bg-bg-base">
     <main id="main" class="mx-auto w-full max-w-3xl flex-1 px-6 py-24">
@@ -23,7 +23,7 @@ const posts = await getBlogPosts();
         <p class="eyebrow mb-3">Blog</p>
         <h1 class="mb-4 text-4xl font-semibold tracking-tight text-text-primary">Tulisan</h1>
         <p class="text-lg leading-relaxed text-text-muted">
-          Catatan perjalanan, pemikiran, dan hal-hal yang sedang aku pelajari.
+          Catatan tentang kuliah, tools yang saya gunakan, dan proses belajar saya.
         </p>
       </header>
       <ol class="flex flex-col gap-0" reversed>

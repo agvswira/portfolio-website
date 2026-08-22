@@ -1,12 +1,12 @@
 ---
 title: "Portfolio Website"
 slug: "portfolio-website"
-summary: "Website pribadi untuk proyek, tulisan, dan perjalanan belajar Informatika. Arsitekturnya dimigrasikan dari Next.js ke Astro agar halaman konten tetap statis, ringan, dan tidak membawa runtime React."
-problem: "Versi awal portfolio sudah terlihat lengkap, tetapi proyek hanya tampil sebagai kartu pendek. Pengunjung belum bisa melihat masalah yang kukerjakan, keputusan teknis, peranku, atau hasil akhirnya."
-role: "Solo designer dan developer — menyusun konten, design system, frontend, motion, endpoint server, serta deployment."
-timeline: "22 Juni 2026–sekarang — versi awal, audit menyeluruh, case study MDX, lalu migrasi bertahap dari Next.js ke Astro."
+summary: "Website pribadi yang menyatukan profile, project case study, blog, contact form, dan AI chat. Sebagian besar halaman dibuat statis dengan Astro, sedangkan fitur yang membutuhkan server berjalan melalui endpoint terpisah."
+problem: "Saya membutuhkan satu media untuk memperkenalkan diri dan menjelaskan project yang saya buat. Project card saja tidak cukup untuk memuat proses, keputusan teknis, dan hasil setiap project."
+role: "Saya menentukan arah project, design visual, struktur halaman, dan content. AI banyak membantu implementasi teknis; saya mengarahkan prosesnya lalu memeriksa hasil melalui source review, test, dan build."
+timeline: "22 Juni 2026–sekarang. Dimulai dari website portfolio sederhana, lalu berkembang dengan case study, blog, contact form, AI chat, dan migrasi dari Next.js ke Astro."
 publishedDate: "2026-08-05"
-updatedDate: "2026-08-06"
+updatedDate: "2026-08-22"
 stack:
   - "Astro 7"
   - "TypeScript"
@@ -18,8 +18,9 @@ stack:
   - "Resend"
   - "OpenAI-compatible API"
 outcome:
-  - "Semua halaman publik diprerender lewat Astro; hanya endpoint contact dan chat yang berjalan sebagai serverless function."
-  - "Runtime React, Framer Motion, Lenis, dan canvas lama dihapus; halaman konten hanya memuat sekitar 0,9 kB JavaScript gzip untuk navbar global."
+  - "Homepage, blog, dan project case study tersedia dalam satu website yang dapat diakses di aguswira.dev."
+  - "Semua halaman publik diprerender melalui Astro; hanya endpoint contact dan chat yang berjalan sebagai serverless function."
+  - "Runtime React, Framer Motion, Lenis, dan canvas lama dihapus; halaman content hanya memuat sekitar 0,9 kB JavaScript gzip untuk navbar global."
   - "Homepage mengirim sekitar 47 kB JavaScript gzip dan streaming chat baru dimuat setelah pesan pertama dikirim."
 demoUrl: "https://aguswira.dev"
 repoUrl: "https://github.com/agvswira/portfolio-website"
@@ -36,91 +37,99 @@ evidence:
 
 ## Problem
 
-Versi pertama website ini sebenarnya sudah punya banyak bagian: hero, profil,
-daftar skill, proyek, blog, form kontak, sampai AI chat. Dari luar kelihatan
-lengkap, tetapi bagian proyeknya belum banyak membantu.
+Saya membuat website ini sebagai media untuk memperkenalkan diri, membagikan
+tulisan, dan menjelaskan project yang pernah saya kerjakan. Sebelumnya, setiap
+project hanya tampil sebagai card berisi judul, deskripsi singkat, tech stack,
+dan link.
 
-Setiap proyek hanya mendapat satu kartu dengan judul, deskripsi singkat, stack,
-dan link. Kalau seorang dosen, recruiter magang, atau pembaca teknis ingin tahu
-apa yang sebenarnya kukerjakan, mereka harus keluar dari website dan
-membongkar repository sendiri.
+Format card cukup untuk memberi gambaran awal, tetapi tidak menyediakan ruang
+untuk membahas alasan project dibuat, proses pengembangan, keputusan teknis,
+hasil, dan kekurangannya. Saya membutuhkan halaman khusus agar setiap project
+dapat dijelaskan tanpa memadatkan semuanya ke homepage.
 
-Aku ingin portfolio ini lebih dari halaman perkenalan. Setiap proyek seharusnya
-bisa menjawab beberapa pertanyaan dasar: masalah apa yang dikerjakan, apa
-peranku, bagaimana arsitekturnya, hasil apa yang benar-benar ada, dan bagian
-mana yang masih kurang.
+Website ini juga perlu menyediakan tempat untuk tulisan dan cara menghubungi
+saya. Karena itu, scope-nya berkembang menjadi homepage, blog, project case
+study, contact form, dan AI chat yang menjawab pertanyaan tentang saya.
 
 ## Approach
 
-Aku memulai perombakan dari konten, bukan tampilan. Data proyek yang sebelumnya
-berada di array TypeScript dipindahkan ke MDX. Frontmatter menyimpan informasi
-yang perlu tampil konsisten pada kartu dan header, sedangkan body MDX dipakai
-untuk cerita yang lebih panjang.
+Saya menentukan design visual, struktur halaman, dan content yang ingin
+ditampilkan. AI banyak membantu implementasi teknis. Peran saya lebih banyak
+mengarahkan hasil yang diinginkan, meninjau code, dan memeriksa apakah setiap
+bagian bekerja sesuai design.
 
-Semua case study memakai urutan yang sama: Problem, Approach, Architecture,
-Outcome, lalu Lessons. Urutan ini bukan supaya setiap tulisan terdengar seragam,
-tetapi supaya pembaca tahu di mana harus mencari informasi.
+Homepage dibagi menjadi beberapa section: hero, profile, tech stack, project,
+blog, dan contact. Ilustrasi pegunungan menjadi latar hero, sedangkan warna Nord
+dipakai di seluruh website. Chapter scrolling, reveal animation, spotlight, dan
+project filter ditambahkan untuk memberi interaksi tanpa mengubah halaman
+menjadi aplikasi yang sepenuhnya berjalan di browser.
 
-Homepage menampilkan cover proyek dan ringkasan singkat pada setiap kartu agar
-pengunjung bisa mengenali konteksnya dengan cepat. Outcome yang lebih rinci
-tetap berada di case study supaya kartu tidak berubah menjadi dinding teks.
+Content project dan blog disimpan sebagai MDX. Frontmatter menampung data yang
+perlu tampil konsisten pada card, metadata, dan header halaman. Body MDX
+digunakan untuk tulisan yang lebih panjang. Content Collections memeriksa field
+wajib, slug, URL, image, dan struktur heading sebelum build.
 
-Astro Content Collections memeriksa frontmatter sebelum build.
-Slug harus valid, field wajib tidak boleh kosong, dan body MDX tidak boleh
-menambahkan H1 sendiri. H1 dibuat oleh route detail. Guard terakhir ditambahkan
-karena halaman blog pernah menghasilkan dua H1 pada halaman yang sama.
+Setiap project case study menggunakan urutan `Problem`, `Approach`,
+`Architecture`, `Outcome`, dan `Lessons`. Urutan ini juga diperiksa oleh content
+guard agar setiap halaman memiliki struktur dasar yang sama. Isi di dalamnya
+tetap disesuaikan dengan cerita masing-masing project.
 
-Saat menulis isi proyek, aku memakai source code, riwayat Git, hasil test,
-deployment record, dan URL publik sebagai rujukan. Informasi yang hanya bisa
-datang dari pengalaman pribadi tetap dibiarkan kosong sampai aku bisa
-menuliskannya sendiri.
+Website ini awalnya dibuat dengan Next.js. Ketika fokusnya semakin banyak pada
+content statis, saya memindahkannya ke Astro untuk mengurangi JavaScript yang
+dikirim ke browser. AI membantu sebagian besar proses migrasi, sedangkan saya
+mengarahkan perubahan dan memeriksa hasilnya melalui test, build, serta ukuran
+bundle.
 
 ## Architecture
 
 ```text
 src/content/
-  +-- blog/*.mdx ----------> Content Collection --> /blog/[slug]
+  +-- blog/*.mdx ----------> Content Collections --> /blog/[slug]
   |
-  +-- projects/*.mdx ------> Content Collection --> /projects/[slug]
+  +-- projects/*.mdx ------> Content Collections --> /projects/[slug]
                                      |
                                      +------------> homepage project cards
 
 Astro
   +-- Static pages: layouts, sections, metadata, MDX rendering
-  +-- Vanilla TS: navigation, filters, contact, motion, chat shell
+  +-- Browser interactions: navigation, filters, contact, motion, chat shell
   +-- Server endpoints:
-        +-- /api/chat -----> Upstash --> OpenAI-compatible SSE
+        +-- /api/chat -----> Upstash --> OpenAI-compatible API --> SSE
         +-- /api/contact --> Upstash --> validation --> Resend
 ```
 
-Astro menangani route, layout, dan prerendering. Content Collections membaca
-blog serta proyek dari filesystem, memvalidasi frontmatter dengan Zod, lalu
-menghasilkan static path. MDX dirender saat build dengan GitHub-flavored
-Markdown dan syntax highlighting. Homepage hanya memakai metadata kartu; body
-panjang tidak masuk ke JavaScript filter.
+Astro menangani routing, layout, metadata, dan prerendering. Content Collections
+membaca blog dan project dari filesystem, memvalidasi frontmatter dengan Zod,
+lalu menghasilkan static path. MDX dirender saat build menggunakan
+GitHub-flavored Markdown dan syntax highlighting. Homepage hanya membaca
+metadata yang dibutuhkan project card.
 
-Bagian visual tetap memakai Tailwind dengan warna Nord. GSAP ScrollTrigger
-hanya dimuat di homepage untuk reveal dan parallax, sedangkan marquee memakai
-CSS. Navigasi, filter, spotlight, contact, dan shell chat memakai vanilla
-TypeScript. Reduced motion menghentikan animasi berulang dan menonaktifkan
-transisi yang tidak diperlukan.
+Bagian visual menggunakan Tailwind CSS dengan palet Nord. GSAP ScrollTrigger
+dimuat di homepage untuk reveal dan parallax, sedangkan marquee berjalan dengan
+CSS. Navigation, project filter, spotlight, contact form, dan chat shell
+menggunakan vanilla TypeScript. Pengaturan reduced motion menghentikan animasi
+berulang dan mengurangi transition yang tidak diperlukan.
 
-Chat dan form kontak menjadi endpoint Astro on-demand karena membutuhkan
-secret. Keduanya dibatasi dengan sliding window Upstash yang memakai identitas
-IP ter-hash dan namespace environment. Chat meneruskan SSE dari provider
-OpenAI-compatible; contact memvalidasi input dan mengirim email lewat Resend.
-Request memiliki batas ukuran, timeout upstream, serta status error yang tidak
-membocorkan detail internal.
+Contact form dan AI chat menggunakan endpoint Astro karena keduanya membutuhkan
+secret. Upstash menerapkan rate limit dengan identitas IP yang di-hash dan
+namespace per environment. Contact endpoint memvalidasi input sebelum mengirim
+email melalui Resend. Chat endpoint meneruskan stream dari OpenAI-compatible API
+ke browser melalui SSE.
+
+Request ke endpoint memiliki batas ukuran dan timeout. Error yang dikirim ke
+browser tidak menyertakan detail internal. Code untuk streaming chat juga baru
+dimuat setelah pengguna mengirim pesan pertama.
 
 ## Outcome
 
-Website publik dapat dibuka di [aguswira.dev](https://aguswira.dev), sedangkan
-source-nya tersedia di
+Website dapat diakses di [aguswira.dev](https://aguswira.dev), sedangkan source
+code tersedia di
 [GitHub](https://github.com/agvswira/portfolio-website).
 
-Pada build Astro, seluruh slug blog dan proyek dibuat sebagai static page.
-Setiap halaman memiliki satu H1, canonical URL, social metadata, serta
-structured data sesuai jenis kontennya.
+Homepage sekarang memuat profile, tech stack, project, blog, contact form, dan
+AI chat. Setiap project memiliki case study sendiri, dan tulisan tersedia dalam
+route blog terpisah. Semua halaman content memiliki canonical URL, social
+metadata, structured data, dan satu H1.
 
 | Route              | Rendering         | JavaScript eager (gzip) |
 | ------------------ | ----------------- | ----------------------: |
@@ -129,28 +138,28 @@ structured data sesuai jenis kontennya.
 | `/projects/[slug]` | Static            |          sekitar 0,9 kB |
 | `/api/*`           | Vercel serverless |                       — |
 
-Vitest mencakup schema, validasi API, rate-limit key, timeout, abort, provider,
-dan parser SSE. Playwright memeriksa keyboard flow, reduced motion, axe,
-contact, dan streaming chat di viewport desktop serta mobile tanpa memanggil
-provider live.
+Runtime React, Framer Motion, Lenis, dan canvas dari versi lama sudah dihapus.
+Halaman blog dan project hanya memuat script navbar global, sedangkan homepage
+memuat JavaScript untuk interaksi yang terlihat di halaman.
 
-Implementasi Astro kini menjadi versi utama. Perubahan berikutnya tetap
-melewati build, audit performa, Preview Vercel, dan smoke test sebelum dirilis.
+Vitest memeriksa content schema, validasi API, rate-limit key, timeout, abort,
+provider, dan SSE parser. Playwright mencakup keyboard flow, reduced motion,
+accessibility, contact form, dan streaming chat pada viewport desktop serta
+mobile tanpa memanggil provider live.
 
 ## Lessons
 
-Audit ini mengubah cara aku menilai arsitektur portfolio. Framework dan animasi
-bukan tujuan; keduanya berguna hanya jika halaman tetap cepat, mudah
-dinavigasi, dan membantu pembaca menemukan bukti proyek.
+Portfolio ini membutuhkan lebih dari design homepage. Saya juga perlu menyusun
+content untuk menjelaskan setiap project, melengkapi metadata tiap route, dan
+menangani keamanan fitur server pada website yang sebagian besar statis.
 
-Migrasi bertahap juga terasa lebih aman daripada rewrite sekaligus. Setiap fase
-punya parity check, test, build, dan commit sendiri. Sumber Next dipertahankan
-sebagai referensi sampai halaman, interaksi, dan API Astro terbukti setara, baru
-kemudian dihapus.
+Saya juga belajar bahwa menggunakan AI untuk implementasi tetap membutuhkan
+arah dan pemeriksaan. Saya menentukan design serta struktur content, lalu
+meninjau hasil implementasi melalui source code, test, build, dan pengukuran
+bundle. Output AI tidak langsung dianggap selesai hanya karena tampilannya
+sudah sesuai.
 
-Pelajaran teknis terbesarnya adalah menjaga JavaScript sebagai pilihan per
-route. Halaman konten hanya memuat script kecil untuk navigasi global, homepage
-memuat interaksi yang terlihat, dan parser streaming chat masuk ke lazy chunk
-setelah pengguna benar-benar mengirim pesan. Hasil performa akhir tetap harus
-dibuktikan lewat Lighthouse dan Preview production-like, bukan hanya ukuran
-bundle lokal.
+Astro cocok untuk project ini karena sebagian besar route berisi content yang
+dapat dibuat saat build. JavaScript tetap digunakan pada bagian yang memang
+membutuhkan interaksi, sedangkan contact dan chat dipisahkan sebagai endpoint
+server.

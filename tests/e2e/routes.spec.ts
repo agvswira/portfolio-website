@@ -6,6 +6,7 @@ const htmlRoutes = [
   "/blog/awal-perjalanan-masuk-informatika",
   "/blog/mulai-mencatat-dengan-obsidian",
   "/projects/botpass",
+  "/projects/cekdulu",
   "/projects/eling-bot",
   "/projects/portfolio-website",
 ];

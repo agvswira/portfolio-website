@@ -17,7 +17,7 @@ const { posts, projects } = Astro.props;
 const skillCount = SKILL_GROUPS.reduce((total, group) => total + group.items.length, 0);
 const stats = [
   { label: "Tahun Belajar", value: "1+" },
-  { label: "Proyek", value: String(projects.length) },
+  { label: "Project", value: String(projects.length) },
   { label: "Artikel", value: String(posts.length) },
   { label: "Tech & Skill", value: `${skillCount}+` },
 ];
@@ -26,8 +26,8 @@ const stats = [
 <Section
   id="about"
   eyebrow="Tentang Saya"
-  title={`Halo, saya ${PERSONAL.name} 👋`}
-  subtitle="Mahasiswa yang percaya teknologi bisa dipelajari siapa saja — asal punya rasa penasaran dan semangat untuk terus berkembang."
+  title={`Halo, saya ${PERSONAL.name}`}
+  subtitle="Di sini saya membagikan project dan catatan dari proses belajar selama kuliah Informatika."
 >
   <div class="mt-8 grid items-start gap-12 lg:grid-cols-2">
     <article class="hud-card spotlight-card p-8" data-reveal data-spotlight>

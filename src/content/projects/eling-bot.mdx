@@ -1,12 +1,12 @@
 ---
 title: "Eling — WhatsApp Reminder Bot"
 slug: "eling-bot"
-summary: "Eling adalah bot WhatsApp yang kubuat untuk mencatat deadline, menyimpan link tugas, dan membantu pembagian kerja kelompok langsung dari chat. Prototype ini sempat kupakai bersama seorang teman selama beberapa minggu, tetapi sekarang tidak lagi dikembangkan."
-problem: "Deadline, link dokumen, dan pembagian tugas mudah tenggelam di percakapan grup. Eling mencoba membuat informasi itu bisa dicatat dan dicari lagi tanpa harus keluar dari WhatsApp."
-role: "Pengembang tunggal — membuat alur command dan AI, penyimpanan per chat, scheduler WITA, serta integrasi WhatsApp melalui Baileys."
-timeline: "16–25 Juni 2026 untuk pengembangan awal, kemudian dipakai secara terbatas selama beberapa minggu sebelum dihentikan."
+summary: "Bot WhatsApp untuk mencatat deadline, menyimpan link tugas, dan membantu pembagian kerja kelompok langsung dari chat. Eling sempat dipakai di satu grup privat, tetapi sekarang tidak lagi digunakan atau dikembangkan."
+problem: "Pertanyaan seperti 'Apa saja tugasnya?' dan 'Kapan terakhir dikumpulkan?' sering berulang di grup kelompok. Eling dibuat agar anggota grup dapat menanyakan tugas dan deadline kepada bot, sekaligus menerima reminder."
+role: "Solo developer. Saya membuat alur command dan AI, penyimpanan per chat, scheduler WITA, serta integrasi WhatsApp melalui Baileys."
+timeline: "16–25 Juni 2026 untuk pengembangan awal, lalu dipakai secara terbatas selama beberapa minggu sebelum dihentikan."
 publishedDate: "2026-08-05"
-updatedDate: "2026-08-06"
+updatedDate: "2026-08-22"
 stack:
   - "Node.js 18+"
   - "TypeScript"
@@ -15,9 +15,9 @@ stack:
   - "JSON"
   - "OpenAI-compatible API"
 outcome:
-  - "Dipakai di satu grup privat bersama seorang teman selama beberapa minggu."
+  - "Diuji lalu dipakai untuk mencatat tugas dan deadline nyata di satu grup privat bersama beberapa teman."
   - "Command mode tetap berjalan tanpa API key; AI mode menerima bahasa natural melalui 11 function tools."
-  - "Proyek dihentikan ketika minatku bergeser ke Obsidian untuk note-taking dan membangun second brain."
+  - "Penggunaan dihentikan karena biaya VPS dan AI API, keterbatasan local storage, serta jawaban AI yang belum konsisten dengan data tersimpan."
 demoUrl: null
 repoUrl: "https://github.com/agvswira/eling-bot"
 coverImage: "/images/projects/eling-bot.png"
@@ -31,45 +31,45 @@ evidence:
 
 ## Problem
 
-Eling berawal dari hal yang cukup dekat dengan kehidupan kuliah: informasi
-penting sering muncul di grup WhatsApp, lalu tenggelam di antara percakapan
-lain. Deadline, link Google Docs, pembagian bab laporan, dan revisi akhirnya
-harus dicari lagi dengan scroll atau bertanya ulang.
+Ide Eling muncul dari percakapan di grup kelompok yang berisi saya dan beberapa
+teman. Pertanyaan seperti "Apa saja tugasnya?" dan "Kapan terakhir dikumpulkan?"
+sering ditanyakan kembali. Saya kemudian berpikir bahwa bot di dalam grup dapat
+menjawab pertanyaan tersebut dan mengirim reminder setiap hari.
 
-Aku ingin mencoba menyimpan informasi itu dari tempat percakapannya terjadi.
-Nama “Eling” sendiri berarti “ingat”. Scope-nya hanya tiga jenis data:
+Eling dibuat untuk menyimpan tiga jenis informasi:
 
 - deadline beserta mata kuliah, tanggal, jam, dan detail;
-- link tugas yang dapat diberi label dan dicari;
+- link tugas yang dapat diberi label dan dicari kembali;
 - pembagian tugas kelompok untuk setiap anggota.
 
-Eling bukan bot publik. Aku menjalankannya di satu grup privat yang berisi aku
-dan seorang teman selama kurang lebih beberapa minggu.
+Bot ini tidak ditujukan untuk penggunaan publik. Eling awalnya dipasang di grup
+untuk menguji apakah alurnya bekerja, lalu sempat dipakai untuk mencatat tugas
+dan deadline kuliah yang benar-benar ada.
 
 ## Approach
 
-Ada dua cara memakai Eling. Command mode menggunakan perintah seperti
-`!deadline`, `!link`, dan `!grouptask`. Mode ini tidak memerlukan layanan AI dan
-tetap bekerja ketika API key tidak diisi.
+Eling memiliki command mode dan AI mode. Command mode menggunakan perintah
+seperti `!deadline`, `!link`, dan `!grouptask`. Mode ini tidak memerlukan AI API
+dan tetap dapat digunakan ketika API key tidak diisi.
 
-AI mode dipakai untuk pesan yang lebih natural. Di grup, bot baru merespons
-ketika di-mention atau ketika pesannya dibalas. Di chat pribadi, pesan dapat
-dikirim langsung.
+AI mode menerima pertanyaan dengan bahasa natural. Di grup, bot hanya merespons
+ketika di-mention atau ketika pengguna membalas pesannya. Di chat pribadi,
+pesan dapat dikirim langsung.
 
-Model tidak menulis ke file sesukanya. Eling menyediakan 11 function tools
-untuk menambah, membaca, menyelesaikan, mencari, atau menghapus data. Hasil
-function call dikirim kembali ke model sebelum balasan akhir dibuat. Loop
-tool-nya dibatasi lima putaran, sedangkan riwayat percakapan disimpan maksimal
-12 pesan per chat di memory.
+Model tidak menulis ke file secara langsung. Eling menyediakan 11 function
+tools untuk menambah, membaca, menyelesaikan, mencari, dan menghapus data. Hasil
+function call dikirim kembali ke model sebelum bot membuat jawaban akhir. Loop
+tool dibatasi lima putaran, sedangkan memory percakapan menyimpan maksimal 12
+pesan per chat.
 
-Setiap grup memakai JID WhatsApp-nya sebagai scope. Karena itu, deadline dan
-link dari grup lain tidak ikut muncul ketika dicari. Penghapusan data juga
-dibatasi untuk orang yang menambahkannya atau nomor admin yang dikonfigurasi.
+Setiap grup menggunakan JID WhatsApp sebagai scope. Deadline dan link dari grup
+lain tidak muncul dalam hasil pencarian. Data hanya dapat dihapus oleh orang
+yang menambahkannya atau nomor admin yang sudah dikonfigurasi.
 
-Scheduler berjalan tiap menit dengan zona waktu WITA. Reminder sebelum deadline
-hanya dikirim sekali per hari mulai pukul 07.00. Setelah waktunya lewat, bot
-mengirim satu notifikasi terlambat dan mempertahankan item di daftar selama 24
-jam.
+Scheduler berjalan setiap menit dalam zona waktu WITA. Reminder sebelum
+deadline dikirim satu kali per hari mulai pukul 07.00. Setelah deadline lewat,
+bot mengirim satu notifikasi terlambat dan mempertahankan item di dalam list
+selama 24 jam.
 
 ## Architecture
 
@@ -97,47 +97,59 @@ node-cron --> baca seluruh deadline --> kirim reminder ke chat asal
 ```
 
 `src/index.ts` menangani sesi Baileys, QR login, reconnect, pesan masuk, dan
-scheduler. `handlers/message.ts` membaca isi pesan lalu memilih command mode
-atau AI mode. Operasi deadline, link, dan tugas kelompok disimpan lewat modul
-terpisah di `src/storage`.
+scheduler. `handlers/message.ts` membaca pesan lalu memilih command mode atau AI
+mode. Operasi deadline, link, dan tugas kelompok berada di modul terpisah dalam
+`src/storage`.
 
-Data disimpan dalam file JSON lokal. Saat menulis, Eling membuat temporary file
-lebih dulu lalu me-rename-nya menjadi file utama. Cara ini cukup untuk satu
-proses bot, tetapi belum dirancang untuk beberapa instance yang menulis data
-secara bersamaan.
+Eling menyimpan data dalam file JSON lokal di mesin tempat bot di-deploy. Saat
+menulis data, Eling membuat temporary file lalu me-rename-nya menjadi file
+utama. Cara ini cukup untuk satu proses, tetapi belum mendukung beberapa
+instance yang menulis data secara bersamaan.
 
 Base URL, API key, dan model AI dibaca dari environment. Provider
-OpenAI-compatible dapat diganti tanpa mengubah alur pesan, dan seluruh fitur
-command masih tersedia ketika AI dinonaktifkan.
+OpenAI-compatible dapat diganti tanpa mengubah alur pesan. Seluruh fitur command
+tetap tersedia ketika AI mode dinonaktifkan.
 
 ## Outcome
 
-Eling sempat dipakai di satu grup kecil selama beberapa minggu. Dalam pemakaian
-tersebut, bot menjadi tempat untuk mencatat deadline, menyimpan link, dan
-mencoba pembagian tugas lewat AI.
+Eling sempat dipakai selama beberapa minggu di satu grup privat bersama
+beberapa teman. Setelah fase testing awal, bot digunakan untuk menyimpan tugas
+dan deadline kuliah yang nyata. Pemakaiannya tetap terbatas pada grup tersebut
+dan tidak pernah menjadi bot publik.
 
-Aku tidak menyimpan screenshot percakapannya. Karena grupnya privat dan botnya
-sudah tidak dijalankan, aku memilih tidak mengaktifkannya kembali hanya untuk
-membuat screenshot baru. Source code dan README menjadi dokumentasi yang masih
-tersisa.
+Saya tidak menyimpan screenshot percakapannya. Grup tersebut bersifat privat
+dan bot sudah tidak dijalankan, jadi source code dan README menjadi dokumentasi
+yang masih tersedia. Eling juga belum memiliki automated test atau data
+penggunaan yang lebih rinci.
 
-Proyek ini juga tidak memiliki automated test atau data penggunaan yang lebih
-rinci. Pemakaiannya berhenti pada lingkup kecil tersebut; Eling tidak pernah
-dijalankan sebagai bot produksi.
+Menjalankan bot membutuhkan VPS yang terus aktif dan mengeluarkan biaya. AI mode
+juga memakai external API dari provider, sehingga menambah biaya operasional.
+Data tetap berada di local storage pada mesin deployment.
+
+Dalam penggunaan nyata, jawaban AI belum selalu konsisten dengan data yang
+tersimpan. Ada kondisi ketika deadline masih ada di dalam list, tetapi AI
+menjawab bahwa data tersebut tidak ditemukan setelah bot lama tidak diajak
+berinteraksi. Saya belum mengetahui apakah penyebabnya berada pada context,
+pemilihan function tool, memory, atau provider.
 
 ## Lessons
 
-Setelah beberapa minggu, minatku bergeser dari reminder di WhatsApp ke cara
-menyusun catatan dan pengetahuan dalam jangka panjang. Sekarang aku lebih
-tertarik memakai dan mengeksplorasi Obsidian sebagai aplikasi note-taking dan
-second brain. Karena itu, pengembangan Eling tidak kulanjutkan.
+Dari pemakaian selama beberapa minggu, saya melihat perbedaan antara fitur yang
+bekerja saat testing dan sistem yang cukup stabil untuk terus dijalankan. Eling
+sempat mencatat tugas nyata, tetapi masih memiliki masalah pada biaya,
+penyimpanan, dan jawaban AI.
 
-Ada juga beberapa batas teknis yang sudah terlihat dari prototype-nya. Reminder
-hanya berjalan selama proses bot aktif, data tersimpan di satu mesin, dan
-Baileys bukan client resmi WhatsApp. Menjadikannya layanan yang terus hidup
-berarti harus memikirkan backup, monitoring, privacy, dan perubahan protokol
-WhatsApp.
+Bot harus selalu aktif agar reminder dapat dikirim. Penyimpanan lokal perlu
+dipindahkan jika proses berjalan di mesin lain, dan AI API menambah biaya serta
+hasil yang belum selalu konsisten. Baileys juga bukan client resmi WhatsApp,
+sehingga perubahan protokol dapat memengaruhi bot.
 
-Eling tetap berguna sebagai eksperimen kecil: aku sempat membawa ide dari
-source code ke percakapan nyata, memakainya sebentar, lalu berhenti ketika arah
-belajarku berubah.
+Sekarang saya lebih membutuhkan tempat untuk menyimpan informasi secara
+terpusat dan terstruktur. Saya memakai Obsidian untuk materi kuliah, tugas,
+deadline, ide, serta catatan project dan kompetisi. Obsidian tidak menggantikan
+fitur reminder Eling, tetapi lebih sesuai dengan kebutuhan saya saat ini.
+
+Mengembangkan Eling lebih lanjut berarti memperbaiki penyimpanan, monitoring,
+stabilitas integrasi WhatsApp, biaya operasional, dan konsistensi AI mode. Saya
+belum memiliki waktu untuk mengerjakan bagian-bagian tersebut, sehingga Eling
+tidak saya lanjutkan.

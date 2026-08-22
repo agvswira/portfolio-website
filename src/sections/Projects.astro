@@ -17,13 +17,13 @@ const tags = Array.from(new Set(projects.flatMap((project) => project.data.tags)
 
 <Section
   id="projects"
-  eyebrow="Proyek"
-  title="Karya Pilihan"
-  subtitle="Proyek belajar yang aku bangun sambil mengeksplorasi teknologi baru."
+  eyebrow="Project"
+  title="Project yang Saya Kerjakan"
+  subtitle="Beberapa project yang saya buat untuk belajar dan mencoba teknologi baru."
 >
   <div
     class="mb-10 flex flex-wrap justify-center gap-2"
-    aria-label="Filter proyek"
+    aria-label="Filter project"
     data-project-filters
   >
     {
@@ -65,7 +65,7 @@ const tags = Array.from(new Set(projects.flatMap((project) => project.data.tags)
           >
             <img
               src={project.data.coverImage}
-              alt={`Cover proyek ${project.data.title}`}
+              alt={`Cover project ${project.data.title}`}
               width="1200"
               height="630"
               loading="lazy"
@@ -136,6 +136,6 @@ const tags = Array.from(new Set(projects.flatMap((project) => project.data.tags)
     }
   </div>
   <p class="hidden py-12 text-center text-text-muted" data-project-empty>
-    Tidak ada proyek dengan tag tersebut.
+    Tidak ada project dengan tag tersebut.
   </p>
 </Section>

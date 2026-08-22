@@ -1,0 +1,170 @@
+---
+title: "CekDulu"
+slug: "cekdulu"
+summary: "Asisten pemeriksa risiko pesan yang membaca screenshot di browser, menyamarkan data sensitif sebelum analisis AI, lalu memberi evidence dan langkah verifikasi. Project tim ini meraih Juara III BITSMIKRO Innovative Vibecode 2026."
+problem: "Pesan yang mendesak pengguna untuk membuka link, membagikan data, atau mentransfer uang sering datang ketika mereka tidak punya cukup waktu untuk memeriksa konteksnya. CekDulu membantu menjelaskan tanda yang perlu diwaspadai tanpa memberi vonis bahwa sebuah pesan pasti aman atau penipuan."
+role: "Anggota tim. Saya menangani AI adapter, prompt contract, response schema, dan safety validation. Saat pitching, saya membawakan bagian problem dan AI utilization."
+timeline: "5–16 Agustus 2026, dari masa development dan submission sampai pengumuman pemenang BITSMIKRO Innovative Vibecode 2026."
+publishedDate: "2026-08-22"
+updatedDate: "2026-08-22"
+stack:
+  - "Next.js 16"
+  - "React 19"
+  - "TypeScript"
+  - "Tesseract.js"
+  - "Zod"
+  - "Gemini API"
+  - "OpenAI-compatible API"
+  - "Playwright"
+  - "Vitest"
+  - "Vercel"
+outcome:
+  - "Meraih Juara III BITSMIKRO Innovative Vibecode 2026 setelah masuk lima tim terbaik dan mengikuti final pitching."
+  - "Live web application menerima screenshot atau pasted text, lalu menghasilkan risk level, evidence dari pesan, langkah verifikasi, dan limitations."
+  - "Screenshot diproses melalui OCR di browser; hanya confirmed redacted text yang dikirim ke endpoint analisis."
+  - "Ketika AI tidak tersedia, aplikasi menampilkan panduan keselamatan umum tanpa mengarang risk classification."
+demoUrl: "https://cekdulu-gamma.vercel.app"
+repoUrl: "https://github.com/agvswira/cekdulu"
+coverImage: "/images/projects/cekdulu.png"
+featured: false
+status: "active"
+tags: ["AI", "Next.js", "Privacy", "Hackathon"]
+evidence:
+  - label: "Live website"
+    url: "https://cekdulu-gamma.vercel.app"
+  - label: "Source repository"
+    url: "https://github.com/agvswira/cekdulu"
+  - label: "Official winner announcement"
+    url: "https://aguswira.dev/documents/bitsmikro-innovative-vibecode-2026-winners.pdf"
+  - label: "Team project post"
+    url: "https://www.instagram.com/p/Db0lsGWzOX7/"
+---
+
+## Problem
+
+CekDulu dibuat untuk membantu orang yang menerima pesan mencurigakan, terutama
+pesan yang memakai tekanan waktu agar penerima segera membuka link, memberikan
+data, atau mentransfer uang. Dalam situasi seperti itu, pengguna perlu memahami
+bagian mana yang patut dicurigai dan apa yang sebaiknya diperiksa sebelum
+bertindak.
+
+Project ini tidak diposisikan sebagai fraud detector. CekDulu adalah asisten
+pemeriksa risiko pesan yang menjelaskan tanda-tanda pada input pengguna. Risk
+level dipakai untuk membantu menentukan prioritas, bukan sebagai keputusan hukum
+atau jaminan bahwa sebuah pesan aman.
+
+Kami membuat CekDulu untuk BITSMIKRO Innovative Vibecode 2026. Kompetisi ini
+meminta peserta membuat web application yang dapat diakses, memakai AI dalam
+proses development, dan menjadikan setidaknya satu teknologi AI sebagai bagian
+penting dari solusi. Dari seluruh peserta, lima tim dengan nilai tertinggi maju
+ke final pitching.
+
+## Approach
+
+Pengguna dapat mengunggah screenshot atau menempelkan teks pesan. Screenshot
+dibaca dengan Tesseract.js langsung di browser, kemudian hasil OCR masuk ke
+editor agar pengguna dapat memperbaiki teks yang keliru.
+
+Sebelum analisis dimulai, CekDulu menyamarkan nomor telepon, nomor yang menyerupai
+rekening, email, dan URL. Pengguna dapat melihat redacted preview dan harus
+mengonfirmasinya. Hanya teks hasil redaction yang sudah dikonfirmasi tersebut
+yang dikirim ke endpoint analisis. Gambar aslinya tidak melewati alur API.
+
+AI dipakai untuk membaca hubungan antarsinyal di dalam pesan dan menyusunnya
+menjadi hasil yang terstruktur. Output berisi risk level, ringkasan, kutipan
+evidence, alasan, tindakan yang diprioritaskan, dan limitations. Kutipan evidence
+harus benar-benar ada pada input yang sudah di-redact.
+
+Saya mengerjakan AI adapter, prompt contract, response schema, dan safety
+validation. Anggota tim lain menangani bagian seperti UI/UX, OCR, redaction,
+integration, testing, proposal, dan deployment. Saat final, saya menjelaskan
+problem yang kami pilih serta cara AI digunakan di dalam produk dan selama
+development.
+
+## Architecture
+
+```text
+Screenshot ----------------> OCR Tesseract di browser
+                                   |
+Pasted text -----------------------+
+                                   v
+                         Editable review
+                                   |
+                                   v
+                      Deterministic redaction
+                                   |
+                         Konfirmasi pengguna
+                                   |
+                                   v
+               POST confirmed redacted text saja
+                                   |
+                                   v
+                           /api/analyze
+                                   |
+                  +----------------+----------------+
+                  |                                 |
+            Gemini adapter               OpenAI-compatible adapter
+                  |                                 |
+                  +----------------+----------------+
+                                   |
+                   Schema, grounding, dan safety
+                                   |
+                    +--------------+--------------+
+                    |                             |
+             Structured result          Panduan tanpa klasifikasi
+```
+
+Browser menangani file validation, OCR, editing, redaction, dan konfirmasi.
+State selama pemeriksaan hanya disimpan di component memory. CekDulu tidak
+memiliki account, database, message history, URL crawling, atau owner lookup.
+
+Endpoint serverless menerima body `{ message }`, memilih satu provider dari
+environment, lalu meminta structured output. Zod memeriksa bentuk respons,
+sedangkan validation tambahan memastikan evidence berasal dari input dan model
+tidak memberi klaim absolut seperti "pasti aman" atau "pasti penipuan".
+
+Output invalid dapat dicoba sekali lagi, tetapi timeout, quota, auth, dan network
+failure tidak di-retry. Server memakai deadline 13 detik, sementara client
+menunggu 15 detik. Selisih tersebut memberi waktu bagi server untuk mengirim
+response `unavailable` sebelum browser membatalkan request.
+
+Ketika provider tidak tersedia atau output tetap invalid, UI tidak menampilkan
+risk level. Pengguna mendapat panduan umum untuk tidak membuka link atau
+mengirim data, mencari kanal resmi secara terpisah, dan mencoba lagi bila
+diperlukan.
+
+## Outcome
+
+CekDulu dapat diakses di
+[cekdulu-gamma.vercel.app](https://cekdulu-gamma.vercel.app), sedangkan source
+code tersedia di [GitHub](https://github.com/agvswira/cekdulu).
+
+Alur screenshot berjalan dari OCR lokal, review, redaction, konfirmasi, sampai
+hasil analisis. Runtime Tesseract disajikan dari origin CekDulu agar OCR tetap
+bekerja di production tanpa melonggarkan Content Security Policy. Test juga
+mencakup core flow, privacy boundary, structured result, fallback, mobile, dan
+accessibility.
+
+Pada 16 Agustus 2026, CekDulu meraih Juara III BITSMIKRO Innovative Vibecode 2026. Hasil tersebut diumumkan setelah lima finalis mengikuti sesi pitching.
+[Dokumen pengumuman resmi](https://aguswira.dev/documents/bitsmikro-innovative-vibecode-2026-winners.pdf)
+mencatat CekDulu sebagai project dari tim Universitas Udayana yang memperoleh
+peringkat ketiga.
+
+## Lessons
+
+Bagian teknis yang paling terasa bagi saya adalah belajar bahwa output AI tidak
+bisa langsung diterima hanya karena responsnya terlihat meyakinkan. Prompt perlu
+didampingi schema, grounding, safety validation, batas retry, dan fallback yang
+jujur. Bagi saya, fallback yang mengakui kegagalan lebih berguna daripada risk
+classification yang dibuat tanpa dasar.
+
+Project ini juga memberi pengalaman bekerja dengan pembagian peran yang lebih
+jelas. Setiap anggota mengerjakan bagian berbeda, tetapi hasil akhirnya tetap
+harus menjadi satu flow yang konsisten. Integrasi, dokumentasi, dan cara kami
+menjelaskan produk sama pentingnya dengan bagian yang dikerjakan masing-masing.
+
+Saat pitching, saya perlu menjelaskan mengapa AI digunakan, apa yang tetap
+ditangani secara deterministik, dan batas kemampuan produk. Pengalaman tersebut
+membantu saya melihat bahwa memahami implementasi saja belum cukup. Keputusan
+teknis juga harus dapat dijelaskan dengan bahasa yang masuk akal bagi orang yang
+tidak membaca source code-nya.
