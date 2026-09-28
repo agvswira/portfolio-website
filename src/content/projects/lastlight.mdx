@@ -1,0 +1,115 @@
+---
+title: "Lastlight"
+slug: "lastlight"
+summary: "DApp rencana kelanjutan aset di BOT Chain. Pemilik menyetor BOT untuk satu penerima, menjaga kendali lewat check-in berkala, dan penerima dapat mengklaim setelah tenggat akhir lewat."
+problem: "Rencana penyerahan aset digital perlu memberi pemilik kendali selama masih aktif dan menyediakan jalur klaim yang bisa diperiksa penerima. Lastlight memakai aturan waktu di smart contract tanpa memindahkan dana secara otomatis."
+role: "Solo builder. Saya merancang alur produk, membuat frontend dan smart contract, serta memverifikasi deployment dan siklus transaksi di BOT Chain."
+timeline: "September 2026; aplikasi dan contract Mainnet dipublikasikan pada 25 September 2026."
+publishedDate: "2026-09-28"
+updatedDate: "2026-09-28"
+stack:
+  - "TypeScript"
+  - "Vite"
+  - "Solidity"
+  - "Foundry"
+  - "viem"
+  - "BOT Chain"
+  - "Playwright"
+outcome:
+  - "Aplikasi live di lastlight.website dan contract terverifikasi di BOT Chain Mainnet (Chain ID 677)."
+  - "Siklus plan dengan dana nyata telah diuji di Mainnet: dibuat, diperbarui lewat check-in, lalu diklaim oleh penerima."
+  - "Pemilik tetap mengendalikan plan sebelum tenggat akhir; setelah itu hanya wallet penerima yang ditunjuk dapat memulai klaim."
+demoUrl: "https://lastlight.website"
+repoUrl: "https://github.com/agvswira/lastlight"
+coverImage: "/images/projects/lastlight.png"
+featured: false
+status: "active"
+tags: ["Web3", "DApp", "Smart Contract", "BOT Chain"]
+evidence:
+  - label: "Verified Mainnet contract"
+    url: "https://scan.botchain.ai/address/0x8a16dA8aAB1db133b3d1CFFbEC1761C0441B322D"
+  - label: "Mainnet claim transaction"
+    url: "https://scan.botchain.ai/tx/0xc710fa3367007a07c803447ce52fcf024b330f8c9212a8d5a93d9a153b2f7cc0"
+  - label: "Source and documentation"
+    url: "https://github.com/agvswira/lastlight#readme"
+---
+
+## Problem
+
+Rencana untuk menyerahkan aset digital kepada orang lain memiliki dua kebutuhan
+yang berbeda: pemilik harus tetap bisa mengendalikan dananya selama aktif, dan
+penerima memerlukan cara yang jelas untuk mengklaimnya jika pemilik berhenti
+melakukan check-in. Perubahan tenggat harus dapat diperiksa dari aturan yang
+sama oleh kedua pihak.
+
+Lastlight dibuat untuk satu pemilik, satu penerima, dan satu setoran BOT per
+plan. Produk ini tidak mendeteksi kematian atau memastikan identitas seseorang.
+Tenggat hanya mengubah siapa yang boleh bertindak; dana tidak pernah berpindah
+sendiri ketika waktu habis.
+
+## Approach
+
+Pemilik menghubungkan wallet di BOT Chain Mainnet, memilih wallet penerima,
+jumlah BOT, interval check-in, dan tambahan waktu setelah interval berakhir.
+Sebelum mendanai plan, aplikasi menampilkan ringkasan aturan dan biaya
+transaksi. Contract mencatat parameter tersebut bersama setoran.
+
+Selama tenggat akhir belum lewat, pemilik dapat check-in untuk memperbarui
+jadwal, mengganti penerima, atau menutup plan dan mengambil kembali dana.
+Setelah tenggat akhir, hak pemilik berakhir dan hanya wallet penerima yang
+ditunjuk dapat mengirim transaksi klaim. Penerima tetap harus membuka aplikasi,
+menghubungkan wallet, dan membayar biaya transaksi sendiri.
+
+Daftar plan, status, dan tenggat dibaca dari BOT Chain. Label serta pengingat
+lokal hanya membantu pengguna mengelola plan di browser; keduanya tidak
+mengubah aturan contract.
+
+## Architecture
+
+```text
+Pemilik + wallet ----> Buat plan dan setor BOT
+       |                        |
+       |                        v
+       +-- check-in ------> LastlightVault di BOT Chain
+       |                        |
+       +-- ubah penerima -------+
+       +-- tutup plan ----------+
+                                |
+                         Tenggat akhir lewat
+                                |
+                                v
+Penerima + wallet --------> Klaim BOT
+```
+
+Frontend dibuat dengan TypeScript dan Vite, sedangkan akses wallet dan pembacaan
+chain menggunakan viem. Smart contract Solidity memegang aturan otorisasi dan
+waktu. Pemeriksaan di UI membantu pengguna memahami status, tetapi keputusan
+transaksi tetap ditegakkan contract.
+
+Saya menguji aturan domain, contract, dan alur browser. Deployment disimpan
+sebagai record terpisah untuk Mainnet dan Testnet, sehingga frontend publik
+dapat diarahkan ke alamat contract Mainnet yang telah diverifikasi.
+
+## Outcome
+
+[Lastlight](https://lastlight.website) sudah dapat digunakan di BOT Chain
+Mainnet. Source tersedia di [GitHub](https://github.com/agvswira/lastlight),
+dan [contract Mainnet](https://scan.botchain.ai/address/0x8a16dA8aAB1db133b3d1CFFbEC1761C0441B322D)
+terverifikasi di explorer.
+
+Siklus dengan setoran 0,01 BOT telah dicatat di Mainnet: plan
+[dibuat](https://scan.botchain.ai/tx/0xfb0683b62952bc7a77886d0fa923222f065497f20164e15c915f9fa91f5d3d42),
+[diperbarui lewat check-in](https://scan.botchain.ai/tx/0xa81d483c82d0270c9fbedf32ec8cb1b279760739c8a976c7b3616b1db365ca35),
+lalu [diklaim penerima](https://scan.botchain.ai/tx/0xc710fa3367007a07c803447ce52fcf024b330f8c9212a8d5a93d9a153b2f7cc0).
+Alur create-to-claim dengan dana juga telah dijalankan di Testnet.
+
+## Lessons
+
+Project ini memperjelas pentingnya membedakan perubahan hak dari perpindahan
+dana. Ketika tenggat habis, contract tidak mengirim BOT secara otomatis.
+Penerima harus melakukan klaim, dan UI perlu menjelaskan keadaan tersebut
+tanpa memberi kesan bahwa transfer sudah terjadi.
+
+Saya juga belajar menjaga kesesuaian antara alamat contract, jaringan wallet,
+dan bukti deployment. Ketiganya harus menunjuk ke rilis yang sama agar status
+yang dilihat pengguna dapat dipercaya.

@@ -8,6 +8,7 @@ const htmlRoutes = [
   "/projects/botpass",
   "/projects/cekdulu",
   "/projects/eling-bot",
+  "/projects/lastlight",
   "/projects/portfolio-website",
 ];
 

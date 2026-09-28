@@ -1,15 +1,14 @@
 ---
 title: "BOTPass"
 slug: "botpass"
-summary: "DApp check-in event di BOT Chain. Peserta mencatat kehadiran lewat wallet, lalu siapa pun dapat memeriksa statusnya langsung dari smart contract tanpa mengakses data pribadi peserta."
+summary: "DApp pass kehadiran event di BOT Chain. Penyelenggara mengatur event, peserta mencatat satu pass lewat wallet, dan siapa pun dapat memeriksanya di smart contract."
 problem: "Daftar hadir di spreadsheet atau platform tertutup hanya dapat diperiksa oleh pengelolanya. BOTPass mencatat check-in di jaringan publik tanpa menyimpan nama, email, atau nomor telepon peserta."
 role: "Solo builder. Saya menentukan use case, merancang alur wallet, membuat frontend dan smart contract, serta menangani testing dan deployment."
-timeline: "25 Juli–6 Agustus 2026. Dibuat untuk submission BOTChain Build Week Hackathon dan tidak dikembangkan lagi setelah kompetisi selesai."
+timeline: "25 Juli–28 September 2026. Dimulai untuk BOTChain Build Week Hackathon, lalu antarmuka dan alur pass diperbarui."
 publishedDate: "2026-08-05"
-updatedDate: "2026-08-22"
+updatedDate: "2026-09-28"
 stack:
   - "Solidity 0.8.20"
-  - "OpenZeppelin Contracts 5.0.2"
   - "Hardhat"
   - "ethers.js"
   - "Vite"
@@ -20,9 +19,9 @@ stack:
 outcome:
   - "Frontend tetap dapat diakses di botpass.online dan contract aktif di BOT Chain Mainnet (Chain ID 677)."
   - "Source contract Mainnet terverifikasi di BOTScan dan dapat dibaca melalui explorer."
-  - "Seluruh 107 test untuk contract, deployment guard, pemisahan jaringan, dan verification record berhasil dijalankan."
+  - "Antarmuka kini menyediakan halaman Events, Create, Manage, My Passes, dan Verify."
   - "BOTPass tidak menjadi pemenang BOTChain Build Week Hackathon."
-demoUrl: "https://botpass.online/?event=1"
+demoUrl: "https://botpass.online/"
 repoUrl: "https://github.com/agvswira/botpass"
 coverImage: "/images/projects/botpass.png"
 featured: false
@@ -30,7 +29,7 @@ status: "active"
 tags: ["Web3", "DApp", "Smart Contract", "Hackathon"]
 evidence:
   - label: "Verified Mainnet contract"
-    url: "https://scan.botchain.ai/address/0xFd7A12779c69C705b8aFF1fe3409E45867d33133"
+    url: "https://scan.botchain.ai/address/0x41fc0234A8f94482168B063FDE7ABE67043E68A4"
   - label: "Hackathon guidebook"
     url: "https://www.girlmeetstech.org/guidebook-build-week-hackathon"
   - label: "Technical documentation"
@@ -115,9 +114,10 @@ Browser
                                 BOTScan
 ```
 
-Smart contract ditulis dengan Solidity `0.8.20` dan memakai `Ownable2Step`
-dari OpenZeppelin Contracts `5.0.2`. Contract menyimpan detail event, status
-check-in, relasi antara event dan wallet, serta jumlah kehadiran.
+Smart contract ditulis dengan Solidity `0.8.20`. Setiap event menyimpan alamat
+penyelenggaranya sendiri, detail event, status ketersediaan pass, dan jumlah
+pass. Contract juga menyimpan waktu klaim untuk setiap pasangan event dan
+wallet.
 
 Penyelenggara dapat membuat event serta membuka atau menutup check-in. Peserta
 hanya dapat mencatat wallet yang memanggil contract. Getter terpisah digunakan
@@ -137,20 +137,21 @@ record dan hash-nya cocok.
 ## Outcome
 
 Contract Mainnet BOTPass berada di
-[`0xFd7…33133`](https://scan.botchain.ai/address/0xFd7A12779c69C705b8aFF1fe3409E45867d33133)
+[`0x41fc…68A4`](https://scan.botchain.ai/address/0x41fc0234A8f94482168B063FDE7ABE67043E68A4)
 pada Chain ID `677`. Source Solidity terverifikasi di BOTScan dengan compiler
 `0.8.20`, EVM `paris`, dan optimizer `200` runs.
 
-Frontend masih dapat dibuka di [botpass.online](https://botpass.online/?event=1),
+Frontend masih dapat dibuka di [botpass.online](https://botpass.online/),
 sedangkan source code tersedia di
 [GitHub](https://github.com/agvswira/botpass).
 
-Suite Hardhat menghasilkan `107 passing`. Test mencakup lifecycle event,
-otorisasi owner, batas waktu, check-in duplikat, getter kehadiran, pemisahan
-Testnet dan Mainnet, deployment record, serta guard pada jalur deployment.
+Antarmuka terbaru memisahkan pencarian event, pembuatan dan pengelolaan event,
+daftar pass milik wallet, serta verifikasi berdasarkan Event ID dan alamat
+wallet. Verifikasi tetap berupa pembacaan data dan tidak memerlukan gas.
 
-BOTPass tidak menjadi pemenang hackathon. Pengembangannya berhenti setelah
-submission, tetapi frontend dan contract Mainnet masih dapat diakses.
+BOTPass tidak menjadi pemenang hackathon. Project ini kemudian mendapat
+perbaikan antarmuka dan alur penggunaan; frontend dan contract Mainnet masih
+dapat diakses.
 
 ## Lessons
 
