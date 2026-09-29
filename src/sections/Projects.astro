@@ -17,15 +17,10 @@ const tags = Array.from(new Set(projects.flatMap((project) => project.data.tags)
 
 <Section
   id="projects"
-  eyebrow="Project"
   title="Project yang Saya Kerjakan"
   subtitle="Beberapa project yang saya buat untuk belajar dan mencoba teknologi baru."
 >
-  <div
-    class="mb-10 flex flex-wrap justify-center gap-2"
-    aria-label="Filter project"
-    data-project-filters
-  >
+  <div class="mb-8 flex flex-wrap gap-2" aria-label="Filter project" data-project-filters>
     {
       ["All", ...tags].map((tag, index) => (
         <button
@@ -33,35 +28,31 @@ const tags = Array.from(new Set(projects.flatMap((project) => project.data.tags)
           aria-pressed={index === 0 ? "true" : "false"}
           data-project-filter={tag}
           class:list={[
-            "rounded-full border px-4 py-1.5 text-sm font-medium transition-all duration-200",
+            "filter-button border px-4 py-2 text-sm font-medium transition-all duration-200",
             index === 0
               ? "border-frost/40 bg-frost/15 text-frost"
               : "border-nord-border/40 bg-transparent text-text-muted hover:border-frost/20 hover:text-text-secondary",
           ]}
         >
-          {tag}
+          {tag === "All" ? "Semua" : tag}
         </button>
       ))
     }
   </div>
 
-  <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-project-grid>
+  <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3" data-project-grid>
     {
       projects.map((project) => (
         <article
-          class:list={[
-            "project-card hud-card spotlight-card flex flex-col overflow-hidden",
-            project.data.featured && "border-beam",
-          ]}
+          class="project-card flex flex-col overflow-hidden border border-nord-border/45 bg-bg-surface transition-colors duration-200 hover:border-frost/35"
           data-project-card
           data-project-tags={JSON.stringify(project.data.tags)}
           data-reveal
-          data-spotlight
         >
           <a
             href={`/projects/${project.data.slug}`}
             aria-label={`Buka case study ${project.data.title}`}
-            class="group relative block aspect-[40/21] overflow-hidden border-b border-nord-border/30 bg-bg-elevated"
+            class="group relative block aspect-[40/21] overflow-hidden bg-bg-elevated"
           >
             <img
               src={project.data.coverImage}
@@ -72,19 +63,15 @@ const tags = Array.from(new Set(projects.flatMap((project) => project.data.tags)
               decoding="async"
               class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]"
             />
-            <span
-              aria-hidden="true"
-              class="absolute inset-0 bg-gradient-to-t from-bg-base/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-            />
           </a>
 
-          <div class="relative z-10 flex flex-1 flex-col gap-4 p-5">
+          <div class="flex flex-1 flex-col gap-5 p-5">
             <div class="flex flex-1 flex-col gap-3">
               <div class="flex items-start justify-between gap-3">
                 <h3 class="text-sm font-semibold leading-snug text-text-primary">
                   {project.data.title}
                 </h3>
-                <div class="flex flex-shrink-0 flex-wrap justify-end gap-1.5">
+                <div class="flex shrink-0 flex-wrap justify-end gap-1.5">
                   {project.data.featured && <Badge variant="featured">Featured</Badge>}
                   {project.data.status === "discontinued" && (
                     <Badge variant="discontinued">Discontinued</Badge>
@@ -100,7 +87,7 @@ const tags = Array.from(new Set(projects.flatMap((project) => project.data.tags)
                 ))}
               </div>
             </div>
-            <div class="flex flex-wrap items-center gap-3 border-t border-nord-border/20 pt-3">
+            <div class="mt-auto flex flex-wrap items-center gap-4 pt-4">
               <a
                 href={`/projects/${project.data.slug}`}
                 class="text-xs font-medium text-frost transition-colors hover:text-frost-cyan"

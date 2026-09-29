@@ -38,7 +38,7 @@ const isActive = (href: (typeof NAV_ITEMS)[number]["href"]) => href === activeRo
                 href={hrefFor(item.href)}
                 aria-current={isActive(item.href) ? (isHome ? "location" : "page") : undefined}
                 class:list={[
-                  "block rounded-lg px-4 py-2 text-sm transition-colors",
+                  "block rounded-none px-4 py-2 text-sm transition-colors",
                   isActive(item.href)
                     ? "border border-nord-border/50 bg-bg-elevated text-text-primary"
                     : "text-text-muted hover:text-text-secondary",
@@ -57,7 +57,7 @@ const isActive = (href: (typeof NAV_ITEMS)[number]["href"]) => href === activeRo
       aria-label="Buka menu"
       aria-expanded="false"
       aria-controls="mobile-navigation"
-      class="rounded-lg p-2 text-text-muted transition-colors hover:bg-bg-elevated hover:text-frost md:hidden"
+      class="rounded-none p-2 text-text-muted transition-colors hover:bg-bg-elevated hover:text-frost md:hidden"
       data-menu-toggle
     >
       <Icon name="lucide:menu" size={20} aria-hidden="true" data-menu-closed-icon />
@@ -67,7 +67,7 @@ const isActive = (href: (typeof NAV_ITEMS)[number]["href"]) => href === activeRo
   <nav
     id="mobile-navigation"
     aria-label="Navigasi mobile"
-    class="hidden border-b border-frost/10 bg-bg-surface/95 backdrop-blur-md md:hidden"
+    class="hidden bg-bg-surface/95 backdrop-blur-md md:hidden"
     data-mobile-nav
   >
     <ul class="mx-auto flex max-w-6xl flex-col gap-1 px-6 py-4" role="list">
@@ -78,7 +78,7 @@ const isActive = (href: (typeof NAV_ITEMS)[number]["href"]) => href === activeRo
               href={hrefFor(item.href)}
               aria-current={isActive(item.href) ? (isHome ? "location" : "page") : undefined}
               class:list={[
-                "block rounded-lg px-4 py-3 text-sm transition-colors hover:bg-bg-elevated/50 hover:text-text-secondary",
+                "block rounded-none px-4 py-3 text-sm transition-colors hover:bg-bg-elevated/50 hover:text-text-secondary",
                 isActive(item.href) ? "text-text-primary" : "text-text-muted",
               ]}
               data-nav-link

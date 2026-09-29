@@ -8,18 +8,18 @@ import { Icon } from "astro-icon/components";
     role="dialog"
     aria-modal="false"
     aria-labelledby="chat-title"
-    class="mb-3 hidden h-[min(34rem,calc(100vh-7rem))] w-[min(23rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-frost/20 bg-bg-surface/95 shadow-2xl backdrop-blur-xl"
+    class="mb-3 hidden h-[min(34rem,calc(100vh-7rem))] w-[min(23rem,calc(100vw-2rem))] flex-col overflow-hidden border border-nord-border/60 bg-bg-surface shadow-2xl"
     data-chat-panel
   >
-    <header class="flex items-center justify-between border-b border-nord-border/40 px-4 py-3">
+    <header class="flex items-center justify-between px-4 py-3">
       <div>
         <h2 id="chat-title" class="text-sm font-semibold text-text-primary">Tanya tentang Wira</h2>
-        <p class="text-xs text-text-muted">Asisten AI portfolio</p>
+        <p class="text-xs text-text-muted">Tanya tentang project dan pengalaman</p>
       </div>
       <button
         type="button"
         aria-label="Tutup chat"
-        class="rounded-lg p-2 text-text-muted hover:bg-bg-elevated hover:text-frost"
+        class="inline-flex h-9 w-9 items-center justify-center text-text-muted transition-colors hover:bg-bg-elevated hover:text-frost"
         data-chat-close
       >
         <Icon name="lucide:x" size={18} aria-hidden="true" />
@@ -32,12 +32,12 @@ import { Icon } from "astro-icon/components";
       aria-relevant="additions"
       data-chat-messages
     >
-      <p class="mr-8 rounded-xl rounded-tl-sm bg-bg-elevated px-3 py-2 text-text-secondary">
+      <p class="mr-8 border border-nord-border/35 bg-bg-elevated px-3 py-2 text-text-secondary">
         Halo! Ada yang ingin kamu tanyakan tentang Wira, project, atau perjalanannya?
       </p>
     </div>
     <p class="sr-only" role="status" aria-live="polite" data-chat-status></p>
-    <form class="flex gap-2 border-t border-nord-border/40 p-3" data-chat-form>
+    <form class="flex gap-2 p-3" data-chat-form>
       <label for="chat-message" class="sr-only">Pesan untuk asisten</label>
       <input
         id="chat-message"
@@ -47,13 +47,13 @@ import { Icon } from "astro-icon/components";
         maxlength="2000"
         autocomplete="off"
         placeholder="Tulis pertanyaan..."
-        class="min-w-0 flex-1 rounded-lg border border-nord-border/60 bg-bg-elevated px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-frost focus:outline-none"
+        class="form-control min-w-0 flex-1 px-3 py-2 text-sm"
         data-chat-input
       />
       <button
         type="submit"
         aria-label="Kirim pesan"
-        class="rounded-lg bg-frost p-2.5 text-bg-base transition-colors hover:bg-frost-cyan"
+        class="inline-flex h-10 w-10 items-center justify-center bg-frost text-bg-base transition-colors hover:bg-frost-cyan disabled:cursor-not-allowed disabled:opacity-50"
         data-chat-submit
       >
         <Icon name="lucide:send" size={17} aria-hidden="true" />
@@ -65,7 +65,7 @@ import { Icon } from "astro-icon/components";
     aria-label="Buka chat"
     aria-expanded="false"
     aria-controls="chat-panel"
-    class="ml-auto flex h-12 w-12 items-center justify-center rounded-full bg-frost text-bg-base shadow-lg transition-transform hover:scale-105"
+    class="ml-auto flex h-12 w-12 items-center justify-center bg-frost text-bg-base shadow-lg transition-transform hover:-translate-y-0.5 hover:bg-frost-cyan"
     data-chat-toggle
   >
     <Icon name="lucide:message-circle" size={22} aria-hidden="true" />

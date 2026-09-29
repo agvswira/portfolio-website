@@ -12,47 +12,44 @@ const posts = await getBlogPosts();
   title="Blog"
   description={`Tulisan ${PERSONAL.name} tentang kuliah Informatika, tools, dan proses belajar.`}
 >
-  <div class="flex min-h-screen flex-col bg-bg-base">
-    <main id="main" class="mx-auto w-full max-w-3xl flex-1 px-6 py-24">
-      <a
-        href="/"
-        class="mb-10 inline-flex items-center gap-2 text-sm text-text-muted transition-colors hover:text-frost"
-        >← Kembali ke Beranda</a
-      >
-      <header class="mb-14">
-        <p class="eyebrow mb-3">Blog</p>
+  <div class="content-page flex min-h-screen flex-col">
+    <main id="main" class="mx-auto w-full max-w-4xl flex-1 px-5 pb-20 pt-28 sm:px-6">
+      <a href="/" class="content-back"><span aria-hidden="true">←</span> Beranda</a>
+      <header class="content-heading mb-10 mt-10">
         <h1 class="mb-4 text-4xl font-semibold tracking-tight text-text-primary">Tulisan</h1>
         <p class="text-lg leading-relaxed text-text-muted">
           Catatan tentang kuliah, tools yang saya gunakan, dan proses belajar saya.
         </p>
       </header>
-      <ol class="flex flex-col gap-0" reversed>
+      <ol class="grid gap-4 sm:grid-cols-2" reversed>
         {
           posts.map((post) => (
-            <li>
+            <li class="border border-nord-border/45 bg-bg-surface transition-colors hover:border-frost/35">
               <a
                 href={`/blog/${post.slug}`}
-                class="group flex flex-col gap-1 border-b border-nord-border/30 py-6 transition-colors hover:border-frost/20 sm:flex-row sm:items-baseline sm:gap-6"
+                class="group flex h-full flex-col gap-4 p-5 transition-colors hover:bg-bg-elevated/45 sm:p-6"
               >
-                <time
-                  datetime={post.data.date.toISOString()}
-                  class="w-36 flex-shrink-0 font-mono text-sm text-text-muted"
-                >
-                  {formatIndonesianDate(post.data.date)}
-                </time>
+                <div class="flex items-center justify-between gap-4">
+                  <time
+                    datetime={post.data.date.toISOString()}
+                    class="w-36 flex-shrink-0 font-mono text-sm text-text-muted"
+                  >
+                    {formatIndonesianDate(post.data.date)}
+                  </time>
+                  <span class="text-xs text-text-muted">{post.readingTime} mnt baca</span>
+                </div>
                 <div class="flex-1">
                   <h2 class="mb-2 font-medium leading-snug text-text-primary transition-colors group-hover:text-frost">
                     {post.data.title}
                   </h2>
-                  <p class="mb-3 line-clamp-2 text-sm leading-relaxed text-text-muted">
+                  <p class="line-clamp-3 text-sm leading-relaxed text-text-muted">
                     {post.data.excerpt}
                   </p>
-                  <div class="flex flex-wrap items-center gap-2">
-                    {post.data.tags.map((tag) => (
-                      <Badge variant="tag">{tag}</Badge>
-                    ))}
-                    <span class="ml-auto text-xs text-text-muted">{post.readingTime} mnt baca</span>
-                  </div>
+                </div>
+                <div class="flex flex-wrap gap-1.5">
+                  {post.data.tags.map((tag) => (
+                    <Badge variant="tag">{tag}</Badge>
+                  ))}
                 </div>
               </a>
             </li>

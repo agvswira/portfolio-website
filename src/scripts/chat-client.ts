@@ -24,8 +24,8 @@ function addBubble(
   bubble.dataset.chatRole = role;
   bubble.className =
     role === "user"
-      ? "ml-8 rounded-xl rounded-tr-sm bg-frost px-3 py-2 text-bg-base"
-      : "mr-8 rounded-xl rounded-tl-sm bg-bg-elevated px-3 py-2 text-text-secondary";
+      ? "ml-8 border border-frost/25 bg-frost/10 px-3 py-2 text-text-primary"
+      : "mr-8 border border-nord-border/35 bg-bg-elevated px-3 py-2 text-text-secondary";
   bubble.textContent = content;
   container.append(bubble);
   container.scrollTop = container.scrollHeight;

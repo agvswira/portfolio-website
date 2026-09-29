@@ -12,17 +12,17 @@ const icons: Record<string, string> = {
 };
 ---
 
-<footer class="relative z-10 border-t border-nord-border/10 py-3">
+<footer class="relative z-10 py-5">
   <div
-    class="mx-auto flex max-w-5xl flex-col items-center justify-between gap-2 px-6 text-sm sm:flex-row"
+    class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 text-sm sm:flex-row sm:px-6"
   >
-    <div class="text-text-muted">
-      <span class="font-semibold text-gradient">{SITE.name}</span>
-      <span class="mx-2">·</span>
+    <div class="text-center text-text-muted sm:text-left">
+      <span class="font-semibold text-text-secondary">{SITE.name}</span>
+      <span class="mx-2 text-frost/60">/</span>
       <span>© {new Date().getFullYear()}</span>
     </div>
     <nav aria-label="Social links">
-      <ul class="flex items-center gap-3" role="list">
+      <ul class="flex items-center gap-1" role="list">
         {
           SOCIAL_LINKS.map(({ label, href, icon }) => (
             <li>
@@ -31,7 +31,7 @@ const icons: Record<string, string> = {
                 aria-label={label}
                 rel="noopener noreferrer"
                 target={href.startsWith("mailto") ? undefined : "_blank"}
-                class="block p-1 text-text-muted transition-colors hover:text-frost"
+                class="footer-social-link inline-flex h-9 w-9 items-center justify-center text-text-muted transition-colors hover:text-frost"
               >
                 <Icon name={icons[icon]} size={16} aria-hidden="true" />
               </a>

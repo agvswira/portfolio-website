@@ -52,16 +52,12 @@ const blogJsonLd = {
   modifiedTime={(post.data.updatedDate ?? post.data.date).toISOString()}
   structuredData={blogJsonLd}
 >
-  <div class="flex min-h-screen flex-col bg-bg-base">
-    <main id="main" class="mx-auto w-full max-w-3xl flex-1 px-6 py-24">
-      <a
-        href="/blog"
-        class="mb-10 inline-flex items-center gap-2 text-sm text-text-muted transition-colors hover:text-frost"
-        >← Semua Artikel</a
-      >
-      <article>
-        <header class="mb-10">
-          <div class="mb-4 flex flex-wrap gap-1.5">
+  <div class="content-page flex min-h-screen flex-col">
+    <main id="main" class="mx-auto w-full max-w-4xl flex-1 px-5 pb-20 pt-28 sm:px-6">
+      <a href="/blog" class="content-back"><span aria-hidden="true">←</span> Semua tulisan</a>
+      <article class="mt-10">
+        <header class="mb-10 max-w-3xl">
+          <div class="mb-5 flex flex-wrap gap-1.5">
             {post.data.tags.map((tag) => <Badge variant="tag">{tag}</Badge>)}
           </div>
           <h1
@@ -69,28 +65,29 @@ const blogJsonLd = {
           >
             {post.data.title}
           </h1>
-          <div class="flex items-center gap-4 text-sm text-text-muted">
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-2 py-4 text-sm text-text-muted">
             <time datetime={post.data.date.toISOString()}
               >{formatIndonesianDate(post.data.date)}</time
             >
-            <span aria-hidden="true">·</span><span>{post.readingTime} mnt baca</span>
+            <span aria-hidden="true" class="text-frost">/</span>
+            <span>{post.readingTime} mnt baca</span>
           </div>
+          <p class="mt-6 text-sm leading-relaxed text-text-secondary">
+            {post.data.excerpt}
+          </p>
         </header>
         <div class="prose-dark"><Content /></div>
       </article>
       {
         (older || newer) && (
-          <nav
-            aria-label="Navigasi artikel"
-            class="mt-16 grid gap-4 border-t border-nord-border/30 pt-8 sm:grid-cols-2"
-          >
+          <nav aria-label="Navigasi artikel" class="mt-16 grid gap-4 sm:grid-cols-2">
             {older && (
               <a
                 href={`/blog/${older.slug}`}
-                class="group flex flex-col rounded-xl border border-nord-border/40 p-4 transition-colors hover:border-frost/30"
+                class="group flex w-fit max-w-[20rem] flex-col bg-bg-surface px-4 py-3 transition-colors hover:bg-bg-elevated/45"
               >
                 <span class="mb-1 text-xs text-text-muted">← Lebih lama</span>
-                <span class="text-sm font-medium leading-snug text-text-secondary transition-colors group-hover:text-frost">
+                <span class="block max-w-full truncate text-sm font-medium leading-snug text-text-secondary transition-colors group-hover:text-frost">
                   {older.data.title}
                 </span>
               </a>
@@ -98,10 +95,10 @@ const blogJsonLd = {
             {newer && (
               <a
                 href={`/blog/${newer.slug}`}
-                class="group flex flex-col rounded-xl border border-nord-border/40 p-4 transition-colors hover:border-frost/30 sm:col-start-2 sm:text-right"
+                class="group flex w-fit max-w-[20rem] flex-col bg-bg-surface px-4 py-3 transition-colors hover:bg-bg-elevated/45 sm:col-start-2 sm:justify-self-end sm:text-right"
               >
                 <span class="mb-1 text-xs text-text-muted">Lebih baru →</span>
-                <span class="text-sm font-medium leading-snug text-text-secondary transition-colors group-hover:text-frost">
+                <span class="block max-w-full truncate text-sm font-medium leading-snug text-text-secondary transition-colors group-hover:text-frost">
                   {newer.data.title}
                 </span>
               </a>

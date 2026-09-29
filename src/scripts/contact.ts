@@ -1,7 +1,7 @@
 function renderStatus(target: HTMLElement, kind: "success" | "error", message: string): void {
   target.textContent = message;
   target.className = [
-    "mt-4 rounded-lg border px-4 py-3 text-sm",
+    "mt-4 border px-4 py-3 text-sm",
     kind === "success"
       ? "border-aurora-green/20 bg-aurora-green/10 text-aurora-green"
       : "border-aurora-red/20 bg-aurora-red/10 text-[#E099A0]",

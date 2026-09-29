@@ -21,10 +21,10 @@ const [posts, projects] = await Promise.all([getBlogPosts(), getProjects()]);
     >
     </div>
   </div>
-  <main id="main" class="relative">
+  <main id="main" class="relative z-[2]">
     <Hero />
     <ScrollChapters>
-      <About {posts} {projects} />
+      <About {projects} />
       <Skills />
       <Projects {projects} />
       <BlogSection {posts} />

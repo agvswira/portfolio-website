@@ -89,6 +89,13 @@ const jsonLd = JSON.stringify([personJsonLd, ...pageStructuredData]).replace(/</
   <body>
     <a href="#main" class="skip-link">Lewati ke konten</a>
     <Navbar />
+    <canvas class="splash-canvas" aria-hidden="true" tabindex="-1" data-splash-canvas></canvas>
     <slot />
+    <script>
+      import { mountSplashBackground } from "@/scripts/splash-background";
+
+      const canvas = document.querySelector<HTMLCanvasElement>("[data-splash-canvas]");
+      if (canvas) mountSplashBackground(canvas);
+    </script>
   </body>
 </html>

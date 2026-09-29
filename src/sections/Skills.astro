@@ -1,51 +1,29 @@
 ---
 import { Icon } from "astro-icon/components";
 
-import { SKILL_GROUPS, TECH_MARQUEE } from "@/lib/skills";
+import { SKILL_GROUPS } from "@/lib/skills";
 import Section from "@/ui/Section.astro";
 ---
 
 <Section
   id="skills"
-  eyebrow="Keahlian"
   title="Tech Stack yang Saya Gunakan"
   subtitle="Tools dan teknologi yang pernah saya gunakan saat belajar dan mengerjakan project."
 >
-  <div class="marquee-container -mx-6 mb-14" aria-label="Teknologi pilihan">
-    <div class="marquee-track gap-3 px-6 py-3" data-marquee>
-      {
-        [...TECH_MARQUEE, ...TECH_MARQUEE].map(({ name, icon }, index) => (
-          <div
-            class="flex items-center gap-2.5 whitespace-nowrap rounded-full border border-nord-border/40 bg-bg-elevated px-5 py-2 text-sm text-text-muted"
-            aria-hidden={index >= TECH_MARQUEE.length ? "true" : undefined}
-          >
-            <Icon name={icon} size={16} class="flex-shrink-0 text-frost-blue" aria-hidden="true" />
-            {name}
-          </div>
-        ))
-      }
-    </div>
-  </div>
-  <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+  <div
+    class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+  >
     {
       SKILL_GROUPS.map((group) => (
-        <article class="hud-card spotlight-card p-5" data-reveal data-spotlight>
-          <h3 class="eyebrow mb-4 text-[11px]">{group.category}</h3>
-          <ul class="grid grid-cols-3 gap-3" role="list">
+        <article class="skill-group bg-bg-surface p-5 sm:p-6" data-reveal>
+          <h3 class="mb-4 text-sm font-semibold tracking-tight text-text-primary">
+            {group.category}
+          </h3>
+          <ul class="flex flex-wrap gap-2" role="list">
             {group.items.map(({ name, icon }) => (
-              <li
-                class="group flex flex-col items-center gap-1.5 rounded-lg border border-transparent bg-bg-elevated/40 p-2.5 transition-all hover:border-frost/20 hover:bg-bg-elevated"
-                title={name}
-              >
-                <Icon
-                  name={icon}
-                  size={22}
-                  class="text-text-muted transition-colors group-hover:text-frost"
-                  aria-hidden="true"
-                />
-                <span class="text-center text-[10px] leading-tight text-text-muted transition-colors group-hover:text-text-secondary">
-                  {name}
-                </span>
+              <li class="skill-chip" title={name}>
+                <Icon name={icon} size={17} class="shrink-0 text-frost-blue" aria-hidden="true" />
+                <span class="text-center leading-tight">{name}</span>
               </li>
             ))}
           </ul>

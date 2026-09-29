@@ -1,7 +1,7 @@
 ---
 import { Icon } from "astro-icon/components";
 
-import { SOCIAL_LINKS } from "@/lib/constants";
+import { PERSONAL, SOCIAL_LINKS } from "@/lib/constants";
 import Section from "@/ui/Section.astro";
 
 const icons: Record<string, string> = {
@@ -11,18 +11,15 @@ const icons: Record<string, string> = {
   FaDiscord: "simple-icons:discord",
   FiMail: "lucide:mail",
 };
-const inputClass =
-  "w-full rounded-lg border border-nord-border/60 bg-bg-elevated px-4 py-3 text-sm text-text-primary placeholder-text-muted/60 transition-colors focus:border-frost/60 focus:outline-none focus:ring-1 focus:ring-frost/30";
 ---
 
 <Section
   id="contact"
-  eyebrow="Kontak"
-  title="Hubungi Saya"
-  subtitle="Jika ingin berdiskusi atau membicarakan project, kirim pesan melalui formulir di bawah."
+  title="Mari terhubung"
+  subtitle="Punya ide project, ingin berdiskusi, atau sekadar menyapa? Saya senang mendengarnya."
 >
-  <div class="mt-4 grid gap-10 lg:grid-cols-2">
-    <div class="hud-card spotlight-card p-6 sm:p-8" data-reveal data-spotlight>
+  <div class="grid items-start gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-12">
+    <div class="portfolio-panel p-5 sm:p-7" data-reveal>
       <form action="/api/contact" method="post" data-contact-form>
         <input
           type="text"
@@ -34,7 +31,7 @@ const inputClass =
         />
         <div class="flex flex-col gap-5">
           <div>
-            <label for="contact-name" class="mb-1.5 block text-sm text-text-secondary">Nama</label>
+            <label for="contact-name" class="mb-2 block text-sm text-text-secondary">Nama</label>
             <input
               id="contact-name"
               name="name"
@@ -44,12 +41,11 @@ const inputClass =
               maxlength="100"
               required
               placeholder="Nama lengkap Anda"
-              class={inputClass}
+              class="form-control"
             />
           </div>
           <div>
-            <label for="contact-email" class="mb-1.5 block text-sm text-text-secondary">Email</label
-            >
+            <label for="contact-email" class="mb-2 block text-sm text-text-secondary">Email</label>
             <input
               id="contact-email"
               name="email"
@@ -58,12 +54,11 @@ const inputClass =
               maxlength="254"
               required
               placeholder="email@anda.com"
-              class={inputClass}
+              class="form-control"
             />
           </div>
           <div>
-            <label for="contact-message" class="mb-1.5 block text-sm text-text-secondary"
-              >Pesan</label
+            <label for="contact-message" class="mb-2 block text-sm text-text-secondary">Pesan</label
             >
             <textarea
               id="contact-message"
@@ -73,57 +68,65 @@ const inputClass =
               maxlength="3000"
               rows="6"
               placeholder="Ceritakan project atau pertanyaan Anda..."
-              class:list={[inputClass, "resize-none"]}></textarea>
+              class="form-control min-h-40 resize-y"></textarea>
           </div>
           <button
             type="submit"
-            class="shimmer-btn inline-flex w-full items-center justify-center rounded-lg bg-frost px-5 py-2.5 text-sm font-semibold text-bg-base transition-all hover:bg-frost-cyan"
+            class="button-primary min-h-12 w-full px-5 text-sm font-semibold"
             data-contact-submit
           >
-            Kirim Pesan
+            Kirim pesan
           </button>
         </div>
       </form>
       <div role="status" aria-live="polite" aria-atomic="true" class="mt-4" data-contact-status>
         <p
           id="contact-success"
-          class="hidden rounded-lg border border-aurora-green/20 bg-aurora-green/10 px-4 py-3 text-sm text-aurora-green target:block"
+          class="hidden border border-aurora-green/25 bg-aurora-green/10 px-4 py-3 text-sm text-aurora-green target:block"
         >
           Pesan berhasil terkirim! Saya akan segera menghubungi Anda.
         </p>
         <p
           id="contact-error"
-          class="hidden rounded-lg border border-aurora-red/20 bg-aurora-red/10 px-4 py-3 text-sm text-[#E099A0] target:block"
+          class="hidden border border-aurora-red/25 bg-aurora-red/10 px-4 py-3 text-sm text-[#E099A0] target:block"
         >
           Pesan belum berhasil dikirim. Silakan periksa kembali atau coba nanti.
         </p>
       </div>
     </div>
 
-    <div class="flex flex-col gap-6" data-reveal>
-      <div>
-        <h3 class="mb-2 font-semibold text-text-primary">Atau hubungi langsung</h3>
-        <p class="text-sm leading-relaxed text-text-muted">
-          Temukan saya di platform berikut. Respons paling cepat melalui email atau LinkedIn.
-        </p>
-      </div>
-      <div class="flex flex-col gap-3">
+    <aside class="lg:pt-1" data-reveal>
+      <h3 class="font-semibold text-text-primary">Terhubung langsung</h3>
+      <p class="mt-2 max-w-md text-sm leading-relaxed text-text-muted">
+        Untuk respons cepat, kirim email atau temukan saya di platform berikut.
+      </p>
+      <a
+        href={`mailto:${PERSONAL.email}`}
+        class="contact-email mt-6 flex items-center justify-between gap-4 border border-frost/30 bg-frost/5 px-4 py-4 text-sm transition-colors hover:border-frost/60 hover:bg-frost/10"
+      >
+        <span>
+          <span class="block text-xs text-text-muted">Email</span>
+          <span class="mt-1 block break-all font-medium text-text-primary">{PERSONAL.email}</span>
+        </span>
+        <Icon name="lucide:mail" size={18} class="shrink-0 text-frost" aria-hidden="true" />
+      </a>
+      <ul class="mt-3 grid grid-cols-2 gap-2" role="list">
         {
-          SOCIAL_LINKS.map(({ label, href, icon }) => (
-            <a
-              href={href}
-              rel="noopener noreferrer"
-              target={href.startsWith("mailto") ? undefined : "_blank"}
-              class="group flex items-center gap-4 rounded-xl border border-nord-border/40 bg-bg-elevated/30 p-4 text-text-muted transition-all hover:border-frost/30 hover:bg-bg-elevated/60 hover:text-text-secondary"
-            >
-              <span class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-bg-elevated text-text-muted transition-colors group-hover:text-frost">
-                <Icon name={icons[icon]} size={18} aria-hidden="true" />
-              </span>
-              <span class="text-sm font-medium">{label}</span>
-            </a>
+          SOCIAL_LINKS.filter(({ label }) => label !== "Email").map(({ label, href, icon }) => (
+            <li>
+              <a
+                href={href}
+                rel="noopener noreferrer"
+                target="_blank"
+                class="social-card flex min-h-12 items-center gap-3 border border-nord-border/40 bg-bg-surface px-3 py-3 text-sm font-medium text-text-secondary transition-colors hover:border-frost/35 hover:text-frost"
+              >
+                <Icon name={icons[icon]} size={16} aria-hidden="true" />
+                {label}
+              </a>
+            </li>
           ))
         }
-      </div>
-    </div>
+      </ul>
+    </aside>
   </div>
 </Section>
