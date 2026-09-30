@@ -20,7 +20,7 @@ const { posts } = Astro.props;
     {
       posts.slice(0, 4).map((post) => (
         <a href={`/blog/${post.slug}`} class="group block" data-reveal>
-          <article class="blog-card flex h-full flex-col gap-4 border border-nord-border/45 bg-bg-surface p-5 transition-colors hover:border-frost/35 sm:p-6">
+          <article class="blog-card panel-surface flex h-full flex-col gap-4 border border-nord-border/45 p-5 transition-colors hover:border-frost/35 sm:p-6">
             <div class="flex flex-wrap items-center justify-between gap-3">
               <time datetime={post.data.date.toISOString()} class="text-[10px] text-text-muted">
                 {formatIndonesianDate(post.data.date)}

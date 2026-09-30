@@ -44,7 +44,7 @@ const tags = Array.from(new Set(projects.flatMap((project) => project.data.tags)
     {
       projects.map((project) => (
         <article
-          class="project-card flex flex-col overflow-hidden border border-nord-border/45 bg-bg-surface transition-colors duration-200 hover:border-frost/35"
+          class="project-card panel-surface flex flex-col overflow-hidden border border-nord-border/45 transition-colors duration-200 hover:border-frost/35"
           data-project-card
           data-project-tags={JSON.stringify(project.data.tags)}
           data-reveal

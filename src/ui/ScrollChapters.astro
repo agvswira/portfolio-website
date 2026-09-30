@@ -1,10 +1,10 @@
 ---
 const chapters = [
-  { number: "01", label: "About", href: "#about" },
-  { number: "02", label: "Skills", href: "#skills" },
-  { number: "03", label: "Projects", href: "#projects" },
-  { number: "04", label: "Blog", href: "#blog" },
-  { number: "05", label: "Contact", href: "#contact" },
+  { number: "01", label: "About", href: "#about", image: "/images/chapters/about.webp" },
+  { number: "02", label: "Skills", href: "#skills", image: "/images/chapters/skills.webp" },
+  { number: "03", label: "Projects", href: "#projects", image: "/images/chapters/projects.webp" },
+  { number: "04", label: "Blog", href: "#blog", image: "/images/chapters/blog.webp" },
+  { number: "05", label: "Contact", href: "#contact", image: "/images/chapters/contact.webp" },
 ] as const;
 ---
 
@@ -15,6 +15,23 @@ const chapters = [
   <div class="relative hidden lg:block">
     <nav aria-label="Bab halaman" class="chapter-rail" data-chapter-rail>
       <div class="chapter-dial" data-chapter-dial>
+        <div class="chapter-dial-symbols" aria-hidden="true">
+          {
+            chapters.map((chapter, index) => (
+              <img
+                src={chapter.image}
+                alt=""
+                width="512"
+                height="512"
+                decoding="async"
+                class="chapter-dial-symbol"
+                data-chapter-symbol
+                data-chapter-art
+                data-active={index === 0 ? "true" : "false"}
+              />
+            ))
+          }
+        </div>
         <ol class="chapter-dial-rotor" data-chapter-dial-rotor role="list">
           {
             chapters.map((chapter, index) => (

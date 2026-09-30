@@ -321,6 +321,7 @@ test("desktop chapter dial keeps one active dot attached to its number", async (
   await expect(rail.locator("[data-chapter-dial-rotor]")).toBeVisible();
   await expect(rail.locator("[data-chapter-label]")).toHaveCount(5);
   await expect(rail.locator("[data-chapter-dot]")).toHaveCount(5);
+  await expect(rail.locator("[data-chapter-art]")).toHaveCount(5);
   expect(await rail.evaluate((element) => getComputedStyle(element).position)).toBe("fixed");
   expect(
     await rail
@@ -337,6 +338,11 @@ test("desktop chapter dial keeps one active dot attached to its number", async (
       "step"
     );
     await page.waitForTimeout(450);
+    await expect(rail.locator('[data-chapter-art][data-active="true"]')).toHaveCount(1);
+    await expect(rail.locator('[data-chapter-art][data-active="true"]')).toHaveAttribute(
+      "src",
+      `/images/chapters/${chapter.id}.webp`
+    );
 
     const dotState = await rail.locator("[data-step-index]").evaluateAll((steps) => {
       const visibleDots = steps.flatMap((step) => {

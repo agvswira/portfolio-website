@@ -24,7 +24,7 @@ const posts = await getBlogPosts();
       <ol class="grid gap-4 sm:grid-cols-2" reversed>
         {
           posts.map((post) => (
-            <li class="border border-nord-border/45 bg-bg-surface transition-colors hover:border-frost/35">
+            <li class="panel-surface border border-nord-border/45 transition-colors hover:border-frost/35">
               <a
                 href={`/blog/${post.slug}`}
                 class="group flex h-full flex-col gap-4 p-5 transition-colors hover:bg-bg-elevated/45 sm:p-6"

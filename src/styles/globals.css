@@ -51,6 +51,7 @@ body {
 }
 
 .splash-canvas {
+  opacity: 0.4;
   position: fixed;
   inset: 0;
   z-index: 1;
@@ -277,6 +278,55 @@ body {
   pointer-events: none;
   will-change: transform;
 }
+.chapter-dial-symbols {
+  --chapter-symbol-size: clamp(8.5rem, calc(var(--dial-size) * 0.27), 12rem);
+  position: absolute;
+  top: 50%;
+  right: calc(var(--rail-right) * 0.54 - var(--chapter-symbol-size) / 2);
+  width: var(--chapter-symbol-size);
+  height: var(--chapter-symbol-size);
+  transform: translateY(-50%);
+  perspective: 240px;
+  pointer-events: none;
+}
+@media (min-width: 1024px) and (max-width: 1599px) {
+  .chapter-dial-symbols {
+    --chapter-symbol-size: 8rem;
+    top: calc(50% + 4.75rem);
+    right: calc(
+      var(--rail-right) - clamp(3.5rem, calc(var(--rail-right) * 0.45), 6rem) - var(--chapter-symbol-size) / 2
+    );
+  }
+}
+.chapter-dial-symbol {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  scale: var(--chapter-icon-scale, 1);
+  opacity: 0;
+  backface-visibility: hidden;
+  transform: rotateY(-70deg);
+}
+.chapter-dial-symbol:nth-child(1) {
+  --chapter-icon-scale: 1.28;
+}
+.chapter-dial-symbol:nth-child(2),
+.chapter-dial-symbol:nth-child(3) {
+  --chapter-icon-scale: 1.12;
+}
+.chapter-dial-symbol:nth-child(4) {
+  --chapter-icon-scale: 0.96;
+}
+.chapter-dial-symbol:nth-child(5) {
+  --chapter-icon-scale: 1.08;
+}
+.chapter-dial-symbol.is-active {
+  opacity: 1;
+  transform: rotateY(0deg);
+}
 .chapter-dial-rotor {
   --chapter-highlight-angle: 0deg;
   position: absolute;
@@ -432,15 +482,58 @@ body {
   }
 }
 
+#hero {
+  height: 100svh;
+}
+.parallax-layer[data-mountain] svg {
+  height: 100%;
+}
+.parallax-layer[data-mountain="far"] {
+  height: 36svh;
+}
+.parallax-layer[data-mountain="mid"] {
+  height: 26svh;
+}
+.parallax-layer[data-mountain="near"] {
+  height: 18svh;
+}
+@media (max-width: 767px) {
+  .parallax-layer[data-mountain="far"] { height: 24svh; }
+  .parallax-layer[data-mountain="mid"] { height: 18svh; }
+  .parallax-layer[data-mountain="near"] { height: 12svh; }
+}
+
+.parallax-layer[data-mountain]::after {
+  content: "";
+  position: absolute;
+  top: calc(100% - 1px);
+  inset-inline: 0;
+  height: 100vh;
+  background: var(--mountain-fill);
+  pointer-events: none;
+}
+
+[data-mountain="far"] {
+  --mountain-fill: #3b4252;
+}
+
+[data-mountain="mid"] {
+  --mountain-fill: #434c5e;
+}
+
+[data-mountain="near"] {
+  --mountain-fill: #4c566a;
+}
+
 .scene-seam {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 160px;
-  background: linear-gradient(to top, var(--bg-base) 0%, transparent 100%);
+  height: 7svh;
+  background: linear-gradient(to top, var(--bg-base) 18%, transparent 100%);
   pointer-events: none;
-  z-index: 10;
+  z-index: 5;
 }
 
 /* =============================================
@@ -580,13 +673,6 @@ body {
   }
 }
 
-/* Mobile: parallax off */
-@media (max-width: 767px) {
-  .parallax-layer {
-    transform: none !important;
-  }
-}
-
 /* Portfolio system: cool slate surfaces, crisp edges, and readable controls. */
 .site-section {
   scroll-margin-top: 5rem;
@@ -600,9 +686,15 @@ body {
   font-size: 0.75rem;
   letter-spacing: 0.15em;
 }
+.portfolio-panel,
+.panel-surface {
+  background: linear-gradient(145deg, rgba(46, 52, 64, 0.88), rgba(41, 47, 58, 0.88));
+}
 .portfolio-panel {
   border: 1px solid rgba(76, 86, 106, 0.58);
-  background: linear-gradient(145deg, rgba(46, 52, 64, 0.92), rgba(41, 47, 58, 0.92));
+}
+.panel-surface:hover {
+  background: linear-gradient(145deg, rgba(50, 58, 70, 0.86), rgba(43, 50, 62, 0.86));
 }
 .timeline-entry {
   display: grid;
@@ -719,14 +811,6 @@ body {
   z-index: 2;
 }
 
-.content-page::before {
-  position: fixed;
-  z-index: -1;
-  inset: 0;
-  background: rgba(36, 41, 51, 0.6);
-  content: "";
-  pointer-events: none;
-}
 
 .content-back {
   display: inline-flex;

@@ -1,8 +1,6 @@
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 
-import { shouldRunMotion } from "@/lib/ui-state";
-
 const CHAPTER_STEP_ANGLE = 30;
 
 const clamp = (value: number, minimum: number, maximum: number) =>
@@ -141,6 +139,7 @@ function getChapterElements() {
   const rail = document.querySelector<HTMLElement>("[data-chapter-rail]");
   const dial = document.querySelector<HTMLElement>("[data-chapter-dial]");
   const rotor = document.querySelector<HTMLElement>("[data-chapter-dial-rotor]");
+  const symbols = Array.from(document.querySelectorAll<HTMLElement>("[data-chapter-symbol]"));
   const links = Array.from(document.querySelectorAll<HTMLAnchorElement>("[data-chapter-link]"));
   const entries = links.flatMap((link) => {
     const chapter = document.querySelector<HTMLElement>(link.hash);
@@ -152,7 +151,7 @@ function getChapterElements() {
     return chapter && dot && label && number ? [{ chapter, dot, label, link, number }] : [];
   });
 
-  if (!dial || !rail || !rotor || entries.length !== links.length || entries.length === 0) {
+  if (!dial || !rail || !rotor || entries.length !== links.length || symbols.length !== links.length || entries.length === 0) {
     return null;
   }
 
@@ -160,6 +159,7 @@ function getChapterElements() {
     dial,
     rail,
     rotor,
+    symbols,
     links: entries.map(({ link }) => link),
     dots: entries.map(({ dot }) => dot),
     labels: entries.map(({ label }) => label),
@@ -203,7 +203,7 @@ function initChapterDial(reducedMotion: boolean): () => void {
   const elements = getChapterElements();
   if (!elements) return () => undefined;
 
-  const { chapters, dial, dots, labels, links, numbers, rail, rotor } = elements;
+  const { chapters, dial, dots, labels, links, numbers, rail, rotor, symbols } = elements;
   const about = chapters[0];
   const contact = chapters.at(-1);
   if (!about || !contact) return () => undefined;
@@ -211,7 +211,9 @@ function initChapterDial(reducedMotion: boolean): () => void {
   let aboutCenterDocY = getDocumentCenter(about);
   let contactCenterDocY = getDocumentCenter(contact);
   let activeDotIndex = -1;
+  let activeSymbolIndex = -1;
   let dotTimeline: gsap.core.Timeline | null = null;
+  let symbolTimeline: gsap.core.Timeline | null = null;
   let active = true;
 
   const measureAnchors = () => {
@@ -264,6 +266,36 @@ function initChapterDial(reducedMotion: boolean): () => void {
       .to(previousDot, { duration: 0.25, ease: "none", opacity: 0, overwrite: "auto" }, 0)
       .to(nextDot, { duration: 0.25, ease: "none", opacity: 1, overwrite: "auto" }, 0.125);
   };
+  const updateActiveSymbol = (nextIndex: number) => {
+    if (nextIndex === activeSymbolIndex) return;
+
+    const previousIndex = activeSymbolIndex;
+    activeSymbolIndex = nextIndex;
+    symbols.forEach((symbol, index) => {
+      symbol.dataset.active = String(index === nextIndex);
+    });
+    symbolTimeline?.kill();
+    gsap.killTweensOf(symbols);
+
+    if (reducedMotion || previousIndex < 0) {
+      symbols.forEach((symbol, index) => {
+        gsap.set(symbol, { opacity: index === nextIndex ? 1 : 0, rotationY: index === nextIndex ? 0 : -70 });
+      });
+      return;
+    }
+
+    const previousSymbol = symbols[previousIndex];
+    const nextSymbol = symbols[nextIndex];
+    if (!previousSymbol || !nextSymbol) return;
+
+    symbols.forEach((symbol, index) => {
+      if (index !== previousIndex && index !== nextIndex) gsap.set(symbol, { opacity: 0, rotationY: -70 });
+    });
+    gsap.set(nextSymbol, { opacity: 0, rotationY: -70 });
+    symbolTimeline = gsap.timeline()
+      .to(previousSymbol, { duration: 0.22, ease: "power2.in", opacity: 0, rotationY: 70 }, 0)
+      .to(nextSymbol, { duration: 0.32, ease: "power2.out", opacity: 1, rotationY: 0 }, 0.18);
+  };
   const renderPresentation = (renderedProgress: number, counterRotation: number) => {
     labels.forEach((label, index) => {
       label.style.transform = `rotate(${counterRotation - index * CHAPTER_STEP_ANGLE}deg)`;
@@ -273,7 +305,9 @@ function initChapterDial(reducedMotion: boolean): () => void {
       `${renderedProgress * CHAPTER_STEP_ANGLE}deg`
     );
     updateChapterPresentation(links, numbers, rotor, renderedProgress);
-    updateActiveDot(Math.round(renderedProgress + Number.EPSILON));
+    const activeIndex = Math.round(renderedProgress + Number.EPSILON);
+    updateActiveDot(activeIndex);
+    updateActiveSymbol(activeIndex);
   };
 
   const rotateRotor = reducedMotion
@@ -327,7 +361,8 @@ function initChapterDial(reducedMotion: boolean): () => void {
     active = false;
     dialTrigger.kill();
     dotTimeline?.kill();
-    gsap.killTweensOf([rotor, ...dots]);
+    symbolTimeline?.kill();
+    gsap.killTweensOf([rotor, ...dots, ...symbols]);
     gsap.set(rotor, { clearProps: "transform" });
     dial.style.removeProperty("transform");
     rail.style.removeProperty("--chapter-rotor-angle");
@@ -342,6 +377,8 @@ function initChapterDial(reducedMotion: boolean): () => void {
       link.removeAttribute("tabindex");
     });
     dots.forEach((dot) => dot.style.removeProperty("opacity"));
+    symbols.forEach((symbol) => symbol.style.removeProperty("transform"));
+    symbols.forEach((symbol) => symbol.style.removeProperty("opacity"));
     numbers.forEach((number) => number.style.removeProperty("font-size"));
   };
 }
@@ -350,6 +387,35 @@ export function initMotion(): void {
   gsap.registerPlugin(ScrollTrigger);
   const media = gsap.matchMedia();
 
+  media.add("(min-width: 0px)", () => {
+    const hero = document.querySelector<HTMLElement>("#hero");
+    const content = hero?.querySelector<HTMLElement>("[data-hero-content] > div");
+    if (!hero || !content) return;
+
+    const layers = Array.from(hero.querySelectorAll<HTMLElement>("[data-mountain]"));
+    const measureMountains = () => {
+      // Measure the centered content without its animated scroll transform.
+      const contentBottom = (hero.clientHeight + content.offsetHeight) / 2;
+      const availableHeight = Math.max(0, hero.clientHeight - contentBottom - 24);
+      const depth = [1, 0.78, 0.56];
+      layers.forEach((layer, index) => {
+        const path = layer.querySelector<SVGPathElement>("path");
+        if (!path) return;
+        const visibleRatio = (480 - path.getBBox().y) / 480;
+        layer.style.height = `${availableHeight * depth[index] / visibleRatio}px`;
+      });
+    };
+
+    measureMountains();
+    const observer = new ResizeObserver(measureMountains);
+    observer.observe(hero);
+    observer.observe(content);
+    return () => {
+      observer.disconnect();
+      layers.forEach((layer) => layer.style.removeProperty("height"));
+    };
+  });
+
   media.add(
     {
       desktop: "(min-width: 768px)",
@@ -357,14 +423,7 @@ export function initMotion(): void {
     },
     (context) => {
       const conditions = context.conditions as { desktop: boolean; noReduce: boolean };
-      if (
-        !shouldRunMotion({
-          mobile: !conditions.desktop,
-          reducedMotion: !conditions.noReduce,
-        })
-      ) {
-        return;
-      }
+      if (!conditions.noReduce) return;
 
       const hero = document.querySelector<HTMLElement>("#hero");
       if (hero) {
@@ -372,20 +431,39 @@ export function initMotion(): void {
           scrollTrigger: {
             trigger: hero,
             start: "top top",
-            end: "+=120%",
+            end: "bottom top",
             scrub: true,
-            pin: true,
-            anticipatePin: 1,
+            invalidateOnRefresh: true,
           },
         });
-        timeline.to("[data-hero-sky]", { yPercent: -5, ease: "none" }, 0);
-        timeline.to("[data-mountain='far']", { yPercent: -15, scale: 1.04, ease: "none" }, 0);
-        timeline.to("[data-mountain='mid']", { yPercent: -35, ease: "none" }, 0);
-        timeline.to("[data-mountain='near']", { yPercent: -70, opacity: 0.4, ease: "none" }, 0);
-        timeline.to("[data-hero-content]", { yPercent: -20, opacity: 0, ease: "none" }, 0);
+        timeline.to(
+          hero.querySelector("[data-mountain='far']"),
+          { y: () => -hero.clientHeight * 0.12, duration: 1, ease: "none" },
+          0
+        );
+        timeline.to(
+          hero.querySelector("[data-mountain='mid']"),
+          { y: () => -hero.clientHeight * 0.28, duration: 1, ease: "none" },
+          0
+        );
+        timeline.to(
+          hero.querySelector("[data-mountain='near']"),
+          { y: () => -hero.clientHeight * 0.46, duration: 1, ease: "none" },
+          0
+        );
+        timeline.to(
+          hero.querySelector("[data-hero-content]"),
+          { yPercent: -4, duration: 1, ease: "none" },
+          0
+        );
+        timeline.to(
+          hero.querySelector("[data-hero-cue]"),
+          { opacity: 0, duration: 0.25, ease: "none" },
+          0
+        );
       }
 
-      for (const element of gsap.utils.toArray<HTMLElement>("[data-reveal]")) {
+      for (const element of conditions.desktop ? gsap.utils.toArray<HTMLElement>("[data-reveal]") : []) {
         gsap.from(element, {
           y: 28,
           opacity: 0,

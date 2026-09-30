@@ -4,8 +4,23 @@ import vercel from "@astrojs/vercel";
 import { defineConfig, envField } from "astro/config";
 import icon from "astro-icon";
 import remarkGfm from "remark-gfm";
+import { realpathSync } from "node:fs";
+import { searchForWorkspaceRoot } from "vite";
+
+const workspaceRoot = searchForWorkspaceRoot(process.cwd());
+const sharedFontPackages = [
+  realpathSync("node_modules/@fontsource-variable/sora"),
+  realpathSync("node_modules/@fontsource-variable/geist-mono"),
+];
 
 export default defineConfig({
+  vite: {
+    server: {
+      fs: {
+        allow: [workspaceRoot, ...sharedFontPackages],
+      },
+    },
+  },
   site: "https://aguswira.dev",
   output: "static",
   adapter: vercel(),
